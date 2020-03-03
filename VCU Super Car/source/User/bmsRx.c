@@ -47,12 +47,15 @@ void vBmsHeartBeat (void *pvParameters)
     {
      .id = 0x01,
      .dlc = 8,
-     .ide = (uint8_t)CAN_Id_Extended,
+     .ide = (uint8_t)CAN_Id_Standard,
     };
     lastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        newCanTransmit(canREG2, canMESSAGE_BOX2, 0xff5f5, canHearBeat.data, canHearBeat.dlc);
+        newCanTransmit(canREG1, canMESSAGE_BOX1, &canHearBeat);
+      //  newCanTransmit(canREG2, canMESSAGE_BOX2, 0xff5f5, canHearBeat.data, canHearBeat.dlc, CAN_Id_Extended);
+       // newCanTransmit(canREG1, canMESSAGE_BOX2, 0xf, canHearBeat.data, canHearBeat.dlc, CAN_Id_Standard);
+
         vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(100U));
     }
 }

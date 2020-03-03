@@ -8,8 +8,6 @@
 #ifndef INCLUDE_USER_BMSRX_H_
 #define INCLUDE_USER_BMSRX_H_
 
-#define
-
 void BmsRxInit(void);
 
 
