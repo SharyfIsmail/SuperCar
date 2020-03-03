@@ -9,17 +9,18 @@
 #include "os_queue.h"
 #include "os_task.h"
 #include "newCanLib.h"
+#include "SemikronRx.h"
 
 void vSemicronRxHandler (void *pvParameters);
 void vSemicronNmtCommand (void *pvParameters);
 void vSemicronSyn(void *pvParameters);
-
+void vSemicronNmtNodeGuarding(void *pvParameters);
 TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
 
 void semikronRxInit(void)
 {
-    if(xTaskCreate(vSemicronRxHandler, "SemicronRxHandler", configMINIMAL_STACK_SIZE, NULL, 1, &xSemicronRxHandler ) != pdTRUE)
+    if(xTaskCreate(vSemicronRxHandler, "SemicronRxHandler", configMINIMAL_STACK_SIZE, NULL, 1, &xSemicronRxHandler) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
@@ -29,7 +30,12 @@ void semikronRxInit(void)
         /*Task couldn't be created */
         while(1);
     }
-    if(xTaskCreate(vSemicronSym, "SemicronSync", configMINIMAL_STACK_SIZE, ((uint32_t)CAN_PERIOD_MS_SEMICRON_SYN), 1,NULL ) != pdTRUE)
+    if(xTaskCreate(vSemicronSyn, "SemicronSync", configMINIMAL_STACK_SIZE,(void*) ((uint32_t)CAN_PERIOD_MS_SEMICRON_SYN), 1, NULL) != pdTRUE)
+    {
+        /*Task couldn't be created */
+        while(1);
+    }
+    if(xTaskCreate(vSemicronNmtNodeGuarding, "NMT_NodeGuarding", configMINIMAL_STACK_SIZE,(void*) ((uint32_t)CAN_PERIOD_MS_NMT_NODE_GUARDING), 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
@@ -62,4 +68,24 @@ void vSemicronSyn(void *pvParameters)
     }
 }
 
+void vSemicronNmtNodeGuarding(void *pvParameters)
+{
+    TickType_t lastWeakTime;
+    TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
 
+    canMessage_t SemicronNodeGuarding =
+    {
+         .id = SEMICRON_RX_NMT_NODE_GUARDING,
+         .dlc = SEMICRON_RX_NMT_NODE_GUARDING_DLC,
+         .ide =  (uint8_t)CAN_Id_Standard,
+    };
+    lastWeakTime = xTaskGetTickCount();
+    for(;;)
+    {
+        setNmtNodeGuardingState(&SemicronNodeGuarding, 0x1);
+     //   newCanTransmit(canREG1, canMESSAGE_BOX1,SemicronNodeGuarding.id, SemicronNodeGuarding.data,SemicronNodeGuarding.dlc,SemicronNodeGuarding.ide);
+        newCanTransmit(canREG1, canMESSAGE_BOX2, &SemicronNodeGuarding);
+
+        vTaskDelayUntil( &lastWeakTime, transmitPeriod );
+    }
+}
