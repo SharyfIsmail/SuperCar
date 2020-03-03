@@ -19,7 +19,7 @@ void semikronTxInit(void);
 
 typedef struct
 {
-    uint8_t data[8]
+    uint8_t data[8];
 }emdTxPdo01_t;
 
 
@@ -32,7 +32,7 @@ inline uint16_t getTx_PDO_01_InverterLosses(emdTxPdo01_t *ptr)
 /* Inverter state  length : 4 start bit 12*/
 inline uint8_t getTx_PDO_01_InverterState(emdTxPdo01_t *ptr)
 {
-    return (uint8_t) (ptr->data[1] & 0xF0) >> 4);
+    return ((uint8_t) (ptr->data[1] & 0xF0) >> 4);
 }
 
 /* Motor losses  length : 12 start bit 16 */
@@ -78,7 +78,7 @@ inline uint8_t getTx_PDO_01_DishargeState(emdTxPdo01_t *ptr)
 }
 
 /* Spo Input  length : 1 start bit : 63*/
-inline uint8_t getTx_PDO_01_DishargeState(emdTxPdo01_t *ptr)
+inline uint8_t getTx_PDO_01_SpoInput(emdTxPdo01_t *ptr)
 {
     return ((uint8_t)(ptr->data[7] & 0x80 ) >> 7);
 }
@@ -88,11 +88,11 @@ inline uint8_t getTx_PDO_01_DishargeState(emdTxPdo01_t *ptr)
 
 typedef struct
 {
-    uint8_t data[8]
+    uint8_t data[8];
 }emdTxPdo02_t;
 
 /* EMD_ACT_Reference Torquelim lenght: 14 start bit: 0*/
-inline int16_t getTx_PDO_02_ReferenceTorqueLimit(emdTxpdo02_t *ptr)
+inline int16_t getTx_PDO_02_ReferenceTorqueLimit(emdTxPdo02_t *ptr)
 {
     return (int16_t)(((uint16_t)(ptr->data[0]) | ((uint16_t)(ptr->data[1] & 0x3F) << 8)) * 0.02 - 100);
 }
@@ -128,7 +128,7 @@ inline int16_t getTx_PDO_02_Torque (emdTxPdo02_t *ptr)
 }
 
 /* EMD_ACT_Torque VAL lenght: 2 start bit: 54*/
-inline uint8_t getTx_PDO_02_ReferenceTorqueLimitVAL(emdTxPdo02_t *ptr)
+inline uint8_t getTx_PDO_02_TorqueVAL(emdTxPdo02_t *ptr)
 {
     return ((uint8_t)(ptr->data[6] & 0xC0) >> 6);
 }
@@ -144,7 +144,7 @@ inline uint8_t getTx_PDO_02_MessageCounter(emdTxPdo01_t *ptr)
 
 typedef struct
 {
-    uint8_t data[8]
+    uint8_t data[8];
 }emdTxPdo03_t;
 
 /* EMD_ACT_MotorSpeed length : 16 start bit : 0 */
@@ -170,7 +170,7 @@ inline uint8_t getTx_PDO_03_MotorSpeedVAL(emdTxPdo03_t *ptr)
 
 typedef struct
 {
-    uint8_t data[6]
+    uint8_t data[6];
 }emdTxPdo04_t;
 
 /*EMD_ACT_Phase Current length : 14 start bit : 0 */
@@ -220,7 +220,7 @@ inline uint8_t getTx_PDO_04_SystemWarning(emdTxPdo04_t *ptr)
 
 typedef struct
 {
-    uint8_t data[4]
+    uint8_t data[4];
 }emdTxPdo05_t;
 
 /*EMD_ACT_Max Junction Temp  length : 8 start bit : 0*/
@@ -230,7 +230,7 @@ inline int16_t getTx_PDO_05_MaxJunctionTemp(emdTxPdo05_t *ptr)
 }
 
 /*EMD_ACT_Motor Temperature  length : 8 start bit : 8*/
-inline int16_t getTx_PDO_05_MaxJunctionTemp(emdTxPdo05_t *ptr)
+inline int16_t getTx_PDO_05_MotorTemperature(emdTxPdo05_t *ptr)
 {
     return (int16_t)(((uint8_t)ptr->data[1]) - 40 );
 }

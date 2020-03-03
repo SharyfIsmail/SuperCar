@@ -641,14 +641,14 @@ typedef struct can_config_reg
 #define CAN1_TEST_CONFIGVALUE       0x00000080U 
 #define CAN1_ABOTR_CONFIGVALUE    ((uint32)(0U))
 #define CAN1_INTMUX0_CONFIGVALUE  ((uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
+                                 | (uint32)0x00000002U \
+                                 | (uint32)0x00000004U \
+                                 | (uint32)0x00000008U \
+                                 | (uint32)0x00000010U \
+                                 | (uint32)0x00000020U \
+                                 | (uint32)0x00000040U \
+                                 | (uint32)0x00000080U \
+                                 | (uint32)0x00000100U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \

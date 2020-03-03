@@ -23,22 +23,6 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
             node->IF2MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF2CMD  = (uint8) 0xF8U;
             node->IF2NO   = messageBox;
-//            if(ide == CAN_Id_Standard)
-//            {
-//                node->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)mask & (uint32)0x000007FFU) << (uint32)18U);
-//                node->IF2ARB  = (uint32)0x80000000U | (uint32)0x00000000U | (uint32)0x20000000U | (uint32)((uint32)((uint32)filter & (uint32)0x000007FFU) << (uint32)18U);
-//                node->IF2MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-//                node->IF2CMD  = (uint8) 0xF8U;
-//                node->IF2NO   = messageBox;
-//            }
-//            else
-//            {
-//                node->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)mask & (uint32)0x1FFFFFFFU));
-//                node->IF2ARB  = (uint32)0x80000000U | (uint32)0x40000000U | (uint32)0x20000000U | (uint32)((uint32)((uint32)filter & (uint32)0x1FFFFFFFU));
-//                node->IF2MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-//                node->IF2CMD  = (uint8) 0xF8U;
-//                node->IF2NO   = messageBox;
-//            }
         }
 
         else
@@ -68,22 +52,6 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
             node->IF1MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF1CMD  = (uint8) 0xF8U;
             node->IF1NO   = messageBox;
-//            if(ide == CAN_Id_Standard)
-//            {
-//                node->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)mask & (uint32)0x000007FFU) << (uint32)18U);
-//                node->IF1ARB  = (uint32)0x80000000U | (uint32)0x00000000U | (uint32)0x20000000U | (uint32)((uint32)((uint32)filter & (uint32)0x000007FFU) << (uint32)18U);
-//                node->IF1MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-//                node->IF1CMD  = (uint8) 0xF8U;
-//                node->IF1NO   = messageBox;
-//            }
-//            else
-//            {
-//                node->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)mask & (uint32)0x1FFFFFFFU));
-//                node->IF1ARB  = (uint32)0x80000000U | (uint32)0x40000000U | (uint32)0x20000000U | (uint32)((uint32)((uint32)filter & (uint32)0x1FFFFFFFU));
-//                node->IF1MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-//                node->IF1CMD  = (uint8) 0xF8U;
-//                node->IF1NO   = messageBox;
-//            }
         }
 
         else
@@ -109,16 +77,14 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
 }
 static void messageBoxInitReg1(canBASE_t *node)
 {
-    messageBoxInitialize(node, canMESSAGE_BOX1 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX2 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-
-
+    messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
+    messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
 }
 
 static void messageBoxInitReg2(canBASE_t *node)
 {
-    messageBoxInitialize(node, canMESSAGE_BOX1 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX2 , CAN_Id_Extended, 0, 0, SENDING_NODE);
+    messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
+    messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
 
 }
 uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
@@ -180,37 +146,37 @@ void boardCanInit(canBASE_t *node)
     node->ES |= 0xFFFFFFFFU;
     /** - Assign interrupt level for messages */
     node->INTMUXx[0U] = (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U
-                                | (uint32)0x00000000U;
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U
+                      | (uint32)0x00000000U;
 
     /** - Setup auto bus on timer period */
     node->ABOTR = (uint32)0U;

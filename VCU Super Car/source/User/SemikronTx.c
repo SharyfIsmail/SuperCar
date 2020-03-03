@@ -39,9 +39,9 @@ void vSemicronTxHandler (void *pvParameters)
     emdTxPdo05_t *emdTxPdo_05 = &semicronTxCanFrame.p.emdTxPdo05;
     while(1)
     {
-        if(semicronTxCanFrame.id < emdTxPdo_02)
+        if(semicronTxCanFrame.id < EMD_TxPDO_2)
         {
-            if(semicronTxCanFrame.id == emdTxPdo_01)    // emdTxPdo_01
+            if(semicronTxCanFrame.id == EMD_TxPDO_1)    // emdTxPdo_01
             {
 
             }
@@ -51,9 +51,9 @@ void vSemicronTxHandler (void *pvParameters)
             }
         }
 
-        else if(semicronTxCanFrame.id > emdTxPdo_02)
+        else if(semicronTxCanFrame.id > EMD_TxPDO_2)
         {
-            if(semicronTxCanFrame.id == emdTxPdo_03)    // emdTxPdo_03
+            if(semicronTxCanFrame.id == EMD_TxPDO_3)    // emdTxPdo_03
             {
 
             }
