@@ -111,15 +111,7 @@ static void messageBoxInitReg1(canBASE_t *node)
 {
     messageBoxInitialize(node, canMESSAGE_BOX1 , CAN_Id_Standard, 0, 0, SENDING_NODE);
     messageBoxInitialize(node, canMESSAGE_BOX2 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX3 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX4 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX5 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX6 , CAN_Id_Standard, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX7 , CAN_Id_Extended, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX8 , CAN_Id_Extended, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX9 , CAN_Id_Extended, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX10 , CAN_Id_Extended, 0, 0, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX11 , CAN_Id_Extended, 0, 0, SENDING_NODE);
+
 
 }
 
@@ -129,10 +121,9 @@ static void messageBoxInitReg2(canBASE_t *node)
     messageBoxInitialize(node, canMESSAGE_BOX2 , CAN_Id_Extended, 0, 0, SENDING_NODE);
 
 }
-
-uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, uint32_t messageID, const uint8 * data, uint8_t dataLenght)
+uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
 {
-    uint32 i;
+    uint8_t i;
     uint32 success  = 0U;
     uint32 regIndex = (messageBox - 1U) >> 5U;
     uint32 bitIndex = 1U << ((messageBox - 1U) & 0x1FU);
@@ -148,35 +139,34 @@ uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, uint32_t messageID, co
 
         node->IF1CMD = 0x87U;
 
-        for (i = 0U; i < dataLenght; i++)
+        for (i = 0U; i < ptr->dlc; i++)
         {
             #if ((__little_endian__ == 1) || (__LITTLE_ENDIAN__ == 1))
-                    node->IF1DATx[i] = *data;
-                    data++;
+                    node->IF1DATx[i] = ptr->data[i];
+                    ptr->data++;
             #else
-                    node->IF1DATx[s_canByteOrder[i]] = *data;
-                    data++;
+                    node->IF1DATx[s_canByteOrder[i]] = ptr->data[i];
+                    ptr->data[i++];
             #endif
         }
         node->IF1CMD |=0xB0U;
-        if(messageBox >= 25U)
+        if(ptr->ide == CAN_Id_Extended)
         {
             node->IF1ARB = 0xE0000000U;
-            node->IF1ARB |= (messageID & 0x1FFFFFFFU);
-            node->IF1MCTL = 0x00001000U | (uint32_t)dataLenght;
+            node->IF1ARB |= (ptr->id & 0x1FFFFFFFU);
+            node->IF1MCTL = 0x00001000U | (uint32_t)ptr->dlc;
         }
         else
         {
             node->IF1ARB = 0xA0000000U;
-            node->IF1ARB |= (messageID << 18) & 0x1FFC0000U;
-            node->IF1MCTL = 0x00001000U | (uint32_t)dataLenght;
+            node->IF1ARB |= (ptr->id << 18) & 0x1FFC0000U;
+            node->IF1MCTL = 0x00001000U | (uint32_t)ptr->dlc;
         }
 
         node->IF1NO = (uint8) messageBox;
 
         success = 1U;
     }
-
     return success;
 }
 

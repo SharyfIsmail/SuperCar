@@ -45,7 +45,7 @@ enum
     SENDING_NODE = 0x0,
     RECEIVEING_NODE = 0x400
 };
-uint32 newCanTransmit(canBASE_t *node, uint32 messageBox,uint32_t messageID, const uint8 * data, uint8_t dataLenght);
+uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr);
 void boardCanInit(canBASE_t *node);
 
 #endif /* INCLUDE_USER_NEWCANLIB_H_ */
