@@ -702,17 +702,17 @@ typedef struct can_config_reg
 #define CAN2_TEST_CONFIGVALUE    0x00000080U 
 #define CAN2_ABOTR_CONFIGVALUE    ((uint32)(0U))
 #define CAN2_INTMUX0_CONFIGVALUE  ((uint32)0x00000000U \
+                                 | (uint32)0x00000002U \
+                                 | (uint32)0x00000004U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
-                                 | (uint32)0x00000000U \
+                                 | (uint32)0x00000200U \
+                                 | (uint32)0x00000400U \
+                                 | (uint32)0x00000800U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
                                  | (uint32)0x00000000U \
