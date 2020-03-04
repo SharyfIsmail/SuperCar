@@ -30,12 +30,12 @@ void semikronRxInit(void)
         /*Task couldn't be created */
         while(1);
     }
-    if(xTaskCreate(vSemicronSyn, "SemicronSync", configMINIMAL_STACK_SIZE,(void*) ((uint32_t)CAN_PERIOD_MS_SEMICRON_SYN), 1, NULL) != pdTRUE)
+    if(xTaskCreate(vSemicronSyn, "SemicronSync", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_SEMICRON_SYN, 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
     }
-    if(xTaskCreate(vSemicronNmtNodeGuarding, "NMT_NodeGuarding", configMINIMAL_STACK_SIZE,(void*) ((uint32_t)CAN_PERIOD_MS_NMT_NODE_GUARDING), 1, NULL) != pdTRUE)
+    if(xTaskCreate(vSemicronNmtNodeGuarding, "NMT_NodeGuarding", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_NMT_NODE_GUARDING, 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
@@ -52,18 +52,37 @@ void vSemicronRxHandler (void *pvParameters)
 
 void vSemicronNmtCommand (void *pvParameters)
 {
+    nmtCommandSpecifier_t nmtCommandSpecifier = RESET_COMMUNICATION;
+    canMessage_t semicronNmtCommand =
+    {
+     .id = SEMICRON_RX_NMT_NMT_COMMAND,
+     .dlc = SEMICRON_RX_NMT_NMT_COMMAND_DLC,
+     .ide = (uint8_t)CAN_Id_Standard,
+    };
     while(1)
     {
+        setNmtCommandSpecifier(&semicronNmtCommand, (uint8_t)nmtCommandSpecifier);
+        newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNmtCommand);
         taskYIELD();
     }
 }
+
 void vSemicronSyn(void *pvParameters)
 {
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
 
+    canMessage_t semicronSync =
+    {
+     .id = SEMICRON_SYN,
+     .dlc = SEMICRON_SYN_DLC,
+     .ide = (uint8_t)CAN_Id_Standard,
+    };
+    lastWeakTime = xTaskGetTickCount();
     while(1)
     {
+        newCanTransmit(canREG1, canMESSAGE_BOX2, &semicronSync);
+
         vTaskDelayUntil( &lastWeakTime, transmitPeriod );
     }
 }
@@ -72,8 +91,8 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 {
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
-
-    canMessage_t SemicronNodeGuarding =
+    nmtNodeGuardingState_t  nmtNodeGuardingState = INITIALISATION;
+    canMessage_t semicronNodeGuarding =
     {
          .id = SEMICRON_RX_NMT_NODE_GUARDING,
          .dlc = SEMICRON_RX_NMT_NODE_GUARDING_DLC,
@@ -82,9 +101,9 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
-        setNmtNodeGuardingState(&SemicronNodeGuarding, 0x1);
-     //   newCanTransmit(canREG1, canMESSAGE_BOX1,SemicronNodeGuarding.id, SemicronNodeGuarding.data,SemicronNodeGuarding.dlc,SemicronNodeGuarding.ide);
-        newCanTransmit(canREG1, canMESSAGE_BOX2, &SemicronNodeGuarding);
+        setNmtNodeGuardingState(&semicronNodeGuarding,(uint8_t) nmtNodeGuardingState);
+        ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);
+        newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNodeGuarding);
 
         vTaskDelayUntil( &lastWeakTime, transmitPeriod );
     }
