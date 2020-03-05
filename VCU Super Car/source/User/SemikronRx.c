@@ -20,7 +20,7 @@ TaskHandle_t xNMTCommand;
 
 void semikronRxInit(void)
 {
-    if(xTaskCreate(vSemicronRxHandler, "SemicronRxHandler", configMINIMAL_STACK_SIZE, NULL, 1, &xSemicronRxHandler) != pdTRUE)
+    if(xTaskCreate(vSemicronRxHandler, "SemicronRxHandler", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_SEMICRON_HANDLER, 1, &xSemicronRxHandler) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
@@ -44,9 +44,27 @@ void semikronRxInit(void)
 
 void vSemicronRxHandler (void *pvParameters)
 {
+    TickType_t lastWeakTime;
+    TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
+
+    RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
+    Rx_PDO_03ControlMode_t    controlMode = DISABLED;
+    canMessage_t rxPdo_03 =
+    {
+     .id  = SEMICRON_SEMICRON_HANDLER,
+     .dlc = SEMICRON_HANDLER_DLC,
+     .ide = (uint8_t)CAN_Id_Standard,
+    };
+    setRx_PDO_03ControlMode(&rxPdo_03, (uint8_t)controlMode);
+    setRx_PDO_03TorqueRefLim(&rxPdo_03, RX_PDO_03_TORQUE_REF_LIM(0));
+    setRx_PDO_03SpeedRefLim(&rxPdo_03, RX_PDO_03_SPEED_REF_LIM(0));
+    setRX_PDO_03LimitationMode(&rxPdo_03, (uint8_t)limitationMode);
+    lastWeakTime = xTaskGetTickCount();
+
     while(1)
     {
-        taskYIELD();
+        newCanTransmit(canREG1, canMESSAGE_BOX2, &rxPdo_03);
+        vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
 
