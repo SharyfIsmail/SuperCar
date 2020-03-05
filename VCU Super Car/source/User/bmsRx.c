@@ -80,4 +80,3 @@ void vBmsHeartBeat (void *pvParameters)
     }
 }
 
-
