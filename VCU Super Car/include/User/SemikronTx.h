@@ -9,14 +9,15 @@
 #define INCLUDE_USER_SEMIKRONTX_H_
 
 #include <stdint.h>
-
-extern QueueHandle_t xQueueSemikronTx;
+#include "FreeRTOS.h"
+#include "os_queue.h"
 
 void semikronTxInit(void);
 
 #define EMD_TxPDO_1 ((uint32_t) 0x000001FA)
 #define EMD_TxPDO_1_DLC ((uint8_t)8)
 
+extern QueueHandle_t xQueueSemikronTx ;
 typedef struct
 {
     uint8_t data[8];
@@ -71,7 +72,7 @@ inline uint8_t getTx_PDO_01_ASCState(emdTxPdo01_t *ptr)
     return ((uint8_t)(ptr->data[7] & 0x20 ) >> 5);
 }
 
-/* Disharge State  length : 1 start bit : 62*/
+/* Discharge State  length : 1 start bit : 62*/
 inline uint8_t getTx_PDO_01_DishargeState(emdTxPdo01_t *ptr)
 {
     return ((uint8_t)(ptr->data[7] & 0x40 ) >> 6);

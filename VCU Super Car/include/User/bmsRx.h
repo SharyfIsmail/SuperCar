@@ -48,8 +48,8 @@ typedef enum
  * */
 typedef enum
 {
-    NO_CRITICAL_PCU_FAULT = 0x0,
-    CRITICAL_PCU_FAULT = 0x1
+    NO_CRITICAL_PCU_FAULT = 0x0,/*!< Specifies that errors are not presented. */
+    CRITICAL_PCU_FAULT    = 0x1/*!< Specifies that errors are presented. */
 }CriticalPcuFault_t;
 
 /*Contactor request length : 1 start bit : 8*/

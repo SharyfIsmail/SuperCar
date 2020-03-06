@@ -61,6 +61,7 @@
 #include "SemikronTx.h"
 #include "bmsRx.h"
 #include "bmsTx.h"
+#include "selector.h"
 
 #include "strings.h"
 
@@ -89,6 +90,8 @@ int main(void)
     semikronTxInit();
     BmsRxInit();
     BmsTxInit();
+    selectorInit();
+
     _enable_interrupt_();
 
     /*start Scheduler */

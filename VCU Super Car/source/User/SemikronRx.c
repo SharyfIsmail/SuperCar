@@ -63,7 +63,7 @@ void vSemicronRxHandler (void *pvParameters)
 
     while(1)
     {
-        newCanTransmit(canREG1, canMESSAGE_BOX2, &rxPdo_03);
+        newCanTransmit(canREG1, canMESSAGE_BOX4, &rxPdo_03);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
@@ -121,7 +121,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     {
         setNmtNodeGuardingState(&semicronNodeGuarding,(uint8_t) nmtNodeGuardingState);
         ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);
-        newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNodeGuarding);
+        newCanTransmit(canREG1, canMESSAGE_BOX3, &semicronNodeGuarding);
 
         vTaskDelayUntil( &lastWeakTime, transmitPeriod );
     }

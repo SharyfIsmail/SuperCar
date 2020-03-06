@@ -77,8 +77,15 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
 }
 static void messageBoxInitReg1(canBASE_t *node)
 {
-    messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
-    messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
+    messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+    messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
+    messageBoxInitialize(node, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
+    messageBoxInitialize(node, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
+    messageBoxInitialize(node, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Heart Beat
+    messageBoxInitialize(node, canMESSAGE_BOX6 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Rx Handler
+    messageBoxInitialize(node, canMESSAGE_BOX7 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+    messageBoxInitialize(node, canMESSAGE_BOX8 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+
 }
 
 static void messageBoxInitReg2(canBASE_t *node)

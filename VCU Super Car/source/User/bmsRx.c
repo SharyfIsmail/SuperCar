@@ -52,7 +52,7 @@ void vBmsRxHandler (void *pvParameters)
         setBmsContactorRequest(&bmsContactorRequest,(uint8_t) bmsContactorRequestState);
         setPcuCriticalFault(&bmsContactorRequest,(uint8_t) criticalPcuFault);
         setPcuFault(&bmsContactorRequest,(uint8_t) pcuFault);
-        newCanTransmit(canREG1, canMESSAGE_BOX1, &bmsContactorRequest);
+        newCanTransmit(canREG1, canMESSAGE_BOX6, &bmsContactorRequest);
 
         vTaskDelayUntil(&lastWakeTime, transmitPeriod);
     }
@@ -74,7 +74,7 @@ void vBmsHeartBeat (void *pvParameters)
     lastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        newCanTransmit(canREG1, canMESSAGE_BOX1, &bmsHearBeat);
+        newCanTransmit(canREG1, canMESSAGE_BOX5, &bmsHearBeat);
 
         vTaskDelayUntil(&lastWakeTime, transmitPeriod);
     }

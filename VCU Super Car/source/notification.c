@@ -128,6 +128,16 @@ void canMessageNotification(canBASE_t *node, uint32 messageBox)
 }
 
 /* USER CODE BEGIN (16) */
+#pragma WEAK(canLowLevelIrqMessageNotification)
+void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
+{
+
+}
+#pragma WEAK(canHighLevelIrqMessageNotification)
+void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
+{
+
+}
 /* USER CODE END */
 #pragma WEAK(dccNotification)
 void dccNotification(dccBASE_t  *dcc,uint32 flags)
