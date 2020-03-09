@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "os_queue.h"
 #include "os_task.h"
+#include "message_buffer.h"
 #include "newCanLib.h"
 #include "SemikronTx.h"
 
@@ -14,7 +15,7 @@ void vSemicronTxHandler (void *pvParameters);
 
 TaskHandle_t xSemicronTxHandler;
 QueueHandle_t xQueueSemikronTx = NULL;
-
+MessageBufferHandle_t xMessageBuffer;
 
 void semikronTxInit(void)
 {
@@ -24,12 +25,14 @@ void semikronTxInit(void)
            while(1);
     }
 
-    xQueueSemikronTx = xQueueCreate(20U, sizeof(12));
 
+    xQueueSemikronTx = xQueueCreate(20U, sizeof(semicronTxCanFrame_t));
+    xMessageBuffer = xMessageBufferCreate(sizeof(semicronTxCanFrame_t));
 }
 
 void vSemicronTxHandler (void *pvParameters)
 {
+
     semicronTxCanFrame_t  semicronTxCanFrame;
 
     emdTxPdo01_t *emdTxPdo_01 = &semicronTxCanFrame.p.emdTxPdo01;
@@ -39,7 +42,7 @@ void vSemicronTxHandler (void *pvParameters)
     emdTxPdo05_t *emdTxPdo_05 = &semicronTxCanFrame.p.emdTxPdo05;
     while(1)
     {
-        if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(12000)))
+        if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(5000)))
         {
             if(semicronTxCanFrame.id < EMD_TxPDO_2)
             {
@@ -62,6 +65,7 @@ void vSemicronTxHandler (void *pvParameters)
                 else                                        // emdTxPdo_04
                 {
 
+
                 }
             }
 
@@ -72,8 +76,12 @@ void vSemicronTxHandler (void *pvParameters)
         }
         else
         {
-
+            //while(1);
         }
+        xMessageBufferSend( xMessageBuffer,
+                                           ( void * ) &semicronTxCanFrame,
+                                           sizeof( semicronTxCanFrame ), 0 );
+
         taskYIELD();
     }
 }

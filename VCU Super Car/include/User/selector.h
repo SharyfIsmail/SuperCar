@@ -9,17 +9,22 @@
 #define INCLUDE_USER_SELECTOR_H_
 
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "os_queue.h"
+
+extern QueueHandle_t xQueueSelectorTx;
 
 void selectorInit();
 
 
-#define SELECTOR_TX ((uint32_t) 0x000001FA)
+#define SELECTOR_TX ((uint32_t) 0x0000011F)
 #define SLECTOR_TX ((uint8_t)7)
 
 typedef struct
 {
+    uint32_t id ;
     uint8_t data[7];
-}selector_t;
+}selectorTx_t;
 
 
 /*Checksum length : 8 start bit 0 :*/

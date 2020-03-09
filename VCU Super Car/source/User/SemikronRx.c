@@ -10,6 +10,7 @@
 #include "os_task.h"
 #include "newCanLib.h"
 #include "SemikronRx.h"
+#include "SemikronTx.h"
 
 void vSemicronRxHandler (void *pvParameters);
 void vSemicronNmtCommand (void *pvParameters);
@@ -44,9 +45,10 @@ void semikronRxInit(void)
 
 void vSemicronRxHandler (void *pvParameters)
 {
+    semicronTxCanFrame_t  semicronTxCanFrame;
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
-
+    int i;
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
     Rx_PDO_03ControlMode_t    controlMode = DISABLED;
     canMessage_t rxPdo_03 =
@@ -63,6 +65,11 @@ void vSemicronRxHandler (void *pvParameters)
 
     while(1)
     {
+        xMessageBufferReceive(xMessageBuffer, (void *)&semicronTxCanFrame, sizeof(semicronTxCanFrame), 0 );
+        for(  i = 0 ; i < 5 ; i++)
+        {
+            rxPdo_03.data[i]  = semicronTxCanFrame.p.data[i];
+        }
         newCanTransmit(canREG1, canMESSAGE_BOX4, &rxPdo_03);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
@@ -107,6 +114,7 @@ void vSemicronSyn(void *pvParameters)
 
 void vSemicronNmtNodeGuarding(void *pvParameters)
 {
+
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
     nmtNodeGuardingState_t  nmtNodeGuardingState = INITIALISATION;
@@ -119,6 +127,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
+
         setNmtNodeGuardingState(&semicronNodeGuarding,(uint8_t) nmtNodeGuardingState);
         ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);
         newCanTransmit(canREG1, canMESSAGE_BOX3, &semicronNodeGuarding);

@@ -15,6 +15,8 @@ void vSlectorTxHandler (void *pvParameters);
 void vSlectorRxHandler  (void *pvParameters);
 TaskHandle_t xSelectorTxHanlder;
 TaskHandle_t xSelectorRxHanlder;
+QueueHandle_t xQueueSelectorTx = NULL;
+
 
 void selectorInit()
 {
@@ -28,13 +30,25 @@ void selectorInit()
         /*Task couldn't be created */
         while(1);
     }
+    xQueueSelectorTx = xQueueCreate(20U, sizeof(selectorTx_t));
+
 }
 
 void vSlectorTxHandler (void *pvParameters)
 {
+    selectorTx_t selectorTx;
     for(;;)
     {
+        if(xQueueReceive(xQueueSelectorTx, &selectorTx, pdMS_TO_TICKS(5000)))
+        {
 
+        }
+        else
+        {
+
+        }
+
+        taskYIELD();
     }
 }
 
@@ -43,5 +57,6 @@ void vSlectorRxHandler  (void *pvParameters)
     for(;;)
     {
 
+        taskYIELD();
     }
 }

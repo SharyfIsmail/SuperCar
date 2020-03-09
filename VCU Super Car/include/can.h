@@ -872,6 +872,8 @@ void canStatusChangeNotification(canBASE_t *node, uint32 notification);
 void canMessageNotification(canBASE_t *node, uint32 messageBox);
 
 /* USER CODE BEGIN (2) */
+void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox);
+void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox);
 /* USER CODE END */
 
 /**@}*/

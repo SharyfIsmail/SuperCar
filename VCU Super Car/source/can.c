@@ -302,6 +302,25 @@ void canInit(void)
     canREG1->IF2CMD  = (uint8) 0xF8U;
     canREG1->IF2NO   = 8U;
 
+    /** - Initialize message 16 
+    *     - Wait until IF2 is ready for use 
+    *     - Set message mask
+    *     - Set message control word
+    *     - Set message arbitration
+    *     - Set IF2 control byte
+    *     - Set IF2 message number
+    */
+    /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
+    while ((canREG1->IF2STAT & 0x80U) ==0x80U)
+    { 
+    } /* Wait */
+
+    canREG1->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
+    canREG1->IF2ARB  = (uint32)0x80000000U | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)((uint32)((uint32)16U & (uint32)0x000007FFU) << (uint32)18U);
+    canREG1->IF2MCTL = 0x00001000U | (uint32)0x00000400U | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
+    canREG1->IF2CMD  = (uint8) 0xF8U;
+    canREG1->IF2NO   = 16U;
+
     /** - Setup IF1 for data transmission 
     *     - Wait until IF1 is ready for use 
     *     - Set IF1 control byte
@@ -1686,7 +1705,7 @@ void can1HighLevelInterrupt(void)
         } /* Wait */
         canREG1->IF1CMD = 0x87U;
 
-        canMessageNotification(canREG1, value);
+        canHighLevelIrqMessageNotification(canREG1, value);
     }
 	
 /* USER CODE BEGIN (42) */
@@ -1729,7 +1748,7 @@ void can1LowLevelInterrupt(void)
     } /* Wait */
     canREG1->IF1CMD = 0x87U;
 
-    canMessageNotification(canREG1, messageBox);
+    canLowLevelIrqMessageNotification(canREG1, messageBox);
 
 /* USER CODE BEGIN (45) */
 /* USER CODE END */

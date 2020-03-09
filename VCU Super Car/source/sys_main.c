@@ -85,7 +85,7 @@ int main(void)
 /* USER CODE BEGIN (3) */
     boardCanInit(canREG1);
     boardCanInit(canREG2);
-
+//canInit();
     semikronRxInit();
     semikronTxInit();
     BmsRxInit();

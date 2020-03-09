@@ -9,7 +9,7 @@
 #define INCLUDE_USER_NEWCANLIB_H_
 
 #include <stdint.h>
-#include <can.h>
+#include "can.h"
 /** @struct can_message
  *  @brief CAN message structure definition
  */

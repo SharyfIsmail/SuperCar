@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "os_queue.h"
+#include "message_buffer.h"
 
 void semikronTxInit(void);
 
@@ -18,6 +19,8 @@ void semikronTxInit(void);
 #define EMD_TxPDO_1_DLC ((uint8_t)8)
 
 extern QueueHandle_t xQueueSemikronTx ;
+extern MessageBufferHandle_t xMessageBuffer;
+
 typedef struct
 {
     uint8_t data[8];
