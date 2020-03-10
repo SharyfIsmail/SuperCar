@@ -130,7 +130,7 @@ uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
                     ptr->data++;
             #else
                     node->IF1DATx[s_canByteOrder[i]] = ptr->data[i];
-                    ptr->data[i++];
+                 //   ptr->data[i++];
             #endif
         }
         node->IF1CMD |=0xB0U;
