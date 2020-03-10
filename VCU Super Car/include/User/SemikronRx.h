@@ -21,6 +21,7 @@ void semikronRxInit(void);
 #define SEMICRON_RX_NMT_NODE_GUARDING ((uint32_t) 0x0000077A)
 #define SEMICRON_RX_NMT_NODE_GUARDING_DLC ((uint8_t) 1)
 
+
 /**
  * @typedef nmtNodeGuardingState_t
  * @brief Inverter state up to controlling mode
@@ -94,7 +95,7 @@ inline void setNmtNodeId(canMessage_t *ptr, uint8_t value)
 /*EMD_CMD_Torque Ref Lim  length : 14 start bit 0*/
 inline void setRx_PDO_03TorqueRefLim(canMessage_t *ptr, uint16_t value)
 {
-    ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t)value;
+    ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) value;
     ptr->data[1] = (ptr->data[1] & 0xC0) | (uint8_t) (value >> 8);
 }
 /*EMD_CMD_Torque Ref Lim VAL  length : 2 start bit 14*/
@@ -151,6 +152,12 @@ inline void incRx_PDO_03MessageCounter(canMessage_t *ptr, uint8_t value)
 {
     setRX_PDO_03MessageCounter(ptr, getRx_PDO_03MessageCounter(ptr) + value);
 }
+
+typedef enum
+{
+    DO_NOT_CLEAR =  false,
+    CLEAR_ERROR  =  true
+}clearError_t;
 
 /*EMD_CMD_Clear Error length : 1 start bit 42*/
 inline void setRX_PDO_03ClearError(canMessage_t *ptr, uint8_t value)

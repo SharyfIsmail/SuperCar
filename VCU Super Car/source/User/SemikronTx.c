@@ -7,16 +7,16 @@
 #include "FreeRTOS.h"
 #include "os_queue.h"
 #include "os_task.h"
-#include "message_buffer.h"
 #include "newCanLib.h"
 #include "SemikronTx.h"
+#include "SemikronRx.h"
+
 
 void vSemicronTxHandler (void *pvParameters);
 
 TaskHandle_t xSemicronTxHandler;
 QueueHandle_t xQueueSemikronTx = NULL;
-MessageBufferHandle_t xMessageBuffer;
-
+QueueHandle_t xQueueCausingError = NULL;
 void semikronTxInit(void)
 {
     if(xTaskCreate(vSemicronTxHandler, "SemicronTxHandler", configMINIMAL_STACK_SIZE, NULL, 1, &xSemicronTxHandler ) != pdTRUE)
@@ -27,12 +27,24 @@ void semikronTxInit(void)
 
 
     xQueueSemikronTx = xQueueCreate(20U, sizeof(semicronTxCanFrame_t));
-    xMessageBuffer = xMessageBufferCreate(sizeof(semicronTxCanFrame_t));
+    xQueueCausingError = xQueueCreate(1U, sizeof(clearError_t));
+
+  //  xMessageBuffer = xMessageBufferCreate(12);
 }
 
+static void checkCausingError(emdTxPdo01_t *emdTxPdo_01)
+{
+    static clearError_t clearError = DO_NOT_CLEAR;
+    if(getTx_PDO_01_CausingError(emdTxPdo_01))
+        clearError = CLEAR_ERROR;
+
+    else
+        clearError = DO_NOT_CLEAR;
+
+    xQueueOverwrite(xQueueCausingError, &clearError);
+}
 void vSemicronTxHandler (void *pvParameters)
 {
-
     semicronTxCanFrame_t  semicronTxCanFrame;
 
     emdTxPdo01_t *emdTxPdo_01 = &semicronTxCanFrame.p.emdTxPdo01;
@@ -48,7 +60,7 @@ void vSemicronTxHandler (void *pvParameters)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_1)    // emdTxPdo_01
                 {
-
+                    checkCausingError(emdTxPdo_01);
                 }
                 else                                        // emdTxPdo_05
                 {
@@ -76,11 +88,14 @@ void vSemicronTxHandler (void *pvParameters)
         }
         else
         {
-            //while(1);
+
         }
-        xMessageBufferSend( xMessageBuffer,
-                                           ( void * ) &semicronTxCanFrame,
-                                           sizeof( semicronTxCanFrame ), 0 );
+
+//        for(int i = 0 ; i < 8 ; i ++)
+//        {
+//            da[i] = semicronTxCanFrame.p.data[i];
+//        }
+      //  xBytesSent =    xMessageBufferSend( xMessageBuffer, ( void * )da, sizeof(da),  pdMS_TO_TICKS(0) );
 
         taskYIELD();
     }
