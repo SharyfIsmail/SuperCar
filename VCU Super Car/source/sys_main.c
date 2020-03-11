@@ -61,7 +61,7 @@
 #include "SemikronTx.h"
 #include "bmsRx.h"
 #include "bmsTx.h"
-#include "selector.h"
+#include "acceleratorBrakeJoystick.h"
 
 #include "strings.h"
 
@@ -90,7 +90,7 @@ int main(void)
     semikronTxInit();
     BmsRxInit();
     BmsTxInit();
-    selectorInit();
+    acceleratorBrakeJoystickInit();
 
     _enable_interrupt_();
 

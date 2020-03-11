@@ -7,7 +7,7 @@
 
 #include "newCanLib.h"
 #include "SemikronTx.h"
-#include "selector.h"
+#include "acceleratorBrakeJoystick.h"
 
 void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 {
@@ -32,11 +32,11 @@ void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 {
     static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-    selectorTx_t selectorTx ;
+    acceleratorBrakeJoystick_t acceleratorBrakeJoystick ;
     if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX18))
     {
-        selectorTx.id = canGetID(canREG1, canMESSAGE_BOX18) >> 18U;
-        canGetData(canREG1, canMESSAGE_BOX18, selectorTx.data);
-        xQueueSendFromISR(xQueueSelectorTx, &selectorTx, &xHigherPriorityTaskWoken );
+        acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX18) >> 18U;
+        canGetData(canREG1, canMESSAGE_BOX18, acceleratorBrakeJoystick.p.data);
+        xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken );
     }
 }
