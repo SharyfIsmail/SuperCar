@@ -45,6 +45,7 @@ static void checkCausingError(emdTxPdo01_t *emdTxPdo_01)
 }
 void vSemicronTxHandler (void *pvParameters)
 {
+
     semicronTxCanFrame_t  semicronTxCanFrame;
 
     emdTxPdo01_t *emdTxPdo_01 = &semicronTxCanFrame.p.emdTxPdo01;
