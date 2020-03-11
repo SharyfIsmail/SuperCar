@@ -1,28 +1,28 @@
 /*
- * selector.h
+ * acceleratorBrakeJoystick.h
  *
- *  Created on: 6 мар. 2020 г.
+ *  Created on: 11 мар. 2020 г.
  *      Author: User
  */
 
-#ifndef INCLUDE_USER_SELECTOR_H_
-#define INCLUDE_USER_SELECTOR_H_
+#ifndef INCLUDE_USER_ACCELERATORBRAKEJOYSTICK_H_
+#define INCLUDE_USER_ACCELERATORBRAKEJOYSTICK_H_
+
 
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "os_queue.h"
 
-extern QueueHandle_t xQueueSelectorTx;
+extern QueueHandle_t xQueueAcceleratorBrakeJoystickTx;
 
-void selectorInit();
+void acceleratorBrakeJoystickInit(void);
 
 
-#define SELECTOR_TX ((uint32_t) 0x0000011F)
-#define SLECTOR_TX ((uint8_t)7)
+#define SELECTOR_TX      ((uint32_t) 0x0000011F)
+#define SLECETOR_TX_DLC  ((uint8_t)7)
 
 typedef struct
 {
-    uint32_t id ;
     uint8_t data[7];
 }selectorTx_t;
 
@@ -75,4 +75,33 @@ inline uint8_t getSelectorLeverInit(canMessage_t *ptr)
 }
 
 
-#endif /* INCLUDE_USER_SELECTOR_H_ */
+
+#define BRAKE_TX      ((uint32_t) 0x0000011F)
+#define BRAKE_TX_DLC  ((uint8_t)7)
+
+typedef struct
+{
+    uint8_t data[7];
+}brakeTx_t;
+
+#define ACCELERATOR_TX     ((uint32_t) 0x0000011F)
+#define ACCELERATOR_TX_DLC ((uint8_t)7)
+
+typedef struct
+{
+    uint8_t data[7];
+}acceleratorTx_t;
+
+
+typedef struct
+{
+  uint32_t id ;
+  union
+  {
+      uint8_t data[8];
+      selectorTx_t selectorTx;
+      brakeTx_t brakeTx;
+      acceleratorTx_t acceleratorTx;
+  }p;
+}acceleratorBrakeJoystick_t;
+#endif /* INCLUDE_USER_ACCELERATORBRAKEJOYSTICK_H_ */
