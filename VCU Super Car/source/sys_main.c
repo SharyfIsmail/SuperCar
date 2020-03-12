@@ -54,14 +54,15 @@
 #include "os_queue.h"
 #include "os_task.h"
 #include "os_timer.h"
+#include "os_event_groups.h"
 #include "sys_core.h"
 #include "newCanLib.h"
-#include "sys_main.h"
 #include "SemikronRx.h"
 #include "SemikronTx.h"
 #include "bmsRx.h"
 #include "bmsTx.h"
 #include "acceleratorBrakeJoystick.h"
+#include "canMessageLostCheck.h"
 
 #include "strings.h"
 
@@ -76,8 +77,7 @@
 */
 
 /* USER CODE BEGIN (2) */
-//QueueHandle_t xQueueAcceleratorBrakeJoystick = NULL;
-
+EventGroupHandle_t canMessageLostCheckEventGroup;
 /* USER CODE END */
 
 int main(void)
@@ -85,12 +85,16 @@ int main(void)
 /* USER CODE BEGIN (3) */
     boardCanInit(canREG1);
     boardCanInit(canREG2);
-//canInit();
     semikronRxInit();
     semikronTxInit();
     BmsRxInit();
     BmsTxInit();
     acceleratorBrakeJoystickInit();
+    canMessageLostCheckInit();
+
+
+    /*creating event group*/
+    canMessageLostCheckEventGroup = xEventGroupCreate();
 
     _enable_interrupt_();
 

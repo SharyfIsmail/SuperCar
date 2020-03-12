@@ -8,6 +8,7 @@
 #include "FreeRTOS.h"
 #include "os_queue.h"
 #include "os_task.h"
+#include "sys_main.h"
 #include "newCanLib.h"
 #include "acceleratorBrakeJoystick.h"
 
@@ -27,7 +28,7 @@ maxTimeOutTime_t maxTimeOutTime =
  {
      1000,  // accelerator
      1000,  // Brake
-     1000,
+     1000,  //
  }
 };
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
@@ -47,9 +48,9 @@ void acceleratorBrakeJoystickInit(void)
 
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 {
-    TickType_t acceleratorTimeOutControl = 0U;
-    TickType_t brakeTimeOutControl = 0U;
-    TickType_t joystickTimeOutControl = 0U;
+    TickType_t acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
+    TickType_t brakeTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
+    TickType_t joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
     TickType_t checkingTime = 0U;
 
     acceleratorBrakeJoystick_t acceleratorBrakeJoystick;
@@ -59,35 +60,38 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 
     for(;;)
     {
-        xQueueReceive(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, pdMS_TO_TICKS(5000));
-
-        if(acceleratorBrakeJoystick.id == SELECTOR_TX)
+        if(xQueueReceive(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, pdMS_TO_TICKS(500)))
         {
-            acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
-        }
-        else if ( acceleratorBrakeJoystick.id == BRAKE_TX)
-        {
-            brakeTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
-        }
-        else
-        {
-            joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
-        }
+            if(acceleratorBrakeJoystick.id == SELECTOR_TX)
+            {
+                acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
+            }
+            else if ( acceleratorBrakeJoystick.id == BRAKE_TX)
+            {
+                brakeTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
+            }
+            else
+            {
+                joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
+            }
 
-
+        }
         /** Update CAN messages timeout value */
         checkingTime = xTaskGetTickCount();
-        if(acceleratorTimeOutControl < checkingTime)
-        {
 
+        if(acceleratorTimeOutControl <= checkingTime)
+        {
+            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
         }
-        if(brakeTimeOutControl < checkingTime)
-        {
 
+        if(brakeTimeOutControl <= checkingTime)
+        {
+            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
         }
-        if(joystickTimeOutControl < checkingTime)
-        {
 
+        if(joystickTimeOutControl <= checkingTime)
+        {
+            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
         }
 
         taskYIELD();

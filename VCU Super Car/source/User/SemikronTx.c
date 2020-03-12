@@ -10,7 +10,7 @@
 #include "newCanLib.h"
 #include "SemikronTx.h"
 #include "SemikronRx.h"
-
+#include "sys_main.h"
 
 void vSemicronTxHandler (void *pvParameters);
 
@@ -89,14 +89,8 @@ void vSemicronTxHandler (void *pvParameters)
         }
         else
         {
-
+            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(0U));
         }
-
-//        for(int i = 0 ; i < 8 ; i ++)
-//        {
-//            da[i] = semicronTxCanFrame.p.data[i];
-//        }
-      //  xBytesSent =    xMessageBufferSend( xMessageBuffer, ( void * )da, sizeof(da),  pdMS_TO_TICKS(0) );
 
         taskYIELD();
     }

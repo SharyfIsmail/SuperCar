@@ -173,7 +173,6 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     }
 }
 
-
 /**
  * void vSemicronNmtCommand (void *pvParameters)
  * @brief to set command specifier when state (node guarding state ) is changed
@@ -192,7 +191,6 @@ void vSemicronNmtCommand (void *pvParameters)
         xMessageBufferReceive(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), portMAX_DELAY);
 
         setNmtCommandSpecifier(&semicronNmtCommand, (uint8_t)nmtCommandSpecifier);
-
 
         newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNmtCommand);
         taskYIELD();
