@@ -45,7 +45,23 @@ void acceleratorBrakeJoystickInit(void)
 
 }
 
+static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime)
+{
+    if(accelerator <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
+    else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
 
+    if(brake <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
+    else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
+
+    if(joystick <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
+    else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));
+}
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 {
     TickType_t acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
@@ -78,22 +94,28 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
         }
         /** Update CAN messages timeout value */
         checkingTime = xTaskGetTickCount();
-
-        if(acceleratorTimeOutControl <= checkingTime)
+        checkLostsOfComponents(acceleratorTimeOutControl, brakeTimeOutControl, joystickTimeOutControl, checkingTime);
+        /*if(acceleratorTimeOutControl <= checkingTime)
         {
             xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
         }
+        else
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U))
 
         if(brakeTimeOutControl <= checkingTime)
         {
             xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
         }
+        else
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U))
+
 
         if(joystickTimeOutControl <= checkingTime)
         {
             xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
         }
-
+        else
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U))*/
         taskYIELD();
     }
 }

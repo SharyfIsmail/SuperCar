@@ -13,15 +13,75 @@
 #include "canMessageLostCheck.h"
 
 TaskHandle_t xCanMessageLostCheckHandler;
+TaskHandle_t xLostComponentSendExternal;
 
-/*QueueHandle_t xQueueInvertorLost = NULL;
-QueueHandle_t xQueueBmsLost = NULL;
-QueueHandle_t xQueueAcceleratorLost = NULL;
-QueueHandle_t xQueueBrakeLost = NULL;
-QueueHandle_t xQueueJoystickLost = NULL;
-QueueHandle_t xQueueDcdcLost = NULL;*/
 canMessageLoses_t canMessageLossesQueue ;
 void vCanMessageLostCheckHandler(void *pvParameters);
+void vLostComponentSendExternal(void *pvParameters);
+
+typedef bool (*identifyLostComponent_t)(EventBits_t value);
+
+typedef void (*LostComponentHandler_t)();
+
+canMessage_t causingOfLost=
+{
+   .id = 0x01,
+   .dlc = 8,
+   .ide = CAN_Id_Standard
+};
+
+static canMessageLost_t canMessageLoses =
+{
+    .arr = {false}
+};
+
+const static identifyLostComponent_t  identifyLostComponent[COUNT_OF_COMPONENTS]=
+{
+     [INVERTOR_INDEX ]    = getInverterLost,
+     [BMS_INDEX ]         = getBmsLost,
+     [ACCELERATOR_INDEX ] = getAcceleratorLost,
+     [BRAKE_INDEX ]       = getBrakeLost,
+     [JOYSTICK_INDEX ]    = getJoystickLost,
+     [DCDC_INDEX ]        = getDcLost,
+};
+
+
+static void invertorLostHandler()
+{
+
+}
+static void bmsLostHandler()
+{
+
+}
+static void acceleratorLostHandler()
+{
+
+}
+static void brakeLostHandler()
+{
+
+}
+static void joystickLostHandler()
+{
+
+}
+static void DcdcLostHandler()
+{
+
+}
+
+
+const static LostComponentHandler_t  LostComponentHandler[COUNT_OF_COMPONENTS]=
+{
+    [INVERTOR_INDEX ]    = invertorLostHandler,
+    [BMS_INDEX ]         = bmsLostHandler,
+    [ACCELERATOR_INDEX ] = acceleratorLostHandler,
+    [BRAKE_INDEX ]       = brakeLostHandler,
+    [JOYSTICK_INDEX ]    = joystickLostHandler,
+    [DCDC_INDEX ]        = DcdcLostHandler,
+};
+
 
 void canMessageLostCheckInit(void)
 {
@@ -30,89 +90,49 @@ void canMessageLostCheckInit(void)
         /*Task couldn't be created */
         while(1);
     }
-    for(int i = 0 ; i < IP_COUNT_OF_PERIPHS ; i++)
+    if(xTaskCreate(vLostComponentSendExternal, "LostComponentSendExternal", configMINIMAL_STACK_SIZE, (void *)LOST_PERIOD_CAN_SEND, 1, &xLostComponentSendExternal) != pdTRUE)
+    {
+        /*Task couldn't be created */
+        while(1);
+    }
+
+    for(int i = 0 ; i < COUNT_OF_COMPONENTS ; i++)
     {
         canMessageLossesQueue.arr[i] =  xQueueCreate(1U, sizeof(bool));
     }
-    /*xQueueInvertorLost = xQueueCreate(1U, sizeof(bool));
-    xQueueBmsLost = xQueueCreate(1U, sizeof(bool));
-    xQueueAcceleratorLost = xQueueCreate(1U, sizeof(bool));
-    xQueueBrakeLost = xQueueCreate(1U, sizeof(bool));
-    xQueueJoystickLost = xQueueCreate(1U, sizeof(bool));
-    xQueueDcdcLost = xQueueCreate(1U, sizeof(bool));*/
 
 }
-static void setCausingError(EventBits_t getLost)
-{
-    canMessageLost_t canMessageLoses =
-    {
-      .arr = {false}
-    };
 
-
-    if(getInverterLost(getLost))
-    {
-        canMessageLoses.arr[0]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[0], &canMessageLoses.arr[0] );
-    }
-
-    if(getBmsLost(getLost))
-    {
-        canMessageLoses.arr[1]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[1], &canMessageLoses.arr[1] );
-    }
-
-    if(getAcceleratorLost(getLost))
-    {
-        canMessageLoses.arr[2]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[2], &canMessageLoses.arr[2] );
-    }
-
-    if(getBrakeLost(getLost))
-    {
-        canMessageLoses.arr[3]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[3], &canMessageLoses.arr[3] );
-    }
-
-    if(getJoystickLost(getLost))
-    {
-        canMessageLoses.arr[4]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[4], &canMessageLoses.arr[4] );
-    }
-
-    if(getDcLost(getLost))
-    {
-        canMessageLoses.arr[5]  = true;
-        xQueueOverwrite(canMessageLossesQueue.arr[5], &canMessageLoses.arr[5] );
-    }
-}
 void vCanMessageLostCheckHandler(void *pvParameters)
 {
-   // TickType_t lastWeakTime;
-  //  TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
-
-    canMessage_t causingOfLost=
-    {
-     .id = 0x01,
-     .dlc = 8,
-     .ide = CAN_Id_Standard
-    };
     const EventBits_t numberOfLost = 0x3F;
-    uint8_t ErrorToSend = 0;
     EventBits_t  getLost = 0;
-    //lastWeakTime = xTaskGetTickCount();
 
     for(;;)
     {
-        getLost = xEventGroupWaitBits(canMessageLostCheckEventGroup, numberOfLost, pdTRUE, pdFALSE, portMAX_DELAY);
-        ErrorToSend |= getLost;
+        getLost = xEventGroupWaitBits(canMessageLostCheckEventGroup, numberOfLost, pdFALSE, pdFALSE, portMAX_DELAY);
 
-        causingOfLost.data[0] = ErrorToSend;
-
-        setCausingError(getLost);
-
-        newCanTransmit(canREG1, canMESSAGE_BOX7, &causingOfLost);
-      //  vTaskDelayUntil( &lastWeakTime, pdMS_TO_TICKS(100));
+        for(int i = 0 ; i < COUNT_OF_COMPONENTS; i++)
+        {
+            canMessageLoses.arr[i]  = identifyLostComponent[i](getLost);
+            if(canMessageLoses.arr[i])
+            {
+                LostComponentHandler[i]();
+            }
+        }
+        setLostComponents(&causingOfLost, getLost);
     }
 }
 
+void vLostComponentSendExternal(void *pvParameters)
+{
+    TickType_t lastWeakTime;
+    TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
+    lastWeakTime = xTaskGetTickCount();
+
+    for(;;)
+    {
+        newCanTransmit(canREG1, canMESSAGE_BOX7, &causingOfLost);
+        vTaskDelayUntil( &lastWeakTime, transmitPeriod);
+    }
+}

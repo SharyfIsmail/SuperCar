@@ -14,7 +14,17 @@
 
 #include <stdint.h>
 
-#define IP_COUNT_OF_PERIPHS  6
+#define LOST_PERIOD_CAN_SEND   ((uint32_t) 2000)
+enum componentIndex
+{
+    INVERTOR_INDEX    = 0,
+    BMS_INDEX         = 1,
+    ACCELERATOR_INDEX = 2,
+    BRAKE_INDEX       = 3,
+    JOYSTICK_INDEX    = 4,
+    DCDC_INDEX        = 5,
+    COUNT_OF_COMPONENTS
+};
 
 /*typedef enum
 {
@@ -29,49 +39,54 @@
 
 typedef struct
 {
-    QueueHandle_t arr[IP_COUNT_OF_PERIPHS];
+    QueueHandle_t arr[COUNT_OF_COMPONENTS];
 }canMessageLoses_t;
 
 typedef struct
 {
-    bool arr[IP_COUNT_OF_PERIPHS];
+    bool arr[COUNT_OF_COMPONENTS];
 }canMessageLost_t;
 
 void canMessageLostCheckInit(void);
 
 /*returns the 1-st bit*/
-inline EventBits_t getInverterLost(EventBits_t value)
+inline bool getInverterLost(EventBits_t value)
 {
-    return (EventBits_t) (value & 0x01);
+    return (bool) (value & 0x01);
 }
 
 /*returns the 2-nd bit*/
-inline EventBits_t getBmsLost(EventBits_t value)
+inline bool getBmsLost(EventBits_t value)
 {
-    return (EventBits_t) ((value & 0x02) >> 1);
+    return (bool) ((value & 0x02) >> 1);
 }
 
 /*returns the 3-d bit*/
-inline EventBits_t getAcceleratorLost(EventBits_t value)
+inline bool getAcceleratorLost(EventBits_t value)
 {
-    return (EventBits_t) ((value & 0x04) >> 2);
+    return (bool) ((value & 0x04) >> 2);
 }
 
 /*returns the 4-th bit*/
-inline EventBits_t getBrakeLost(EventBits_t value)
+inline bool getBrakeLost(EventBits_t value)
 {
-    return (EventBits_t) ((value & 0x08) >> 3);
+    return (bool) ((value & 0x08) >> 3);
 }
 
 /*returns the 5-th bit*/
-inline EventBits_t getJoystickLost(EventBits_t value)
+inline bool getJoystickLost(EventBits_t value)
 {
-    return (EventBits_t) ((value & 0x10) >> 4);
+    return (bool) ((value & 0x10) >> 4);
 }
 
 /*returns the 6-th bit*/
-inline EventBits_t getDcLost(EventBits_t value)
+inline bool getDcLost(EventBits_t value)
 {
-    return (EventBits_t) ((value & 0x20) >> 5);
+    return (bool) ((value & 0x20) >> 5);
+}
+
+inline void setLostComponents(canMessage_t* ptr ,EventBits_t value)
+{
+     ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) value;
 }
 #endif /* INCLUDE_USER_CANMESSAGELOSTCHECK_H_ */
