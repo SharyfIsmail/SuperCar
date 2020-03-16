@@ -90,7 +90,7 @@ static void messageBoxInitReg1(canBASE_t *node)
     /*High level */
     messageBoxInitialize(node, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
     messageBoxInitialize(node, canMESSAGE_BOX17, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
-    messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x11F, RECEIVEING_NODE); //Selector : 11F
+    messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector : 11F
 
   //  messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
   //  messageBoxInitialize(node, canMESSAGE_BOX19, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
@@ -181,7 +181,7 @@ void boardCanInit(canBASE_t *node)
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U //
                       | (uint32)0x00000000U
-                      | (uint32)0x00000000U
+                      | (uint32)0x00040000U
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U

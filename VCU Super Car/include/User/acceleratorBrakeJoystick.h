@@ -14,7 +14,9 @@
 #include "os_queue.h"
 
 extern QueueHandle_t xQueueAcceleratorBrakeJoystickTx;
-
+extern QueueHandle_t xqueueJoystickMode;
+extern QueueHandle_t xqueueAcceleratorValue;
+extern QueueHandle_t xqueueBrakeValue;
 void acceleratorBrakeJoystickInit(void);
 
 
@@ -76,7 +78,7 @@ inline uint8_t getSelectorLeverInit(canMessage_t *ptr)
 
 
 
-#define BRAKE_TX      ((uint32_t) 0x0000011F)
+#define BRAKE_TX      ((uint32_t) 0x0000012F)
 #define BRAKE_TX_DLC  ((uint8_t)7)
 
 typedef struct
@@ -84,7 +86,7 @@ typedef struct
     uint8_t data[7];
 }brakeTx_t;
 
-#define ACCELERATOR_TX     ((uint32_t) 0x0000011F)
+#define ACCELERATOR_TX     ((uint32_t) 0x0000013F)
 #define ACCELERATOR_TX_DLC ((uint8_t)7)
 
 typedef struct

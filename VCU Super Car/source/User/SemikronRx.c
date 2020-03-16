@@ -12,6 +12,8 @@
 #include "SemikronRx.h"
 #include "message_buffer.h"
 #include "SemikronTx.h"
+#include "acceleratorBrakeJoystick.h"
+#include "canMessageLostCheck.h"
 
 void vSemicronRxHandler (void *pvParameters);
 void vSemicronNmtCommand (void *pvParameters);
@@ -21,6 +23,9 @@ void vSemicronNmtNodeGuarding(void *pvParameters);
 MessageBufferHandle_t xMessageBuffer;
 TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
+QueueHandle_t xQueueControllingMode = NULL;
+
+
 
 void semikronRxInit(void)
 {
@@ -45,6 +50,8 @@ void semikronRxInit(void)
         while(1);
     }
     xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4 );
+    xQueueControllingMode = xQueueCreate(1U, sizeof(Rx_PDO_03ControlMode_t));
+
 }
 
 /**
@@ -57,7 +64,7 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t*  NodeGuarding
     static nmtNodeGuardingState_t nmtNodeGuardingState = PRE_OPERATIONAL;
 
     if (nmtNodeGuardingState == *NodeGuardingState)
-        return false ;
+        return false;
 
     else
     {
@@ -70,8 +77,40 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t*  NodeGuarding
 
         nmtNodeGuardingState = *NodeGuardingState;
 
-        return true ;
+        return true;
     }
+}
+
+static void clearErrorAction(canMessage_t *ptr)
+{
+   // clearError = CLEAR_ERROR;
+   // controlMode = DISABLED;
+
+    setRx_PDO_03ControlMode(ptr, (uint8_t)DISABLED);
+    setRX_PDO_03ClearError(ptr, (uint8_t)CLEAR_ERROR);
+    setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(0));
+    setRx_PDO_03SpeedRefLim(ptr, RX_PDO_03_SPEED_REF_LIM(0));
+}
+
+static void carInMotion(canMessage_t *ptr, int TorqueValue)
+{
+  //  clearError = DO_NOT_CLEAR;
+    //controlMode = TORQUE_CONTROL_MODE;
+
+    setRx_PDO_03ControlMode(ptr, (uint8_t)TORQUE_CONTROL_MODE);
+    setRX_PDO_03ClearError(ptr, (uint8_t)DO_NOT_CLEAR);
+    setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(TorqueValue));
+    setRx_PDO_03SpeedRefLim(ptr, RX_PDO_03_SPEED_REF_LIM(0));
+}
+static void carStop(canMessage_t *ptr)
+{
+   // clearError = DO_NOT_CLEAR;
+   // controlMode = DISABLED;
+
+    setRx_PDO_03ControlMode(ptr, (uint8_t)DISABLED);
+    setRX_PDO_03ClearError(ptr, (uint8_t)DO_NOT_CLEAR);
+    setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(0));
+    setRx_PDO_03SpeedRefLim(ptr, RX_PDO_03_SPEED_REF_LIM(0));
 }
 
 /**
@@ -80,12 +119,13 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t*  NodeGuarding
  * */
 void vSemicronRxHandler (void *pvParameters)
 {
-    clearError_t clearError = DO_NOT_CLEAR;
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
-
+    int torqueValue = 0 ;
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
-    Rx_PDO_03ControlMode_t    controlMode = DISABLED;
+
+    clearError_t clearError = DO_NOT_CLEAR;
+    Rx_PDO_03ControlMode_t controlMode = DISABLED;
 
     canMessage_t rxPdo_03 =
     {
@@ -93,18 +133,45 @@ void vSemicronRxHandler (void *pvParameters)
      .dlc = SEMICRON_HANDLER_DLC,
      .ide = (uint8_t)CAN_Id_Standard,
     };
-
     setRx_PDO_03ControlMode(&rxPdo_03, (uint8_t)controlMode);
     setRx_PDO_03TorqueRefLim(&rxPdo_03, RX_PDO_03_TORQUE_REF_LIM(0));
     setRx_PDO_03SpeedRefLim(&rxPdo_03, RX_PDO_03_SPEED_REF_LIM(0));
     setRX_PDO_03LimitationMode(&rxPdo_03, (uint8_t)limitationMode);
-    lastWeakTime = xTaskGetTickCount();
 
+    lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
         xQueuePeek(xQueueCausingError, &clearError, pdMS_TO_TICKS(0));
+        //xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
+        if(clearError == CLEAR_ERROR )
+        {
+            clearErrorAction(&rxPdo_03);
 
-        setRX_PDO_03ClearError(&rxPdo_03, (uint8_t)clearError);
+        }
+        else
+        {
+
+            if (controlMode == TORQUE_CONTROL_MODE)
+            {
+                xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
+                carInMotion(&rxPdo_03, torqueValue);
+            }
+            else
+            {
+                carStop(&rxPdo_03);
+            }
+        }
+
+        /*if(clearError == CLEAR_ERROR && controlMode == DISABLED)
+            clearErrorAction(&rxPdo_03);
+        else if (controlMode == TORQUE_CONTROL_MODE)
+        {
+            carInMotion(&rxPdo_03, torqueValue);
+        }
+        else
+            carStop(&rxPdo_03);*/
+
+        xQueueSend(xQueueControllingMode, &controlMode,pdMS_TO_TICKS(0));
 
         newCanTransmit(canREG1, canMESSAGE_BOX4, &rxPdo_03);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
@@ -145,9 +212,8 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
-
-    nmtCommandSpecifier_t nmtCommandSpecifier;
     nmtNodeGuardingState_t  nmtNodeGuardingState = PRE_OPERATIONAL;
+    nmtCommandSpecifier_t nmtCommandSpecifier;
 
     canMessage_t semicronNodeGuarding =
     {

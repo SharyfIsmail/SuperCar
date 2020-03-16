@@ -7,7 +7,12 @@
 #ifndef INCLUDE_USER_SEMIKRONRX_H_
 #define INCLUDE_USER_SEMIKRONRX_H_
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "os_queue.h"
 #include "newCanLib.h"
+
+
+extern QueueHandle_t xQueueControllingMode ;
 
 
 void semikronRxInit(void);

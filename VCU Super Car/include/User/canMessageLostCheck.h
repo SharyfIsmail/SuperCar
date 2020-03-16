@@ -14,7 +14,14 @@
 
 #include <stdint.h>
 
-#define LOST_PERIOD_CAN_SEND   ((uint32_t) 2000)
+extern QueueHandle_t ErrorModeOperationInvertor;
+extern QueueHandle_t ErrorModeOperationBms;
+extern QueueHandle_t ErrorModeOperationAccelerator;
+extern QueueHandle_t ErrorModeOperationBrake;
+extern QueueHandle_t ErrorModeOperationJoystick;
+extern QueueHandle_t ErrorModeOperationDcdc;
+
+#define LOST_PERIOD_CAN_SEND   ((uint32_t) 1000)
 enum componentIndex
 {
     INVERTOR_INDEX    = 0,
@@ -26,7 +33,7 @@ enum componentIndex
     COUNT_OF_COMPONENTS
 };
 
-/*typedef enum
+typedef enum
 {
     EVERY_COMPONENT_IS_PRESENTED=  0x00,
     INVERTOR_CANMESSAGE_LOST    =  0x01,
@@ -35,13 +42,27 @@ enum componentIndex
     BRAKE_CANMESSAGE_LOST       =  0x04,
     JOYSTICK_CANMESSAGE_LOST    =  0x05,
     DCDC_CANMESSAGE_LOST        =  0x06,
-};*/
+}causingOfError_t;
 
-typedef struct
+typedef enum
+{
+    VCU_Status_Init            = 0x00,
+    VCU_Status_Parking         = 0x01,
+    VCU_Status_WorkNeutral     = 0x10,
+    VCU_Status_WorkForward     = 0x11,
+    VCU_Status_WorkReverse     = 0x12,
+    VCU_Status_Charge          = 0x02,
+    VCU_Status_Sleep           = 0x03,
+    VCU_Status_ErrorDrive      = 0x20,
+    VCU_Status_ErrorStop       = 0x21,
+    VCU_Status_ErrorBatteryOff = 0x22,
+} errorModeOperation_t;
+
+/*typedef struct
 {
     QueueHandle_t arr[COUNT_OF_COMPONENTS];
-}canMessageLoses_t;
-
+}canMessage_t;
+*/
 typedef struct
 {
     bool arr[COUNT_OF_COMPONENTS];

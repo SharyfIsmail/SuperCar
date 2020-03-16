@@ -34,7 +34,7 @@ void semikronTxInit(void)
 
 static void checkCausingError(emdTxPdo01_t *emdTxPdo_01)
 {
-    static clearError_t clearError = DO_NOT_CLEAR;
+    clearError_t clearError = DO_NOT_CLEAR;
     if(getTx_PDO_01_CausingError(emdTxPdo_01))
         clearError = CLEAR_ERROR;
 
@@ -57,6 +57,7 @@ void vSemicronTxHandler (void *pvParameters)
     {
         if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(5000)))
         {
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(0U));
             if(semicronTxCanFrame.id < EMD_TxPDO_2)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_1)    // emdTxPdo_01
