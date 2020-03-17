@@ -57,15 +57,18 @@ static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, Tic
     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
 
+
     if(brake <= checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
 
+
     if(joystick <= checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
-    else
+     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));
+
 }
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 {

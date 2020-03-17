@@ -21,7 +21,7 @@ extern QueueHandle_t ErrorModeOperationBrake;
 extern QueueHandle_t ErrorModeOperationJoystick;
 extern QueueHandle_t ErrorModeOperationDcdc;
 
-#define LOST_PERIOD_CAN_SEND   ((uint32_t) 1000)
+#define LOST_PERIOD_CAN_SEND   ((uint32_t) 5000)
 enum componentIndex
 {
     INVERTOR_INDEX    = 0,
@@ -108,6 +108,6 @@ inline bool getDcLost(EventBits_t value)
 
 inline void setLostComponents(canMessage_t* ptr ,EventBits_t value)
 {
-     ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) value;
+     ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) (value & 0x3F);
 }
 #endif /* INCLUDE_USER_CANMESSAGELOSTCHECK_H_ */

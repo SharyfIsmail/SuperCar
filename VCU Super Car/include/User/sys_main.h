@@ -15,7 +15,13 @@
 
 extern EventGroupHandle_t canMessageLostCheckEventGroup;
 
-#define MASK(x) ((uint8_t)( 1 <<(x)))
+#define MASK(x) ((uint8_t)( 1 <<(x)))       /*0- Inverter canMessageLost    */
+                                            /*1- BMS canMessageLost         */
+                                            /*2- Accelerator canMessageLost */
+                                            /*3- Brake canMessageLost       */
+                                            /*4- Joystick canMessageLost    */
+                                            /*5- Dcdc canMessageLost        */
+                                            /*6- checks if errors were fixed*/
 
 
 #endif /* INCLUDE_USER_SYS_MAIN_H_ */

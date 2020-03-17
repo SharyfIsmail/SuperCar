@@ -58,6 +58,7 @@ void vSemicronTxHandler (void *pvParameters)
         if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(5000)))
         {
             xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(0U));
+
             if(semicronTxCanFrame.id < EMD_TxPDO_2)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_1)    // emdTxPdo_01

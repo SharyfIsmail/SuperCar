@@ -96,7 +96,7 @@
 #define configUSE_IDLE_HOOK			  0
 #define configUSE_TICK_HOOK			  0
 #define configUSE_TRACE_FACILITY	  0
-#define configUSE_16_BIT_TICKS		  1
+#define configUSE_16_BIT_TICKS		  0
 #define configCPU_CLOCK_HZ			  ( ( unsigned portLONG ) 80000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ			  ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		  ( 5 )

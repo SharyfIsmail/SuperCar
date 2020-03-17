@@ -199,13 +199,14 @@ void canMessageLostCheckInit(void)
 
 void vCanMessageLostCheckHandler(void *pvParameters)
 {
-
-    const EventBits_t numberOfLost = 0x3F;
+    const EventBits_t numberOfLost = 0x7F;
     EventBits_t  getLost = 0;
 
     for(;;)
     {
         getLost = xEventGroupWaitBits(canMessageLostCheckEventGroup, numberOfLost, pdFALSE, pdFALSE, portMAX_DELAY);
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(6U));
+
         xQueuePeek(xQueueControllingMode, &controlMode, pdMS_TO_TICKS(0));
 
         for(int i = 0 ; i < COUNT_OF_COMPONENTS; i++)
@@ -214,7 +215,6 @@ void vCanMessageLostCheckHandler(void *pvParameters)
             if(canMessageLoses.arr[i])
             {
                 LostComponentHandler[i](&controlMode);
-             //   xQueueOverwrite()
             }
         }
         setLostComponents(&causingOfLost, getLost);
@@ -229,6 +229,7 @@ void vLostComponentSendExternal(void *pvParameters)
 
     for(;;)
     {
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(6U));
         newCanTransmit(canREG1, canMESSAGE_BOX7, &causingOfLost);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
