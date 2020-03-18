@@ -20,7 +20,9 @@ typedef struct
 }maxTimeOutTime_t;
 
 TaskHandle_t xAcceleratorBrakeJoystickTxHandler;
+
 QueueHandle_t xQueueAcceleratorBrakeJoystickTx = NULL;
+
 QueueHandle_t xqueueJoystickMode = NULL;
 QueueHandle_t xqueueAcceleratorValue = NULL;
 QueueHandle_t xqueueBrakeValue = NULL;
@@ -31,7 +33,7 @@ maxTimeOutTime_t maxTimeOutTime =
  {
      1000,  // accelerator
      1000,  // Brake
-     1000,  //
+     1000,  // Joystick
  }
 };
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
@@ -101,7 +103,6 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
                 joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
                 xQueueOverwrite(xqueueAcceleratorValue, &torqueValue);
             }
-
         }
         /** Update CAN messages timeout value */
         checkingTime = xTaskGetTickCount();

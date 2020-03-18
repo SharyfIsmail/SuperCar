@@ -25,6 +25,7 @@ TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
 QueueHandle_t xQueueControllingMode = NULL;
 
+static VcuModeOperation_t operetionMode = VCU_Status_Init;
 
 
 void semikronRxInit(void)
@@ -50,7 +51,7 @@ void semikronRxInit(void)
         while(1);
     }
     xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4 );
-    xQueueControllingMode = xQueueCreate(1U, sizeof(Rx_PDO_03ControlMode_t));
+    xQueueControllingMode = xQueueCreate(1U, sizeof(VcuModeOperation_t));
 
 }
 
@@ -83,20 +84,14 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t*  NodeGuarding
 
 static void clearErrorAction(canMessage_t *ptr)
 {
-   // clearError = CLEAR_ERROR;
-   // controlMode = DISABLED;
-
     setRx_PDO_03ControlMode(ptr, (uint8_t)DISABLED);
     setRX_PDO_03ClearError(ptr, (uint8_t)CLEAR_ERROR);
     setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(0));
     setRx_PDO_03SpeedRefLim(ptr, RX_PDO_03_SPEED_REF_LIM(0));
 }
 
-static void carInMotion(canMessage_t *ptr, int TorqueValue)
+static void carInMotion(canMessage_t *ptr,VcuModeOperation_t operetionMode ,int TorqueValue)
 {
-  //  clearError = DO_NOT_CLEAR;
-    //controlMode = TORQUE_CONTROL_MODE;
-
     setRx_PDO_03ControlMode(ptr, (uint8_t)TORQUE_CONTROL_MODE);
     setRX_PDO_03ClearError(ptr, (uint8_t)DO_NOT_CLEAR);
     setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(TorqueValue));
@@ -104,9 +99,6 @@ static void carInMotion(canMessage_t *ptr, int TorqueValue)
 }
 static void carStop(canMessage_t *ptr)
 {
-   // clearError = DO_NOT_CLEAR;
-   // controlMode = DISABLED;
-
     setRx_PDO_03ControlMode(ptr, (uint8_t)DISABLED);
     setRX_PDO_03ClearError(ptr, (uint8_t)DO_NOT_CLEAR);
     setRx_PDO_03TorqueRefLim(ptr, RX_PDO_03_TORQUE_REF_LIM(0));
@@ -123,7 +115,6 @@ void vSemicronRxHandler (void *pvParameters)
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
     int torqueValue = 0 ;
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
-
     clearError_t clearError = DO_NOT_CLEAR;
     Rx_PDO_03ControlMode_t controlMode = DISABLED;
 
@@ -142,43 +133,28 @@ void vSemicronRxHandler (void *pvParameters)
     for(;;)
     {
         xQueuePeek(xQueueCausingError, &clearError, pdMS_TO_TICKS(0));
-        //xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
-        if(clearError == CLEAR_ERROR )
+
+        if(clearError == CLEAR_ERROR || operetionMode == VCU_Status_Neutral )
         {
             clearErrorAction(&rxPdo_03);
 
         }
+        else if (operetionMode == VCU_Status_Forward || operetionMode == VCU_Status_Reverse)
+        {
+            xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
+            carInMotion(&rxPdo_03, operetionMode ,torqueValue);
+        }
         else
         {
-
-            if (controlMode == TORQUE_CONTROL_MODE)
-            {
-                xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
-                carInMotion(&rxPdo_03, torqueValue);
-            }
-            else
-            {
                 carStop(&rxPdo_03);
-            }
         }
 
-        /*if(clearError == CLEAR_ERROR && controlMode == DISABLED)
-            clearErrorAction(&rxPdo_03);
-        else if (controlMode == TORQUE_CONTROL_MODE)
-        {
-            carInMotion(&rxPdo_03, torqueValue);
-        }
-        else
-            carStop(&rxPdo_03);*/
-
-        xQueueSend(xQueueControllingMode, &controlMode,pdMS_TO_TICKS(0));
-
+        //xQueueSend(xQueueControllingMode, &operetionMode, pdMS_TO_TICKS(0));
+        xQueueOverwrite(xQueueControllingMode, &operetionMode );
         newCanTransmit(canREG1, canMESSAGE_BOX4, &rxPdo_03);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
-
-
 /**
  * void vSemicronSyn(void *pvParameters)
  * @brief heart beat which needs to be sent every 100ms
@@ -225,6 +201,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 
     for(;;)
     {
+
         if(isStatusNmtGuardingChanged(&nmtNodeGuardingState, &nmtCommandSpecifier))
         {
             xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
