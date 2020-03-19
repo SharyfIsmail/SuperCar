@@ -14,16 +14,16 @@ void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
     static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     semicronTxCanFrame_t semicronTxCanFrame;
 
-    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX16))
+    if(canIsRxMessageArrived(canREG2, canMESSAGE_BOX9))
     {
-        semicronTxCanFrame.id = canGetID(canREG1, canMESSAGE_BOX16) >> 18U;
-        canGetData(canREG1, canMESSAGE_BOX16, semicronTxCanFrame.p.data);
+        semicronTxCanFrame.id = canGetID(canREG2, canMESSAGE_BOX9) >> 18U;
+        canGetData(canREG2, canMESSAGE_BOX9, semicronTxCanFrame.p.data);
         xQueueSendFromISR(xQueueSemikronTx, &semicronTxCanFrame, &xHigherPriorityTaskWoken );
     }
-    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX17))
+    if(canIsRxMessageArrived(canREG2, canMESSAGE_BOX10))
     {
-        semicronTxCanFrame.id = canGetID(canREG1, canMESSAGE_BOX17) >> 18U;
-        canGetData(canREG1, canMESSAGE_BOX17, semicronTxCanFrame.p.data);
+        semicronTxCanFrame.id = canGetID(canREG2, canMESSAGE_BOX10) >> 18U;
+        canGetData(canREG2, canMESSAGE_BOX10, semicronTxCanFrame.p.data);
         xQueueSendFromISR(xQueueSemikronTx, &semicronTxCanFrame, &xHigherPriorityTaskWoken );
     }
 

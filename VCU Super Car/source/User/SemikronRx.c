@@ -14,6 +14,7 @@
 #include "SemikronTx.h"
 #include "acceleratorBrakeJoystick.h"
 #include "canMessageLostCheck.h"
+#include "vcuStateManagement.h"
 
 void vSemicronRxHandler (void *pvParameters);
 void vSemicronNmtCommand (void *pvParameters);
@@ -26,7 +27,7 @@ TaskHandle_t xNMTCommand;
 QueueHandle_t xQueueControllingMode = NULL;
 
 static VcuModeOperation_t operetionMode = VCU_Status_Init;
-
+//static VcuStateMangement_t  vcuStatus  = VCU_Status_Init;
 
 void semikronRxInit(void)
 {
@@ -50,7 +51,7 @@ void semikronRxInit(void)
         /*Task couldn't be created */
         while(1);
     }
-    xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4 );
+    xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4);
     xQueueControllingMode = xQueueCreate(1U, sizeof(VcuModeOperation_t));
 
 }
@@ -113,6 +114,7 @@ void vSemicronRxHandler (void *pvParameters)
 {
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
+    VcuStateMangement_t  vcuStatus = VCU_Status_Init;;
     int torqueValue = 0 ;
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
     clearError_t clearError = DO_NOT_CLEAR;
@@ -132,17 +134,17 @@ void vSemicronRxHandler (void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
+        xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
         xQueuePeek(xQueueCausingError, &clearError, pdMS_TO_TICKS(0));
 
-        if(clearError == CLEAR_ERROR || operetionMode == VCU_Status_Neutral )
+        if(clearError == CLEAR_ERROR && (vcuStatus == VCU_Status_Neutral || vcuStatus == VCU_Status_Parking))
         {
             clearErrorAction(&rxPdo_03);
-
         }
-        else if (operetionMode == VCU_Status_Forward || operetionMode == VCU_Status_Reverse)
+        else if (vcuStatus == VCU_Status_Forward || vcuStatus == VCU_Status_Reverse)
         {
             xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
-            carInMotion(&rxPdo_03, operetionMode ,torqueValue);
+            carInMotion(&rxPdo_03, vcuStatus ,torqueValue);
         }
         else
         {
@@ -151,7 +153,7 @@ void vSemicronRxHandler (void *pvParameters)
 
         //xQueueSend(xQueueControllingMode, &operetionMode, pdMS_TO_TICKS(0));
         xQueueOverwrite(xQueueControllingMode, &operetionMode );
-        newCanTransmit(canREG1, canMESSAGE_BOX4, &rxPdo_03);
+        newCanTransmit(canREG2, canMESSAGE_BOX4, &rxPdo_03);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
@@ -173,7 +175,7 @@ void vSemicronSyn(void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
-        newCanTransmit(canREG1, canMESSAGE_BOX2, &semicronSync);
+        newCanTransmit(canREG2, canMESSAGE_BOX2, &semicronSync);
 
         vTaskDelayUntil( &lastWeakTime, transmitPeriod );
     }
@@ -185,7 +187,7 @@ void vSemicronSyn(void *pvParameters)
  * */
 void vSemicronNmtNodeGuarding(void *pvParameters)
 {
-
+     VcuStateMangement_t  vcuStatus = VCU_Status_Init;;
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
     nmtNodeGuardingState_t  nmtNodeGuardingState = PRE_OPERATIONAL;
@@ -201,6 +203,10 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 
     for(;;)
     {
+        xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
+
+        if(vcuStatus == VCU_Status_Parking || vcuStatus == VCU_Status_Neutral)
+            nmtNodeGuardingState = OPERATIONAL;
 
         if(isStatusNmtGuardingChanged(&nmtNodeGuardingState, &nmtCommandSpecifier))
         {
@@ -210,7 +216,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
         setNmtNodeGuardingState(&semicronNodeGuarding, (uint8_t) nmtNodeGuardingState);
         ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);
 
-        newCanTransmit(canREG1, canMESSAGE_BOX3, &semicronNodeGuarding);
+        newCanTransmit(canREG2, canMESSAGE_BOX3, &semicronNodeGuarding);
 
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
@@ -235,7 +241,7 @@ void vSemicronNmtCommand (void *pvParameters)
 
         setNmtCommandSpecifier(&semicronNmtCommand, (uint8_t)nmtCommandSpecifier);
 
-        newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNmtCommand);
+        newCanTransmit(canREG2, canMESSAGE_BOX1, &semicronNmtCommand);
         taskYIELD();
     }
 }

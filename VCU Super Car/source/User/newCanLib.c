@@ -75,22 +75,17 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
         }
     }
 }
-static void messageBoxInitReg1(canBASE_t *node)
+static void messageBoxInitReg1()
 {
     /*Sending node*/
-    messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
-    messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
-    messageBoxInitialize(node, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
-    messageBoxInitialize(node, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
-    messageBoxInitialize(node, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Heart Beat
-    messageBoxInitialize(node, canMESSAGE_BOX6 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Rx Handler
-    messageBoxInitialize(node, canMESSAGE_BOX7 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+
+    messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Heart Beat
+    messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Rx Handler
 
     /*Receiving node */
     /*High level */
-    messageBoxInitialize(node, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
-    messageBoxInitialize(node, canMESSAGE_BOX17, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
-    messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector : 11F
+
+    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
 
   //  messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
   //  messageBoxInitialize(node, canMESSAGE_BOX19, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
@@ -99,11 +94,18 @@ static void messageBoxInitReg1(canBASE_t *node)
 
 }
 
-static void messageBoxInitReg2(canBASE_t *node)
+static void messageBoxInitReg2()
 {
-    //messageBoxInitialize(node, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
-   // messageBoxInitialize(node, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);
+    /*Sending node*/
+    messageBoxInitialize(canREG2, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+    messageBoxInitialize(canREG2, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
+    messageBoxInitialize(canREG2, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
+    messageBoxInitialize(canREG2, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
 
+    /*Receiving node */
+    /*High level */
+    messageBoxInitialize(canREG2, canMESSAGE_BOX9, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
+    messageBoxInitialize(canREG2, canMESSAGE_BOX10, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
 }
 uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
 {
@@ -200,9 +202,9 @@ void boardCanInit(canBASE_t *node)
     node->ABOTR = (uint32)0U;
 
     if(node == canREG1)
-        messageBoxInitReg1(node);
+        messageBoxInitReg1();
     else
-        messageBoxInitReg2(node);
+        messageBoxInitReg2();
     /** - Setup IF1 for data transmission
      *     - Wait until IF1 is ready for use
      *     - Set IF1 control byte
