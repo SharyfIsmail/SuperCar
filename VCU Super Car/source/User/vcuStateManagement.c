@@ -14,6 +14,10 @@ TaskHandle_t xVcuStateManagement;
 
 QueueHandle_t xQueueVcuStatusManagement = NULL;
 QueueHandle_t xQueueVcuStatus = NULL;
+
+static VcuStateMangement_t vcuStateMangement;
+static   VcuStateMangement_t vcuStatus;
+
 void vcuStateManagementInit(void)
 {
     if(xTaskCreate(vVcuStateManagement, "VcuStateManagement", configMINIMAL_STACK_SIZE, NULL, 2, xVcuStateManagement) != pdTRUE)
@@ -25,17 +29,24 @@ void vcuStateManagementInit(void)
     xQueueVcuStatus = xQueueCreate(1U, sizeof(VcuStateMangement_t));
 }
 
+static void setVcuStatus()
+{
+    if(vcuStateMangement == VCU_CLEAR_ERROR && (vcuStatus == VCU_Status_Parking
+            || vcuStatus == VCU_Status_Parking))
+        vcuStatus = VCU_CLEAR_ERROR;
+
+    else
+        vcuStatus = VCU_Status_ErrorDrive;
+
+}
 
 void vVcuStateManagement(void *pvParameters)
 {
-    VcuStateMangement_t vcuStateMangement;
-    VcuStateMangement_t vcuStatus = VCU_Status_Init
-
     for(;;)
     {
         if(xQueueReceive(xQueueVcuStatusManagement, &vcuStateMangement, portMAX_DELAY))
         {
-
+            setVcuStatus();
         }
 
         xQueueOverwrite(xQueueVcuStatus, &vcuStatus);

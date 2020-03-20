@@ -12,9 +12,6 @@
 #include "newCanLib.h"
 
 
-extern QueueHandle_t xQueueControllingMode ;
-
-
 void semikronRxInit(void);
 
 #define CAN_PERIOD_MS_SEMICRON_SYN           ((uint32_t) 100)

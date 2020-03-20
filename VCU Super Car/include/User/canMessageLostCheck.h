@@ -44,7 +44,7 @@ typedef enum
     DCDC_CANMESSAGE_LOST        =  0x06,
 }causingOfError_t;
 
-typedef enum
+/*typedef enum
 {
     VCU_Status_Init            = 0x00,
     VCU_Status_Parking         = 0x01,
@@ -57,7 +57,7 @@ typedef enum
     VCU_Status_ErrorStop       = 0x21,
     VCU_Status_ErrorBatteryOff = 0x22,
 }VcuModeOperation_t;
-
+*/
 /*typedef struct
 {
     QueueHandle_t arr[COUNT_OF_COMPONENTS];

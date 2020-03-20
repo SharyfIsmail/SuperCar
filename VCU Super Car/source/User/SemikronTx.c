@@ -11,6 +11,7 @@
 #include "SemikronTx.h"
 #include "SemikronRx.h"
 #include "sys_main.h"
+#include "vcuStateManagement.h"
 
 void vSemicronTxHandler (void *pvParameters);
 
@@ -28,24 +29,19 @@ void semikronTxInit(void)
 
     xQueueSemikronTx = xQueueCreate(20U, sizeof(semicronTxCanFrame_t));
     xQueueCausingError = xQueueCreate(1U, sizeof(clearError_t));
-
-  //  xMessageBuffer = xMessageBufferCreate(12);
 }
 
-static void checkCausingError(emdTxPdo01_t *emdTxPdo_01)
+static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
 {
-    clearError_t clearError = DO_NOT_CLEAR;
+    VcuStateMangement_t vcuStatus;
     if(getTx_PDO_01_CausingError(emdTxPdo_01))
-        clearError = CLEAR_ERROR;
-
-    else
-        clearError = DO_NOT_CLEAR;
-
-    xQueueOverwrite(xQueueCausingError, &clearError);
+    {
+        vcuStatus = VCU_CLEAR_ERROR;
+        xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
+    }
 }
 void vSemicronTxHandler (void *pvParameters)
 {
-
     semicronTxCanFrame_t  semicronTxCanFrame;
 
     emdTxPdo01_t *emdTxPdo_01 = &semicronTxCanFrame.p.emdTxPdo01;
@@ -63,7 +59,7 @@ void vSemicronTxHandler (void *pvParameters)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_1)    // emdTxPdo_01
                 {
-                    checkCausingError(emdTxPdo_01);
+                    checkErrorsOnInverter(emdTxPdo_01);
                 }
                 else                                        // emdTxPdo_05
                 {
