@@ -53,7 +53,7 @@ void vSemicronTxHandler (void *pvParameters)
     {
         if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(5000)))
         {
-           // xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(0U));
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(0U));
 
             if(semicronTxCanFrame.id < EMD_TxPDO_2)
             {
@@ -87,7 +87,7 @@ void vSemicronTxHandler (void *pvParameters)
         }
         else
         {
-           // xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(0U));
+            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(0U));
         }
 
         taskYIELD();
