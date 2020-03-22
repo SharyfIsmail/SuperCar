@@ -17,22 +17,14 @@
 TaskHandle_t xCanMessageLostCheckHandler;
 TaskHandle_t xLostComponentSendExternal;
 
-//canMessageLoses_t ErrorModeOperation;
-QueueHandle_t ErrorModeOperationInvertor = NULL;
-QueueHandle_t ErrorModeOperationBms = NULL;
-QueueHandle_t ErrorModeOperationAccelerator = NULL;
-QueueHandle_t ErrorModeOperationBrake = NULL;
-QueueHandle_t ErrorModeOperationJoystick = NULL;
-QueueHandle_t ErrorModeOperationDcdc = NULL;
 
 void vCanMessageLostCheckHandler(void *pvParameters);
 void vLostComponentSendExternal(void *pvParameters);
 
 typedef bool (*identifyLostComponent_t)(EventBits_t value);
-
 typedef void (*LostComponentHandler_t)(VcuStateMangement_t *vcuStatus);
-static causingOfError_t  causingOfError = EVERY_COMPONENT_IS_PRESENTED;
 
+static causingOfError_t  causingOfError = EVERY_COMPONENT_IS_PRESENTED;
 
 static canMessage_t causingOfLost=
 {
@@ -44,6 +36,10 @@ static canMessage_t causingOfLost=
 static canMessageLost_t canMessageLoses =
 {
     .arr = {false}
+};
+static canMessageLost_t errorLogWrite =
+{
+ .arr = {false}
 };
 
 const static identifyLostComponent_t  identifyLostComponent[COUNT_OF_COMPONENTS]=
@@ -60,94 +56,137 @@ static void logError(causingOfError_t cause)
 {
 
 }
+static void setVcuStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
+{
+    switch(cause)
+    {
+    case INVERTOR_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+            || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+
+        else
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+        break;
+
+    case BMS_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+            || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorBatteryOff;
+        }
+        else
+        {
+            *vcuStatus = VCU_Status_ErrorBatteryOff;
+        }
+        break;
+
+    case ACCELERATOR_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+            || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+        else if(*vcuStatus != VCU_Status_ErrorStop && *vcuStatus != VCU_Status_ErrorBatteryOff)
+        {
+            *vcuStatus = VCU_Status_ErrorDrive;
+        }
+        break;
+
+    case BRAKE_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+                || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+        else if(*vcuStatus != VCU_Status_ErrorStop && *vcuStatus != VCU_Status_ErrorBatteryOff)
+        {
+            *vcuStatus = VCU_Status_ErrorDrive;
+        }
+        break;
+
+    case JOYSTICK_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+                || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+        else if(*vcuStatus != VCU_Status_ErrorStop && *vcuStatus != VCU_Status_ErrorBatteryOff)
+        {
+            *vcuStatus = VCU_Status_ErrorDrive;
+        }
+        break;
+
+    case DCDC_CANMESSAGE_LOST:
+        if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral
+                  || *vcuStatus == VCU_Status_Init)
+        {
+            *vcuStatus = VCU_Status_ErrorStop;
+        }
+        else if(*vcuStatus != VCU_Status_ErrorStop && *vcuStatus != VCU_Status_ErrorBatteryOff)
+        {
+            *vcuStatus = VCU_Status_ErrorDrive;
+        }
+        break;
+    }
+}
 static void invertorLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = INVERTOR_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[0])
     {
-        *vcuStatus = VCU_Status_ErrorStop;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorStop;
-    }
-    xQueueOverwrite(ErrorModeOperationInvertor, &vcuStatus);
 }
 static void bmsLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = BMS_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[1])
     {
-        *vcuStatus = VCU_Status_ErrorBatteryOff;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorBatteryOff;
-    }
-    xQueueOverwrite(ErrorModeOperationBms, &vcuStatus);
-
 }
 static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = ACCELERATOR_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[2])
     {
-        *vcuStatus = VCU_Status_ErrorStop;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorDrive;
-    }
-    xQueueOverwrite(ErrorModeOperationAccelerator, &vcuStatus);
 }
 static void brakeLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = BRAKE_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[3])
     {
-        *vcuStatus = VCU_Status_ErrorStop;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorDrive;
-    }
-    xQueueOverwrite(ErrorModeOperationBrake, &vcuStatus);
-
 }
 static void joystickLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = JOYSTICK_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[4])
     {
-        *vcuStatus = VCU_Status_ErrorStop;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorDrive;
-    }
-    xQueueOverwrite(ErrorModeOperationJoystick, &vcuStatus);
-
 }
 static void DcdcLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = DCDC_CANMESSAGE_LOST;
-    logError(causingOfError);
-    if(*vcuStatus == VCU_Status_Parking || *vcuStatus == VCU_Status_Neutral || *vcuStatus == VCU_Status_Neutral)
+    if(errorLogWrite.arr[5])
     {
-        *vcuStatus = VCU_Status_ErrorStop;
+        logError(causingOfError);
+        setVcuStatus(causingOfError, vcuStatus);
     }
-    else
-    {
-        *vcuStatus = VCU_Status_ErrorDrive;
-    }
-    xQueueOverwrite(ErrorModeOperationDcdc, &vcuStatus);
-
 }
 
 const static LostComponentHandler_t  LostComponentHandler[COUNT_OF_COMPONENTS]=
@@ -173,24 +212,11 @@ void canMessageLostCheckInit(void)
         /*Task couldn't be created */
         while(1);
     }
-
-  /*  for(int i = 0 ; i < COUNT_OF_COMPONENTS ; i++)
-    {
-        canMessageLossesQueue.arr[i] =  xQueueCreate(1U, sizeof(bool));
-
-    }*/
-    ErrorModeOperationInvertor    =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-    ErrorModeOperationBms         =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-    ErrorModeOperationAccelerator =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-    ErrorModeOperationBrake       =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-    ErrorModeOperationJoystick    =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-    ErrorModeOperationDcdc        =  xQueueCreate(1U, sizeof(VcuStateMangement_t));
-
 }
 
 void vCanMessageLostCheckHandler(void *pvParameters)
 {
-    VcuStateMangement_t vcuStatus;
+    VcuStateMangement_t vcuStatus = VCU_Status_Init;
 
     const EventBits_t numberOfLost = 0x7F;
     EventBits_t  getLost = 0;
@@ -208,9 +234,16 @@ void vCanMessageLostCheckHandler(void *pvParameters)
             if(canMessageLoses.arr[i])
             {
                 LostComponentHandler[i](&vcuStatus);
+                errorLogWrite.arr[i] = true;
             }
+            else
+                errorLogWrite.arr[i] = false;
         }
         setLostComponents(&causingOfLost, getLost);
+        if(!(getLostComponenst(&causingOfLost)))
+            vcuStatus = VCU_Status_Init;
+        xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
+
     }
 }
 

@@ -181,9 +181,9 @@ void boardCanInit(canBASE_t *node)
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U
-                      | (uint32)0x00000000U //
+                      | (uint32)0x00008000U //
                       | (uint32)0x00000000U
-                      | (uint32)0x00040000U
+                      | (uint32)0x00000000U
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U
                       | (uint32)0x00000000U

@@ -63,6 +63,7 @@
 #include "bmsTx.h"
 #include "acceleratorBrakeJoystick.h"
 #include "canMessageLostCheck.h"
+#include "vcuStateManagement.h"
 
 #include "strings.h"
 
@@ -91,7 +92,7 @@ int main(void)
     BmsTxInit();
     acceleratorBrakeJoystickInit();
     canMessageLostCheckInit();
-
+    vcuStateManagementInit();
 
     /*creating event group*/
     canMessageLostCheckEventGroup = xEventGroupCreate();

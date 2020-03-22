@@ -33,10 +33,10 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 {
     static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     acceleratorBrakeJoystick_t acceleratorBrakeJoystick ;
-    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX18))
+    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX15))
     {
-        acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX18) >> 18U;
-        canGetData(canREG1, canMESSAGE_BOX18, acceleratorBrakeJoystick.p.data);
+        acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX15) >> 18U;
+        canGetData(canREG1, canMESSAGE_BOX15, acceleratorBrakeJoystick.p.data);
         xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken );
     }
 }

@@ -32,7 +32,7 @@ void vcuStateManagementInit(void)
 static void setVcuStatus()
 {
     if(vcuStateMangement == VCU_CLEAR_ERROR && (vcuStatus == VCU_Status_Parking
-            || vcuStatus == VCU_Status_Parking))
+            || vcuStatus == VCU_Status_Neutral))
         vcuStatus = VCU_CLEAR_ERROR;
 
     else
@@ -46,7 +46,7 @@ void vVcuStateManagement(void *pvParameters)
     {
         if(xQueueReceive(xQueueVcuStatusManagement, &vcuStateMangement, portMAX_DELAY))
         {
-            setVcuStatus();
+         //   setVcuStatus();
         }
 
         xQueueOverwrite(xQueueVcuStatus, &vcuStatus);

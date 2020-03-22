@@ -14,13 +14,6 @@
 
 #include <stdint.h>
 
-extern QueueHandle_t ErrorModeOperationInvertor;
-extern QueueHandle_t ErrorModeOperationBms;
-extern QueueHandle_t ErrorModeOperationAccelerator;
-extern QueueHandle_t ErrorModeOperationBrake;
-extern QueueHandle_t ErrorModeOperationJoystick;
-extern QueueHandle_t ErrorModeOperationDcdc;
-
 #define LOST_PERIOD_CAN_SEND   ((uint32_t) 5000)
 enum componentIndex
 {
@@ -109,5 +102,9 @@ inline bool getDcLost(EventBits_t value)
 inline void setLostComponents(canMessage_t* ptr ,EventBits_t value)
 {
      ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) (value & 0x3F);
+}
+inline uint8_t getLostComponenst(canMessage_t* ptr)
+{
+    return (uint8_t) (ptr->data[0] & 0x3F);
 }
 #endif /* INCLUDE_USER_CANMESSAGELOSTCHECK_H_ */
