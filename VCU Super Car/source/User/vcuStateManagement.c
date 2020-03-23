@@ -15,8 +15,9 @@ TaskHandle_t xVcuStateManagement;
 QueueHandle_t xQueueVcuStatusManagement = NULL;
 QueueHandle_t xQueueVcuStatus = NULL;
 
-static VcuStateMangement_t vcuStateMangement;
-static   VcuStateMangement_t vcuStatus;
+static VcuStateMangement_t currentVcuStatus = VCU_Status_Init;
+static VcuStateMangement_t rawVcuStatus;
+
 
 void vcuStateManagementInit(void)
 {
@@ -31,12 +32,60 @@ void vcuStateManagementInit(void)
 
 static void setVcuStatus()
 {
-    if(vcuStateMangement == VCU_CLEAR_ERROR && (vcuStatus == VCU_Status_Parking
-            || vcuStatus == VCU_Status_Neutral))
-        vcuStatus = VCU_CLEAR_ERROR;
+    switch(rawVcuStatus)
+    {
+    case VCU_Status_Init:
+        if(currentVcuStatus == VCU_Status_ErrorStop)
+            currentVcuStatus = VCU_Status_Init;
+        break;
 
-    else
-        vcuStatus = VCU_Status_ErrorDrive;
+    case VCU_CLEAR_ERROR:
+        if(currentVcuStatus == VCU_Status_Neutral || currentVcuStatus == VCU_Status_Parking)
+            currentVcuStatus = VCU_CLEAR_ERROR;
+        break;
+
+    case VCU_Status_Parking:
+        if(currentVcuStatus != VCU_Status_ErrorStop )
+            currentVcuStatus = VCU_Status_Parking;
+        break;
+
+    case VCU_Status_Neutral:
+        if(currentVcuStatus != VCU_Status_Parking && currentVcuStatus != VCU_Status_ErrorStop)
+            currentVcuStatus = VCU_Status_Neutral;
+        break;
+
+    case VCU_Status_Forward:
+        if(currentVcuStatus != VCU_Status_Parking && currentVcuStatus != VCU_Status_ErrorStop)
+            currentVcuStatus = VCU_Status_Forward;
+        break;
+
+    case VCU_Status_Reverse:
+        if(currentVcuStatus != VCU_Status_Parking && currentVcuStatus != VCU_Status_ErrorStop)
+            currentVcuStatus = VCU_Status_Reverse;
+        break;
+
+    case VCU_Status_Charge:
+        if(currentVcuStatus == VCU_Status_Parking)
+            currentVcuStatus = VCU_Status_Charge;
+        break;
+
+    case VCU_Status_Sleep:
+        break;
+
+    case VCU_Status_ErrorDrive:
+        if(currentVcuStatus != VCU_Status_ErrorStop && currentVcuStatus != VCU_Status_ErrorBatteryOff)
+            currentVcuStatus = VCU_Status_ErrorDrive;
+        break;
+
+    case VCU_Status_ErrorStop:
+        if(currentVcuStatus != VCU_Status_ErrorBatteryOff)
+        currentVcuStatus = VCU_Status_ErrorStop;
+        break;
+
+    case VCU_Status_ErrorBatteryOff:
+        currentVcuStatus = VCU_Status_ErrorBatteryOff;
+        break;
+    }
 
 }
 
@@ -44,11 +93,11 @@ void vVcuStateManagement(void *pvParameters)
 {
     for(;;)
     {
-        if(xQueueReceive(xQueueVcuStatusManagement, &vcuStateMangement, portMAX_DELAY))
+        if(xQueueReceive(xQueueVcuStatusManagement, &rawVcuStatus, portMAX_DELAY))
         {
-         //   setVcuStatus();
+            setVcuStatus();
         }
 
-        xQueueOverwrite(xQueueVcuStatus, &vcuStatus);
+        xQueueOverwrite(xQueueVcuStatus, &currentVcuStatus);
     }
 }
