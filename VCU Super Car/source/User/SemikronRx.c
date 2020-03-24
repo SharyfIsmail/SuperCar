@@ -31,22 +31,22 @@ void semikronRxInit(void)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
     if(xTaskCreate(vSemicronNmtCommand, "NMT_Command", configMINIMAL_STACK_SIZE, NULL, 1, &xNMTCommand ) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
     if(xTaskCreate(vSemicronSyn, "SemicronSync", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_SEMICRON_SYN, 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
     if(xTaskCreate(vSemicronNmtNodeGuarding, "NMT_NodeGuarding", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_NMT_NODE_GUARDING, 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
     xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4);
 
 }
@@ -203,7 +203,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
         if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
         {
             xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
-        }
+        }/* else not needed */
 
         setNmtNodeGuardingState(&semicronNodeGuarding, (uint8_t) nmtNodeGuardingState);
         ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);

@@ -64,7 +64,7 @@
 #include "acceleratorBrakeJoystick.h"
 #include "canMessageLostCheck.h"
 #include "vcuStateManagement.h"
-
+#include "memory_access.h"
 #include "strings.h"
 
 /* USER CODE END */
@@ -84,6 +84,7 @@ EventGroupHandle_t canMessageLostCheckEventGroup;
 int main(void)
 {
 /* USER CODE BEGIN (3) */
+    memoryAccessInit();
     boardCanInit(canREG1);
     boardCanInit(canREG2);
     semikronRxInit();

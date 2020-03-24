@@ -22,12 +22,12 @@ void BmsRxInit(void)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
     if(xTaskCreate(vBmsHeartBeat, "BmsHeartBeat", configMINIMAL_STACK_SIZE, (void *)CAN_PERIOD_MS_BMS_HEARTBEAT, 1, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
 }
 
 void vBmsRxHandler (void *pvParameters)

@@ -24,7 +24,8 @@ void BmsTxInit(void)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
+
     xQueueBmsTx =  xQueueCreate(20U, sizeof(canMessage_t));
 }
 

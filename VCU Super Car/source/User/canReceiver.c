@@ -19,13 +19,13 @@ void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
         semicronTxCanFrame.id = canGetID(canREG2, canMESSAGE_BOX9) >> 18U;
         canGetData(canREG2, canMESSAGE_BOX9, semicronTxCanFrame.p.data);
         xQueueSendFromISR(xQueueSemikronTx, &semicronTxCanFrame, &xHigherPriorityTaskWoken );
-    }
+    }/* else not needed */
     if(canIsRxMessageArrived(canREG2, canMESSAGE_BOX10))
     {
         semicronTxCanFrame.id = canGetID(canREG2, canMESSAGE_BOX10) >> 18U;
         canGetData(canREG2, canMESSAGE_BOX10, semicronTxCanFrame.p.data);
         xQueueSendFromISR(xQueueSemikronTx, &semicronTxCanFrame, &xHigherPriorityTaskWoken );
-    }
+    }/* else not needed */
 
 }
 
@@ -38,5 +38,5 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
         acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX15) >> 18U;
         canGetData(canREG1, canMESSAGE_BOX15, acceleratorBrakeJoystick.p.data);
         xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken );
-    }
+    }/* else not needed */
 }

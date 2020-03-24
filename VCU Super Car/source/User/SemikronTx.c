@@ -24,7 +24,7 @@ void semikronTxInit(void)
     {
            /*Task couldn't be created */
            while(1);
-    }
+    }/* else not needed */
 
 
     xQueueSemikronTx = xQueueCreate(20U, sizeof(semicronTxCanFrame_t));
@@ -38,7 +38,7 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
     {
         vcuStatus = VCU_CLEAR_ERROR;
         xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
-    }
+    }/* else not needed */
 }
 void vSemicronTxHandler (void *pvParameters)
 {

@@ -37,41 +37,23 @@ maxTimeOutTime_t maxTimeOutTime =
  }
 };
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
+static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime);
 
 void acceleratorBrakeJoystickInit(void)
 {
-
     if(xTaskCreate(vAcceleratorBrakeJoystickTxHandler, "AcceleratorBrakeJoystickTxHandler", configMINIMAL_STACK_SIZE, NULL, 1, &xAcceleratorBrakeJoystickTxHandler) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
-    }
+    }/* else not needed */
+
     xQueueAcceleratorBrakeJoystickTx = xQueueCreate(20U, sizeof(acceleratorBrakeJoystick_t));
     xqueueJoystickMode = xQueueCreate(1U, sizeof(uint8_t));
     xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int));
     xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
 }
 
-static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime)
-{
-    if(accelerator <= checkingTime)
-        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
-    else
-        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
 
-
-    if(brake <= checkingTime)
-        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
-    else
-        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
-
-
-    if(joystick <= checkingTime)
-        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
-     else
-        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));
-
-}
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 {
     TickType_t acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
@@ -103,7 +85,8 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
                 joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
                 xQueueOverwrite(xqueueAcceleratorValue, &torqueValue);
             }
-        }
+        }/* else not needed */
+
         /** Update CAN messages timeout value */
         checkingTime = xTaskGetTickCount();
         checkLostsOfComponents(acceleratorTimeOutControl, brakeTimeOutControl, joystickTimeOutControl, checkingTime);
@@ -112,3 +95,23 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
     }
 }
 
+static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime)
+{
+    if(accelerator <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
+    else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
+
+
+    if(brake <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
+    else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
+
+
+    if(joystick <= checkingTime)
+        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
+     else
+        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));
+
+}
