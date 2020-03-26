@@ -51,10 +51,9 @@
 
 /* USER CODE BEGIN (1) */
 #include "FreeRTOS.h"
-#include "os_queue.h"
-#include "os_task.h"
-#include "os_timer.h"
-#include "os_event_groups.h"
+#include "queue.h"
+#include "task.h"
+#include "event_groups.h"
 #include "sys_core.h"
 #include "newCanLib.h"
 #include "SemikronRx.h"

@@ -6,8 +6,8 @@
  */
 
 #include "FreeRTOS.h"
-#include "os_queue.h"
-#include "os_task.h"
+#include "queue.h"
+#include "task.h"
 #include "sys_main.h"
 #include "newCanLib.h"
 #include "canMessageLostCheck.h"

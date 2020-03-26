@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include "FreeRTOS.h"
-#include "os_queue.h"
+#include "queue.h"
 
 void semikronTxInit(void);
 

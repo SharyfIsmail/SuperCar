@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 #include "FreeRTOS.h"
-#include "os_queue.h"
+#include "queue.h"
 
 extern QueueHandle_t xQueueAcceleratorBrakeJoystickTx;
 extern QueueHandle_t xqueueJoystickMode;

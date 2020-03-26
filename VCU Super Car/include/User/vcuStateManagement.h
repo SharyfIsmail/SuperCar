@@ -9,7 +9,7 @@
 #define INCLUDE_USER_VCUSTATEMANAGEMENT_H_
 
 #include "FreeRTOS.h"
-#include "os_queue.h"
+#include "queue.h"
 
 
 extern QueueHandle_t xQueueVcuStatus;

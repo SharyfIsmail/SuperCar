@@ -9,7 +9,7 @@
 #define INCLUDE_USER_SYS_MAIN_H_
 
 #include "FreeRTOS.h"
-#include "os_event_groups.h"
+#include "event_groups.h"
 #include <stdint.h>
 
 

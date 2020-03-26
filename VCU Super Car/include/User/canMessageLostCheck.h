@@ -9,8 +9,8 @@
 #define INCLUDE_USER_CANMESSAGELOSTCHECK_H_
 
 #include "FreeRTOS.h"
-#include "os_event_groups.h"
-#include "os_queue.h"
+#include "event_groups.h"
+#include "queue.h"
 
 #include <stdint.h>
 

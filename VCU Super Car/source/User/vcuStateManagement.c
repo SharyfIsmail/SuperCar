@@ -6,9 +6,8 @@
  */
 
 #include "vcuStateManagement.h"
-#include "os_task.h"
+#include "task.h"
 
-void vVcuStateManagement(void *pvParameters);
 
 TaskHandle_t xVcuStateManagement;
 
@@ -19,9 +18,11 @@ static VcuStateMangement_t currentVcuStatus = VCU_Status_Init;
 static VcuStateMangement_t rawVcuStatus;
 
 
+void vVcuStateManagement(void *pvParameters);
+
 void vcuStateManagementInit(void)
 {
-    if(xTaskCreate(vVcuStateManagement, "VcuStateManagement", configMINIMAL_STACK_SIZE, NULL, 2, xVcuStateManagement) != pdTRUE)
+    if(xTaskCreate(vVcuStateManagement, "VcuStateManagement", configMINIMAL_STACK_SIZE, NULL, 2, &xVcuStateManagement) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);

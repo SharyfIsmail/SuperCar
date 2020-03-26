@@ -8,7 +8,7 @@
 #define INCLUDE_USER_SEMIKRONRX_H_
 #include <stdint.h>
 #include "FreeRTOS.h"
-#include "os_queue.h"
+#include "queue.h"
 #include "newCanLib.h"
 
 

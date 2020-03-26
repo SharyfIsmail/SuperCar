@@ -10,7 +10,7 @@
 #include "spi_helper.h"
 #include "sys_vim.h"
 #include "FreeRTOS.h"
-#include "os_task.h"
+#include "task.h"
 #include "memory_access.h"
 
 

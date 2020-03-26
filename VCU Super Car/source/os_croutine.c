@@ -68,8 +68,8 @@
 */
 
 #include "FreeRTOS.h"
-#include "os_task.h"
-#include "os_croutine.h"
+#include "task.h"
+#include "croutine.h"
 
 /* Remove the whole file is co-routines are not being used. */
 #if( configUSE_CO_ROUTINES != 0 )
