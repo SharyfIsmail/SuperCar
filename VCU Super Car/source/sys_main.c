@@ -65,6 +65,7 @@
 #include "canMessageLostCheck.h"
 #include "vcuStateManagement.h"
 #include "memory_access.h"
+#include "externalMemoryTask.h"
 #include "strings.h"
 
 /* USER CODE END */
@@ -94,6 +95,7 @@ int main(void)
     acceleratorBrakeJoystickInit();
     canMessageLostCheckInit();
     vcuStateManagementInit();
+    externalMemoryTaskInit();
 
     /*creating event group*/
     canMessageLostCheckEventGroup = xEventGroupCreate();

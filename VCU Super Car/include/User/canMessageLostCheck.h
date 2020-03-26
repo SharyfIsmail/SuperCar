@@ -26,16 +26,6 @@ enum componentIndex
     COUNT_OF_COMPONENTS
 };
 
-typedef enum
-{
-    EVERY_COMPONENT_IS_PRESENTED=  0x00,
-    INVERTOR_CANMESSAGE_LOST    =  0x01,
-    BMS_CANMESSAGE_LOST         =  0x02,
-    ACCELERATOR_CANMESSAGE_LOST =  0x03,
-    BRAKE_CANMESSAGE_LOST       =  0x04,
-    JOYSTICK_CANMESSAGE_LOST    =  0x05,
-    DCDC_CANMESSAGE_LOST        =  0x06,
-}causingOfError_t;
 
 
 typedef struct

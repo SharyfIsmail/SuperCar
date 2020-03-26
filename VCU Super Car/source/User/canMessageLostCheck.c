@@ -13,10 +13,10 @@
 #include "canMessageLostCheck.h"
 #include "vcuStateManagement.h"
 #include "SemikronRx.h"
+#include "externalMemoryTask.h"
 
 TaskHandle_t xCanMessageLostCheckHandler;
 TaskHandle_t xLostComponentSendExternal;
-
 
 void vCanMessageLostCheckHandler(void *pvParameters);
 void vLostComponentSendExternal(void *pvParameters);
@@ -32,7 +32,7 @@ static void DcdcLostHandler(VcuStateMangement_t *vcuStatus);
 typedef bool (*identifyLostComponent_t)(EventBits_t value);
 typedef void (*LostComponentHandler_t)(VcuStateMangement_t *vcuStatus);
 
-static causingOfError_t  causingOfError = EVERY_COMPONENT_IS_PRESENTED;
+static causingOfError_t  causingOfError = EVERYTHING_IS_FINE;
 
 static canMessage_t causingOfLost=
 {
@@ -136,7 +136,17 @@ void vLostComponentSendExternal(void *pvParameters)
 
 static void logError(causingOfError_t cause)
 {
-
+    uint32_t errorTime = 0;
+    CommandToExtMemory_t command =
+    {
+     .type = EXT_MEMROY_WRITE,
+     .errorData =
+     {
+      .time = errorTime,
+      .error = cause,
+     }
+    };
+    xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
 }
 static void setVcuStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
 {
@@ -219,7 +229,7 @@ static void setVcuStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
 static void invertorLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = INVERTOR_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[0])
+    if(!errorLogWrite.arr[0])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
@@ -228,7 +238,7 @@ static void invertorLostHandler(VcuStateMangement_t *vcuStatus)
 static void bmsLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = BMS_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[1])
+    if(!errorLogWrite.arr[1])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
@@ -237,7 +247,7 @@ static void bmsLostHandler(VcuStateMangement_t *vcuStatus)
 static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = ACCELERATOR_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[2])
+    if(!errorLogWrite.arr[2])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
@@ -246,7 +256,7 @@ static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus)
 static void brakeLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = BRAKE_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[3])
+    if(!errorLogWrite.arr[3])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
@@ -255,7 +265,7 @@ static void brakeLostHandler(VcuStateMangement_t *vcuStatus)
 static void joystickLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = JOYSTICK_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[4])
+    if(!errorLogWrite.arr[4])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
@@ -264,10 +274,9 @@ static void joystickLostHandler(VcuStateMangement_t *vcuStatus)
 static void DcdcLostHandler(VcuStateMangement_t *vcuStatus)
 {
     causingOfError = DCDC_CANMESSAGE_LOST;
-    if(errorLogWrite.arr[5])
+    if(!errorLogWrite.arr[5])
     {
         logError(causingOfError);
         setVcuStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
-

@@ -35,15 +35,15 @@ typedef union {
 static uint8_t newCommand[ CY14_CMD_WITH_ADDRESS_SIZE ] = { 0U };
 static spiDAT1_t spiDataConfig = { .WDEL = FALSE, .DFSEL = SPI_FMT_0 };
 
-static memoryControlPoints_t levelMemoryBoardsAccess[ MEMORY_BOARD_NUMBER ] = { 0U };
-static memoryStartingPointInfo_t memoryStartingPointOfBatteryWingInfo;
-static memoryStartingPointInfo_t memoryStartingPointOfImpedanceTrack;
+//static memoryControlPoints_t levelMemoryBoardsAccess[ MEMORY_BOARD_NUMBER ] = { 0U };
+//static memoryStartingPointInfo_t memoryStartingPointOfBatteryWingInfo;
+//static memoryStartingPointInfo_t memoryStartingPointOfImpedanceTrack;
 
 TaskHandle_t xTaskToNotifyFromSpi;
 
-static void InitMemoryStartingPointOfBatteryWingStatistics(void);
-static void InitMemoryStartingPointOfImpedanceTrack(void);
-static void ParseMemoryStartingPointInfoToBuffer(uint8_t memoryBoardNumber, uint8 *outputDataBuffer);
+//static void InitMemoryStartingPointOfBatteryWingStatistics(void);
+//static void InitMemoryStartingPointOfImpedanceTrack(void);
+//static void ParseMemoryStartingPointInfoToBuffer(uint8_t memoryBoardNumber, uint8 *outputDataBuffer);
 
 /** @fn void memoryAccessInit()
 *   @brief Initializes the SPI Driver for getting access to non-volatile memory
