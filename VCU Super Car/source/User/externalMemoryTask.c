@@ -6,7 +6,7 @@
  */
 #include "externalMemoryTask.h"
 #include "memory_access.h"
-//#include <stdint.h>
+#include "reg_spi.h"
 
 #define HEADER_SIZE_BYTES  ((uint8_t) 4)
 #define ERROR_SIZE_BYTES   ((uint8_t) 5)
@@ -23,16 +23,32 @@ typedef struct
 
 void vExternalMemoryTask(void *pvParameters);
 static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData );
+
 static void errorToBytes(const ErrorDataToExtMemory_t *errorData, uint8_t data[]);
 static void errorFromByte(const uint8_t data[], ErrorDataToExtMemory_t *errorData);
+
 static bool longMemoryWriting( uint16_t address, uint8_t tx_data[], uint8_t size);
 static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size);
+
 static void headerToBytes(ExtMemoryHeader_t *extMemoryHeader, uint8_t header[]);
 static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHeader);
-
-
+static void sendErrorFromExtMemory();
 
 static ExtMemoryHeader_t extMemoryHeader = {0};
+
+void spiEndNotification(spiBASE_t *spi)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    configASSERT( xTaskToNotifyFromSpi != NULL );
+
+    vTaskNotifyGiveFromISR( xTaskToNotifyFromSpi, &xHigherPriorityTaskWoken );
+
+    xTaskToNotifyFromSpi = NULL;
+
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+}
+
 void externalMemoryTaskInit()
 {
     if(xTaskCreate(vExternalMemoryTask, "ExternalMemoryTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL) != pdTRUE)
@@ -46,6 +62,13 @@ void externalMemoryTaskInit()
 
 void vExternalMemoryTask(void *pvParameters)
 {
+    uint8_t headerByte[4] = {0};
+
+    if(!longMemoryReading(0, headerByte, HEADER_SIZE_BYTES))
+    {
+        vTaskDelay(portMAX_DELAY);
+    }/* else not needed */
+    headerFromBytes(headerByte, &extMemoryHeader);
 
     CommandToExtMemory_t command;
     for(;;)
@@ -57,8 +80,11 @@ void vExternalMemoryTask(void *pvParameters)
             case EXT_MEMROY_WRITE:
                 writeErrorToExtMemory(&command.errorData);
                 break;
+            case EXT_MEMORY_SEND_BY_CAN:
+                sendErrorFromExtMemory();
+                break;
             }
-        }
+        }/* else not needed */
     }
 }
 static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
@@ -66,11 +92,22 @@ static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
     uint8_t data[5] = {0};
     errorToBytes(errorData, data);
     uint16_t addr = ERROR_ADDRESS(extMemoryHeader.errorQuantity);
+
     if(!longMemoryWriting(addr, data, ERROR_SIZE_BYTES))
     {
         vTaskDelay(portMAX_DELAY);
-    }
+    }/* else not needed */
 
+    if(extMemoryHeader.errorQuantity < 7999)
+        extMemoryHeader.errorQuantity++;
+    else
+        extMemoryHeader.errorQuantity = 0;
+    uint8_t headerByte[4] = {0};
+    headerToBytes(&extMemoryHeader, headerByte);
+    if(!longMemoryWriting(0, headerByte, HEADER_SIZE_BYTES))
+    {
+        vTaskDelay(portMAX_DELAY);
+    }/* else not needed */
 }
 static void errorToBytes(const ErrorDataToExtMemory_t *errorData, uint8_t data[])
 {
@@ -103,7 +140,7 @@ static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHe
     extMemoryHeader->crc8             = (uint8_t)data[3];
 
 }
-static bool longMemoryWriting( uint16_t address, uint8_t tx_data[], uint8_t size )
+static bool longMemoryWriting( uint16_t address, uint8_t tx_data[], uint8_t size)
 {
     cy14_status_register_t memoryBoard;
     uint8_t reiterationCount = 50;
@@ -111,16 +148,16 @@ static bool longMemoryWriting( uint16_t address, uint8_t tx_data[], uint8_t size
 
     for(;;)
     {
-        uint8_t operationResult = readMemoryStatusRegisterFromTask( 0, &memoryBoard );
+        uint8_t operationResult = readMemoryStatusRegisterFromTask( 0, &memoryBoard);
         if(operationResult && memoryBoard.statusRegister.RDY == CY14_READY)
         {
-            result =  (bool) writeDataBufferToMemoryFromTask( 0, address, tx_data, size );
+            result =  (bool) writeDataBufferToMemoryFromTask( 0, address, tx_data, size);
             if(result)
-                break;
-        }
+                break;/* else not needed */
+        }/* else not needed */
         reiterationCount--;
         if(reiterationCount == 0)
-            break;
+            break;/* else not needed */
         vTaskDelay(50);
     }
     return result;
@@ -139,13 +176,16 @@ static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size
         {
            result = (bool) readMemoryFromTask( 0, address, rx_data, size );
            if( result )
-               break;
-        }
+               break;/* else not needed */
+        }/* else not needed */
         reiterationCount--;
         if( reiterationCount == 0 )
-            break;
+            break;/* else not needed */
         vTaskDelay( 50 );
-
     }
     return result;
+}
+static void sendErrorFromExtMemory()
+{
+
 }

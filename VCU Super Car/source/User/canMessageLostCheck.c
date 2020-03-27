@@ -129,7 +129,7 @@ void vLostComponentSendExternal(void *pvParameters)
     for(;;)
     {
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(6U));
-        newCanTransmit(canREG1, canMESSAGE_BOX7, &causingOfLost);
+        newCanTransmit(canREG1, canMESSAGE_BOX3, &causingOfLost);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }

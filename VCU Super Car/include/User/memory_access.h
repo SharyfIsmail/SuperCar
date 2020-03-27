@@ -33,6 +33,8 @@
 
 #define START_MEMORY_BLOCK_ADDRESS                  ((uint16_t) 0)
 
+extern TaskHandle_t xTaskToNotifyFromSpi;
+
 /* ------------------- TYPES ------------------- */
 
 typedef struct {

@@ -81,6 +81,7 @@ static void messageBoxInitReg1()
 
     messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Heart Beat
     messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Rx Handler
+    messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); //Lost Component Send
 
     /*Receiving node */
     /*High level */

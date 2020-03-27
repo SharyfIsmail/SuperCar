@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-#define LOST_PERIOD_CAN_SEND   ((uint32_t) 5000)
+#define LOST_PERIOD_CAN_SEND   ((uint32_t) 1000)
 enum componentIndex
 {
     INVERTOR_INDEX    = 0,

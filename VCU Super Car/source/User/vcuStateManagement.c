@@ -17,7 +17,7 @@ QueueHandle_t xQueueVcuStatus = NULL;
 static VcuStateMangement_t currentVcuStatus = VCU_Status_Init;
 static VcuStateMangement_t rawVcuStatus;
 
-
+static void setVcuStatus();
 void vVcuStateManagement(void *pvParameters);
 
 void vcuStateManagementInit(void)
@@ -29,6 +29,19 @@ void vcuStateManagementInit(void)
     }
     xQueueVcuStatusManagement = xQueueCreate(1U, sizeof(VcuStateMangement_t));
     xQueueVcuStatus = xQueueCreate(1U, sizeof(VcuStateMangement_t));
+}
+
+void vVcuStateManagement(void *pvParameters)
+{
+    for(;;)
+    {
+        if(xQueueReceive(xQueueVcuStatusManagement, &rawVcuStatus, portMAX_DELAY))
+        {
+            setVcuStatus();
+        }/* else not needed */
+
+        xQueueOverwrite(xQueueVcuStatus, &currentVcuStatus);
+    }
 }
 
 static void setVcuStatus()
@@ -104,19 +117,5 @@ static void setVcuStatus()
     case VCU_Status_ErrorBatteryOff:
         currentVcuStatus = VCU_Status_ErrorBatteryOff;
         break;
-    }
-
-}
-
-void vVcuStateManagement(void *pvParameters)
-{
-    for(;;)
-    {
-        if(xQueueReceive(xQueueVcuStatusManagement, &rawVcuStatus, portMAX_DELAY))
-        {
-            setVcuStatus();
-        }/* else not needed */
-
-        xQueueOverwrite(xQueueVcuStatus, &currentVcuStatus);
     }
 }
