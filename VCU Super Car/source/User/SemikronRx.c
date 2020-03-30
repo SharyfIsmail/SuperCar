@@ -107,11 +107,15 @@ void vSemicronRxHandler (void *pvParameters)
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
         if (vcuStatus == VCU_CLEAR_ERROR)
             clearErrorAction(&rxPdo_03);
-        else if (vcuStatus == VCU_Status_Forward || vcuStatus == VCU_Status_Reverse)
+
+        else if (vcuStatus == VCU_Status_Forward  ||
+                 vcuStatus == VCU_Status_Reverse  ||
+                 vcuStatus == VCU_Status_ErrorDrive)
         {
             xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
             carInMotion(&rxPdo_03, torqueValue);
         }
+
         else
             carStop(&rxPdo_03);
 

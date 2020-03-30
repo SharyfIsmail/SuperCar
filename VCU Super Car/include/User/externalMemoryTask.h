@@ -16,6 +16,7 @@ extern QueueHandle_t xQueueCommandToExtMemory;
 
 void externalMemoryTaskInit();
 
+
 typedef enum
 {
     EVERYTHING_IS_FINE            =  0x00,
@@ -67,7 +68,8 @@ typedef enum
     JUNCTION_OVERTEMPERATURE      =  0x9F,
     UNDERVOLTAGE_SUPPLY_INPUT     =  0xA1,
     UNEXPCTED_SHUTDOWN            =  0xE1,
-    DC_LINK_VOLTAGE_SENSOR_ERROR  =  0xE8
+    DC_LINK_VOLTAGE_SENSOR_ERROR  =  0xE8,
+    UNKNOWN_ERROR                 =  0xFF
 }causingOfError_t;
 
 

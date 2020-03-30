@@ -12,8 +12,11 @@
 #include "SemikronRx.h"
 #include "sys_main.h"
 #include "vcuStateManagement.h"
+#include "externalMemoryTask.h"
 
 void vSemicronTxHandler (void *pvParameters);
+static void logError(causingOfError_t cause);
+static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
 
 TaskHandle_t xSemicronTxHandler;
 QueueHandle_t xQueueSemikronTx = NULL;
@@ -31,15 +34,7 @@ void semikronTxInit(void)
     xQueueCausingError = xQueueCreate(1U, sizeof(clearError_t));
 }
 
-static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
-{
-    VcuStateMangement_t vcuStatus;
-    if(getTx_PDO_01_CausingError(emdTxPdo_01))
-    {
-        vcuStatus = VCU_CLEAR_ERROR;
-        xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
-    }/* else not needed */
-}
+
 void vSemicronTxHandler (void *pvParameters)
 {
     semicronTxCanFrame_t  semicronTxCanFrame;
@@ -92,4 +87,43 @@ void vSemicronTxHandler (void *pvParameters)
 
         taskYIELD();
     }
+}
+
+static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
+{
+    VcuStateMangement_t vcuStatus;
+    causingOfError_t causingOfError = EVERYTHING_IS_FINE;
+    causingOfError = (causingOfError_t)getTx_PDO_01_CausingError(emdTxPdo_01);
+    if(causingOfError)
+    {
+        vcuStatus = VCU_CLEAR_ERROR;
+        xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
+        logError(causingOfError);
+    }/* else not needed */
+}
+
+static void logError(causingOfError_t cause)
+{
+    uint32_t errorTime = 0;
+    CommandToExtMemory_t command =
+    {
+     .type = EXT_MEMROY_WRITE,
+     .errorData =
+     {
+      .time = errorTime,
+      .error = cause,
+     }
+    };
+    xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
+}
+static uint8_t errorId[] =
+{
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+  0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+  0x18, 0x19, 0x27, 0x2B, 0x2C, 0x30, 0x32, 0x33, 0x36, 0x37, 0x49, 0x4F, 0x65, 0x67, 0x7F,
+  0x9F, 0xA1, 0xE1, 0xE8, 0xFF
+};
+static void checkIfErrorExists(causingOfError_t* cause)
+{
+
 }

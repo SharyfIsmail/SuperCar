@@ -59,7 +59,11 @@ static void setVcuStatus()
         if(currentVcuStatus == VCU_Status_Neutral || currentVcuStatus == VCU_Status_Parking)
         {
             currentVcuStatus = VCU_CLEAR_ERROR;
-        }/* else not needed */
+        }
+        else
+        {
+            currentVcuStatus = VCU_Status_ErrorStop;
+        }
         break;
 
     case VCU_Status_Parking:
