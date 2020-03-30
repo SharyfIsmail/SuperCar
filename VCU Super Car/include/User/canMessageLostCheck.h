@@ -26,8 +26,6 @@ enum componentIndex
     COUNT_OF_COMPONENTS
 };
 
-
-
 typedef struct
 {
     bool arr[COUNT_OF_COMPONENTS];

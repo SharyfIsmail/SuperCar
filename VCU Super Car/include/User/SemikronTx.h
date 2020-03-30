@@ -12,6 +12,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
+#define SEMICRON_ERROR_COUNT ((uint8_t)43)
 void semikronTxInit(void);
 
 #define EMD_TxPDO_1 ((uint32_t) 0x000001FA)
@@ -20,6 +21,10 @@ void semikronTxInit(void);
 extern QueueHandle_t xQueueSemikronTx ;
 extern QueueHandle_t xQueueCausingError;
 
+typedef struct
+{
+    bool arr[SEMICRON_ERROR_COUNT];
+}semicronErrorWrite_t;
 
 typedef struct
 {
