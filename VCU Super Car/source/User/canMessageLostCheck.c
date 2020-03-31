@@ -21,7 +21,7 @@ TaskHandle_t xLostComponentSendExternal;
 void vCanMessageLostCheckHandler(void *pvParameters);
 void vLostComponentSendExternal(void *pvParameters);
 static void logError(causingOfError_t cause);
-static void setVcuStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus);
+static void setVcuRawStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus);
 static void invertorLostHandler(VcuStateMangement_t *vcuStatus);
 static void bmsLostHandler(VcuStateMangement_t *vcuStatus);
 static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus);
@@ -148,7 +148,7 @@ static void logError(causingOfError_t cause)
     };
     xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
 }
-static void setVcuStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
+static void setVcuRawStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
 {
     switch(cause)
     {
@@ -232,7 +232,7 @@ static void invertorLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[0])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
 static void bmsLostHandler(VcuStateMangement_t *vcuStatus)
@@ -241,7 +241,7 @@ static void bmsLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[1])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
 static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus)
@@ -250,7 +250,7 @@ static void acceleratorLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[2])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
 static void brakeLostHandler(VcuStateMangement_t *vcuStatus)
@@ -259,7 +259,7 @@ static void brakeLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[3])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
 static void joystickLostHandler(VcuStateMangement_t *vcuStatus)
@@ -268,7 +268,7 @@ static void joystickLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[4])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }
 static void DcdcLostHandler(VcuStateMangement_t *vcuStatus)
@@ -277,6 +277,6 @@ static void DcdcLostHandler(VcuStateMangement_t *vcuStatus)
     if(!errorLogWrite.arr[5])
     {
         logError(causingOfError);
-        setVcuStatus(causingOfError, vcuStatus);
+        setVcuRawStatus(causingOfError, vcuStatus);
     }/* else not needed */
 }

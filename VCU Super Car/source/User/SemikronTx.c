@@ -13,12 +13,13 @@
 #include "sys_main.h"
 #include "vcuStateManagement.h"
 #include "externalMemoryTask.h"
+#include "string.h"
 
 void vSemicronTxHandler (void *pvParameters);
 static void logError(causingOfError_t cause);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
-static uint8_t errorSeek(causingOfError_t cause);
-static void errorOccured(causingOfError_t cause);
+static uint8_t errorSeek(causingOfError_t *cause);
+static void errorOccured(uint8_t errorIndex);
 
 static  semicronErrorWrite_t semicronErrorWrite =
 {
@@ -110,17 +111,17 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
     VcuStateMangement_t vcuStatus;
     causingOfError_t causingOfError = EVERYTHING_IS_FINE;
     causingOfError = (causingOfError_t)getTx_PDO_01_CausingError(emdTxPdo_01);
-    if(causingOfError)
+    if(causingOfError != EVERYTHING_IS_FINE)
     {
         vcuStatus = VCU_CLEAR_ERROR;
 
         xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
 
-        causingOfError = (causingOfError_t) errorId[errorSeek(causingOfError)];
-        if(!semicronErrorWrite.arr[errorSeek(causingOfError)])
-            logError(causingOfError);
+        uint8_t errorIndex = errorId[errorSeek(&causingOfError)];
+        if(!semicronErrorWrite.arr[errorIndex])
+            logError(causingOfError); /* else not needed */
 
-        errorOccured(causingOfError);
+        errorOccured(errorIndex);
     }/* else not needed */
 }
 
@@ -139,26 +140,20 @@ static void logError(causingOfError_t cause)
     xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
 }
 
-static uint8_t errorSeek(causingOfError_t cause)
+static uint8_t errorSeek(causingOfError_t *cause)
 {
-   for(int i = 0 ; i< SEMICRON_ERROR_COUNT ; i++ )
+   for(int i = 0 ; i< SEMICRON_ERROR_COUNT ; i++)
    {
-       if(cause == (causingOfError_t)errorId[i])
+       if(*cause == (causingOfError_t)errorId[i])
        {
            return (uint8_t)i;
-       }
+       }/* else not needed */
    }
-   return SEMICRON_ERROR_COUNT;
+   *cause = UNKNOWN_ERROR;
+   return SEMICRON_ERROR_COUNT - 1 ;
 }
-static void errorOccured(causingOfError_t cause)
+static void errorOccured(uint8_t errorIndex)
 {
-    for(int i = 0 ; i < SEMICRON_ERROR_COUNT ; i++)
-    {
-        if(cause == (causingOfError_t)errorId[i])
-        {
-            semicronErrorWrite.arr[i] = true;
-        }
-        else
-            semicronErrorWrite.arr[i] = false;
-    }
+    memset(errorId, false, sizeof(errorId));
+    errorId[errorIndex] = true;
 }

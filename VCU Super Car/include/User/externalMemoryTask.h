@@ -20,12 +20,6 @@ void externalMemoryTaskInit();
 typedef enum
 {
     EVERYTHING_IS_FINE            =  0x00,
-    INVERTOR_CANMESSAGE_LOST      =  0x01,
-    BMS_CANMESSAGE_LOST           =  0x02,
-    ACCELERATOR_CANMESSAGE_LOST   =  0x03,
-    BRAKE_CANMESSAGE_LOST         =  0x04,
-    JOYSTICK_CANMESSAGE_LOST      =  0x05,
-    DCDC_CANMESSAGE_LOST          =  0x06,
 
     SHORT_CIRCUIT_L1_TOP          =  0x01,
     SHORT_CIRCUIT_L1_BOT          =  0x02,
@@ -69,7 +63,17 @@ typedef enum
     UNDERVOLTAGE_SUPPLY_INPUT     =  0xA1,
     UNEXPCTED_SHUTDOWN            =  0xE1,
     DC_LINK_VOLTAGE_SENSOR_ERROR  =  0xE8,
-    UNKNOWN_ERROR                 =  0xFF
+
+    INVERTOR_CANMESSAGE_LOST      =  0xEF,
+    BMS_CANMESSAGE_LOST           =  0xF0,
+    ACCELERATOR_CANMESSAGE_LOST   =  0xF1,
+    BRAKE_CANMESSAGE_LOST         =  0xF2,
+    JOYSTICK_CANMESSAGE_LOST      =  0xF3,
+    DCDC_CANMESSAGE_LOST          =  0xF4,
+
+    UNKNOWN_ERROR                 =  0xFE,
+
+    ALL_ERRORS                    =  0xFF
 }causingOfError_t;
 
 
@@ -77,11 +81,13 @@ typedef struct
 {
     uint32_t time;
     causingOfError_t error;
+    uint8_t crc;
 }ErrorDataToExtMemory_t;
 typedef enum
 {
-    EXT_MEMROY_WRITE,
-    EXT_MEMORY_SEND_BY_CAN
+    CLEAR_EXTERNAL_MEMORY  = 1,
+    EXT_MEMORY_SEND_BY_CAN = 2,
+    EXT_MEMROY_WRITE       = 3,
 }CommandToExtMemoryEnum_t;
 typedef struct
 {

@@ -8,6 +8,10 @@
 #include "newCanLib.h"
 #include "SemikronTx.h"
 #include "acceleratorBrakeJoystick.h"
+#include "externalMemoryTask.h"
+
+
+static void byteToError(const uint8_t data[],CommandToExtMemory_t *memoryCommand);
 
 void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 {
@@ -33,10 +37,26 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 {
     static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     acceleratorBrakeJoystick_t acceleratorBrakeJoystick ;
+    CommandToExtMemory_t commandToExternalMemory;
     if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX15))
     {
         acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX15) >> 18U;
         canGetData(canREG1, canMESSAGE_BOX15, acceleratorBrakeJoystick.p.data);
-        xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken );
+        xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken);
     }/* else not needed */
+
+    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX16))
+    {
+        uint8_t data[2] = {0};
+        canGetData(canREG1, canMESSAGE_BOX16, data);
+        byteToError(data, &commandToExternalMemory);
+        xQueueSendFromISR(xQueueCommandToExtMemory, &commandToExternalMemory, &xHigherPriorityTaskWoken);
+
+    }/* else not needed */
+}
+
+static void byteToError(const uint8_t data[],CommandToExtMemory_t *memoryCommand )
+{
+    memoryCommand->errorData.error = (causingOfError_t)data[0];
+    memoryCommand->type = (CommandToExtMemoryEnum_t) data[1];
 }

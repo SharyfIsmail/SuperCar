@@ -79,19 +79,16 @@ static void messageBoxInitReg1()
 {
     /*Sending node*/
 
-    messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Heart Beat
-    messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Bms Rx Handler
-    messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); //Lost Component Send
-
+    messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Heart Beat
+    messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Rx Handler
+    messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  //Lost Component Send
+    messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  //Error from external memory
     /*Receiving node */
     /*High level */
 
-    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
-
-  //  messageBoxInitialize(node, canMESSAGE_BOX18, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
-  //  messageBoxInitialize(node, canMESSAGE_BOX19, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
-  //  messageBoxInitialize(node, canMESSAGE_BOX20, CAN_Id_Standard, (uint32_t) NULL,(uint32_t) NULL, RECEIVEING_NODE); // Semicron NMT_Command
     /*Low level */
+    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
 
 }
 
@@ -167,37 +164,37 @@ void boardCanInit(canBASE_t *node)
     node->ES |= 0xFFFFFFFFU;
     /** - Assign interrupt level for messages */
     node->INTMUXx[0U] = (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00008000U //
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U
-                      | (uint32)0x00000000U;
+                      | (uint32)0x00000000U // MessageBox1
+                      | (uint32)0x00000000U // MessageBox2
+                      | (uint32)0x00000000U // MessageBox3
+                      | (uint32)0x00000000U // MessageBox4
+                      | (uint32)0x00000000U // MessageBox5
+                      | (uint32)0x00000000U // MessageBox6
+                      | (uint32)0x00000000U // MessageBox7
+                      | (uint32)0x00000000U // MessageBox8
+                      | (uint32)0x00000000U // MessageBox9
+                      | (uint32)0x00000000U // MessageBox10
+                      | (uint32)0x00000000U // MessageBox11
+                      | (uint32)0x00000000U // MessageBox12
+                      | (uint32)0x00000000U // MessageBox13
+                      | (uint32)0x00000000U // MessageBox14
+                      | (uint32)0x00008000U // MessageBox15
+                      | (uint32)0x00010000U // MessageBox16
+                      | (uint32)0x00000000U // MessageBox17
+                      | (uint32)0x00000000U // MessageBox18
+                      | (uint32)0x00000000U // MessageBox19
+                      | (uint32)0x00000000U // MessageBox20
+                      | (uint32)0x00000000U // MessageBox21
+                      | (uint32)0x00000000U // MessageBox22
+                      | (uint32)0x00000000U // MessageBox23
+                      | (uint32)0x00000000U // MessageBox24
+                      | (uint32)0x00000000U // MessageBox25
+                      | (uint32)0x00000000U // MessageBox26
+                      | (uint32)0x00000000U // MessageBox27
+                      | (uint32)0x00000000U // MessageBox28
+                      | (uint32)0x00000000U // MessageBox29
+                      | (uint32)0x00000000U // MessageBox30
+                      | (uint32)0x00000000U;// MessageBox31
 
     /** - Setup auto bus on timer period */
     node->ABOTR = (uint32)0U;
