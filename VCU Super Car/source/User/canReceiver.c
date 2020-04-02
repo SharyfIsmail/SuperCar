@@ -48,8 +48,9 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 
     else if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX14))
     {
-        uint8_t data[2] = {0};
+        uint8_t data[8] = {0};
         canGetData(canREG1, canMESSAGE_BOX14, data);
+        canGetID(canREG1, canMESSAGE_BOX14) >> 18U;
         byteToError(data, &commandToExternalMemory);
         xQueueSendFromISR(xQueueCommandToExtMemory, &commandToExternalMemory, &xHigherPriorityTaskWoken);
 
