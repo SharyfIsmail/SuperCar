@@ -154,6 +154,21 @@ static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan)
         headerToBytes(&extMemoryHeader, canMessage.data);
         newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
     }
+    else if (errorDataTocan->error == 0xFF)
+    {
+        for(uint16_t errorIndex = 1 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
+        {
+            uint16_t addr = ERROR_ADDRESS(errorIndex);
+            if( !longMemoryReading( addr, canMessage.data, ERROR_SIZE_BYTES ))
+            {
+                vTaskDelay( portMAX_DELAY );
+            }/* else not needed */
+            ErrorDataToExtMemory_t errorDataFromExtMemory;
+            errorFromByte(canMessage.data, &errorDataFromExtMemory);
+            newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }
+    }
     else
     {
         for(uint16_t errorIndex = 1 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
@@ -168,6 +183,7 @@ static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan)
             if(errorDataFromExtMemory.error == errorDataTocan->error )
             {
                 newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
+                vTaskDelay(pdMS_TO_TICKS(5));
             }/* else not needed */
 
         }
