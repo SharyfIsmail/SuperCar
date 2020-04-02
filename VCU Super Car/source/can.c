@@ -615,12 +615,12 @@ void canInit(void)
     *     - Setup TSeg1
     *     - Setup sample jump width
     *     - Setup baud rate prescaler
-    */		   
+    */
     canREG2->BTR = (uint32)((uint32)0U << 16U) |
                    (uint32)((uint32)(2U - 1U) << 12U) |
                    (uint32)((uint32)((3U + 2U) - 1U) << 8U) |
                    (uint32)((uint32)(2U - 1U) << 6U) |
-                   (uint32)19U;				   
+                   (uint32)19U;
 
 
    /** - CAN2 Port output values */
@@ -669,8 +669,8 @@ void canInit(void)
 *           - 1: When the setup of the TX message box was successful
 *
 *   This function writes a CAN message into a CAN message box.
-*	This function is not reentrant. However, if a CAN interrupt occurs, the values of
-*	the IF registers are backup up and restored at the end of the ISR, since these are a shared resource.
+*   This function is not reentrant. However, if a CAN interrupt occurs, the values of
+*   the IF registers are backup up and restored at the end of the ISR, since these are a shared resource.
 *
 */
 /* SourceId : CAN_SourceId_002 */
@@ -705,12 +705,12 @@ uint32 canTransmit(canBASE_t *node, uint32 messageBox, const uint8 * data)
     } /* Wait */
 
     /** - Configure IF1 for
-	*     - Message direction - Write
-	*     - Data Update
-	*     - Start Transmission
-	*/	
-	node->IF1CMD = 0x87U;
-	
+    *     - Message direction - Write
+    *     - Data Update
+    *     - Start Transmission
+    */
+    node->IF1CMD = 0x87U;
+
     /** - Copy TX data into IF1 */
     for (i = 0U; i < 8U; i++)
     {
@@ -719,13 +719,13 @@ uint32 canTransmit(canBASE_t *node, uint32 messageBox, const uint8 * data)
         node->IF1DATx[i] = *data;
         /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
         /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-		data++;
+        data++;
 #else
         /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
         node->IF1DATx[s_canByteOrder[i]] = *data;
         /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
         /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-		data++;
+        data++;
 #endif
     }
 
@@ -793,58 +793,58 @@ uint32 canGetData(canBASE_t *node, uint32 messageBox, uint8 * const data)
 
     else
     {
-		/** - Wait until IF2 is ready for use */
-		/*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
-		while ((node->IF2STAT & 0x80U) ==0x80U)
-		{ 
-		} /* Wait */
+        /** - Wait until IF2 is ready for use */
+        /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
+        while ((node->IF2STAT & 0x80U) ==0x80U)
+        {
+        } /* Wait */
 
-		/** - Configure IF2 for
-		*     - Message direction - Read
-		*     - Data Read
-		*     - Clears NewDat bit in the message object.
-		*/	
-		node->IF2CMD = 0x17U;
-		
-		/** - Copy data into IF2 */
-		/*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
-		node->IF2NO = (uint8) messageBox;
+        /** - Configure IF2 for
+        *     - Message direction - Read
+        *     - Data Read
+        *     - Clears NewDat bit in the message object.
+        */
+        node->IF2CMD = 0x17U;
 
-		/** - Wait until data are copied into IF2 */
-		/*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
-		while ((node->IF2STAT & 0x80U) ==0x80U)
-		{ 
-		} /* Wait */
+        /** - Copy data into IF2 */
+        /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
+        node->IF2NO = (uint8) messageBox;
 
-		/** - Get number of received bytes 
-		*   - Value from 0x8 to 0xF equals length 8.
-		*/
-		size = node->IF2MCTL & 0xFU;
-		if(size > 0x8U)
-		{
-			size = 0x8U;
-		}
-		
-		/** - Copy RX data into destination buffer */
-		for (i = 0U; i < size; i++)
-		{
+        /** - Wait until data are copied into IF2 */
+        /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
+        while ((node->IF2STAT & 0x80U) ==0x80U)
+        {
+        } /* Wait */
+
+        /** - Get number of received bytes
+        *   - Value from 0x8 to 0xF equals length 8.
+        */
+        size = node->IF2MCTL & 0xFU;
+        if(size > 0x8U)
+        {
+            size = 0x8U;
+        }
+
+        /** - Copy RX data into destination buffer */
+        for (i = 0U; i < size; i++)
+        {
 #if ((__little_endian__ == 1) || (__LITTLE_ENDIAN__ == 1))
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			*pData = node->IF2DATx[i];
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */        
-			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-			pData++;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            *pData = node->IF2DATx[i];
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            pData++;
 #else
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			*pData = node->IF2DATx[s_canByteOrder[i]];
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-			pData++;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            *pData = node->IF2DATx[s_canByteOrder[i]];
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            pData++;
 #endif
-		}
+        }
 
-		success = 1U;
-	}
+        success = 1U;
+    }
     /** - Check if data have been lost:
     *     - no data lost, return 1
     *     - data lost, return 3 
@@ -894,12 +894,12 @@ uint32 canGetID(canBASE_t *node, uint32 messageBox)
     {
     } /* Wait */
 
-	/** - Configure IF2 for
-	*     - Message direction - Read
-	*     - Data Read
-	*     - Clears NewDat bit in the message object.
-	*/
-	node->IF2CMD = 0x20U;
+    /** - Configure IF2 for
+    *     - Message direction - Read
+    *     - Data Read
+    *     - Clears NewDat bit in the message object.
+    */
+    node->IF2CMD = 0x20U;
 
     /** - Copy message box number into IF2 */
     /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
@@ -926,13 +926,13 @@ uint32 canGetID(canBASE_t *node, uint32 messageBox)
 *              - canMESSAGE_BOX1: CAN message box 1
 *              - canMESSAGE_BOXn: CAN message box n [n: 1-64]
 *              - canMESSAGE_BOX64: CAN message box 64
-*	@param[in] msgBoxArbitVal (32 bit value):
-*				Bit 31 - Not used.
-*				Bit 30 - 0 - The 11-bit ("standard") identifier is used for this message object.
-*						 1 - The 29-bit ("extended") identifier is used for this message object.
-*				Bit 29 - 0 - Direction = Receive
-*						 1 - Direction = Transmit
-*				Bit 28:0 - Message Identifier.
+*   @param[in] msgBoxArbitVal (32 bit value):
+*               Bit 31 - Not used.
+*               Bit 30 - 0 - The 11-bit ("standard") identifier is used for this message object.
+*                        1 - The 29-bit ("extended") identifier is used for this message object.
+*               Bit 29 - 0 - Direction = Receive
+*                        1 - Direction = Transmit
+*               Bit 28:0 - Message Identifier.
 *   @return 
 
 *
@@ -950,15 +950,15 @@ void canUpdateID(canBASE_t *node, uint32 messageBox, uint32 msgBoxArbitVal)
     {
     } /* Wait */
 
-	/** - Configure IF2 for
-	*     - Message direction - Read
-	*     - Data Read
-	*     - Clears NewDat bit in the message object.
-	*/
-	node->IF2CMD = 0xA0U;
-	/* Copy passed value into the arbitration register. */
-	node->IF2ARB &= 0x80000000U;
-	node->IF2ARB |= (msgBoxArbitVal & 0x7FFFFFFFU);
+    /** - Configure IF2 for
+    *     - Message direction - Read
+    *     - Data Read
+    *     - Clears NewDat bit in the message object.
+    */
+    node->IF2CMD = 0xA0U;
+    /* Copy passed value into the arbitration register. */
+    node->IF2ARB &= 0x80000000U;
+    node->IF2ARB |= (msgBoxArbitVal & 0x7FFFFFFFU);
 
     /** - Update message box number. */
     /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
@@ -1012,20 +1012,20 @@ uint32 canSendRemoteFrame(canBASE_t *node, uint32 messageBox)
 
     else
     {
-		/** - Wait until IF1 is ready for use */
-		/*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
-		while ((node->IF1STAT & 0x80U) ==0x80U)
-		{
-		} /* Wait */
+        /** - Wait until IF1 is ready for use */
+        /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
+        while ((node->IF1STAT & 0x80U) ==0x80U)
+        {
+        } /* Wait */
 
-		/** - Request Transmission by setting TxRqst in message box */
-		node->IF1CMD  = (uint8) 0x84U;
+        /** - Request Transmission by setting TxRqst in message box */
+        node->IF1CMD  = (uint8) 0x84U;
 
-		/** - Trigger Remote Frame Transmit from message box */
-		/*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
-		node->IF1NO = (uint8) messageBox;
+        /** - Trigger Remote Frame Transmit from message box */
+        /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
+        node->IF1NO = (uint8) messageBox;
 
-		success = 1U;
+        success = 1U;
     }
     /**   @note The function canInit has to be called before this function can be used.\n
     *           The user is responsible to initialize the message box.
@@ -1070,41 +1070,41 @@ uint32 canFillMessageObjectData(canBASE_t *node, uint32 messageBox, const uint8 
     }
     else
     {
-		/** - Wait until IF1 is ready for use */
-		/*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
-		while ((node->IF1STAT & 0x80U) ==0x80U)
-		{ 
-		} /* Wait */
+        /** - Wait until IF1 is ready for use */
+        /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
+        while ((node->IF1STAT & 0x80U) ==0x80U)
+        {
+        } /* Wait */
 
-		/** - Configure IF1 for 
-		*     - Message direction - Write
-		*     - Data Update
-		*/	
-		node->IF1CMD = 0x83U;
-		
-		/** - Copy TX data into IF1 */
-		for (i = 0U; i < 8U; i++)
-		{
+        /** - Configure IF1 for
+        *     - Message direction - Write
+        *     - Data Update
+        */
+        node->IF1CMD = 0x83U;
+
+        /** - Copy TX data into IF1 */
+        for (i = 0U; i < 8U; i++)
+        {
 #if ((__little_endian__ == 1) || (__LITTLE_ENDIAN__ == 1))
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			node->IF1DATx[i] = *data;
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-			data++;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            node->IF1DATx[i] = *data;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            data++;
 #else
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			node->IF1DATx[s_canByteOrder[i]] = *data;
-			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
-			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-			data++;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            node->IF1DATx[s_canByteOrder[i]] = *data;
+            /*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
+            /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            data++;
 #endif
-		}
+        }
 
-		/** - Copy TX data into message box */
-		/*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
-		node->IF1NO = (uint8) messageBox;
+        /** - Copy TX data into message box */
+        /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
+        node->IF1NO = (uint8) messageBox;
 
-		success = 1U; 
+        success = 1U;
     }
     
     return success;
@@ -1450,8 +1450,8 @@ void canEnableloopback(canBASE_t *node, canloopBackType_t Loopbacktype)
 void canDisableloopback(canBASE_t *node)
 {
     node->TEST &= ~(uint32)(0x00000118U);
-	
-	/* Exit Test Mode */
+
+    /* Exit Test Mode */
     node->CTL &= ~(uint32)((uint32)1U << 7U);
     
     /**   @note The function canInit has to be called before this function can be used. */
@@ -1666,7 +1666,7 @@ void can2GetConfigValue(can_config_reg_t *config_reg, config_value_type_t type)
 void can1HighLevelInterrupt(void)
 {
     uint32 value = canREG1->INT;
-	uint32 ES_value;
+    uint32 ES_value;
 
 /* USER CODE BEGIN (41) */
 /* USER CODE END */
@@ -1696,7 +1696,7 @@ void can1HighLevelInterrupt(void)
         } /* Wait */
 
         canREG1->IF1CMD = 0x08U;
-		/*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
+        /*SAFETYMCUSW 93 S MR: 6.1,6.2,10.1,10.2,10.3,10.4 <APPROVED> "LDRA Tool issue" */
         canREG1->IF1NO  = (uint8) value;
         
         /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
@@ -1707,7 +1707,7 @@ void can1HighLevelInterrupt(void)
 
         canHighLevelIrqMessageNotification(canREG1, value);
     }
-	
+
 /* USER CODE BEGIN (42) */
 /* USER CODE END */
 
@@ -1770,7 +1770,7 @@ void can1LowLevelInterrupt(void)
 void can2HighLevelInterrupt(void)
 {
     uint32 value = canREG2->INT;
-	uint32 ES_value;
+    uint32 ES_value;
     
 /* USER CODE BEGIN (47) */
 /* USER CODE END */
@@ -1813,7 +1813,7 @@ void can2HighLevelInterrupt(void)
     }
 /* USER CODE BEGIN (48) */
 /* USER CODE END */
-	
+
 }
 
 /* USER CODE BEGIN (49) */
@@ -1857,5 +1857,3 @@ void can2LowLevelInterrupt(void)
 /* USER CODE END */
 
 }
-
-

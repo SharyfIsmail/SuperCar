@@ -88,7 +88,7 @@ static void messageBoxInitReg1()
 
     /*Low level */
     messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
-    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x00, (uint32_t)  0x00, RECEIVEING_NODE); //Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX14, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t)0x16, RECEIVEING_NODE); //Selector , joystick, brake: 11F
 
 }
 
@@ -163,39 +163,76 @@ void boardCanInit(canBASE_t *node)
     //Clear pending error flags
     node->ES |= 0xFFFFFFFFU;
     /** - Assign interrupt level for messages */
-    node->INTMUXx[0U] = (uint32)0x00000000U
-                      | (uint32)0x00000000U // MessageBox1
-                      | (uint32)0x00000000U // MessageBox2
-                      | (uint32)0x00000000U // MessageBox3
-                      | (uint32)0x00000000U // MessageBox4
-                      | (uint32)0x00000000U // MessageBox5
-                      | (uint32)0x00000000U // MessageBox6
-                      | (uint32)0x00000000U // MessageBox7
-                      | (uint32)0x00000000U // MessageBox8
-                      | (uint32)0x00000000U // MessageBox9
-                      | (uint32)0x00000000U // MessageBox10
-                      | (uint32)0x00000000U // MessageBox11
-                      | (uint32)0x00000000U // MessageBox12
-                      | (uint32)0x00000000U // MessageBox13
-                      | (uint32)0x00000000U // MessageBox14
-                      | (uint32)0x00008000U // MessageBox15
-                      | (uint32)0x00010000U // MessageBox16
-                      | (uint32)0x00000000U // MessageBox17
-                      | (uint32)0x00000000U // MessageBox18
-                      | (uint32)0x00000000U // MessageBox19
-                      | (uint32)0x00000000U // MessageBox20
-                      | (uint32)0x00000000U // MessageBox21
-                      | (uint32)0x00000000U // MessageBox22
-                      | (uint32)0x00000000U // MessageBox23
-                      | (uint32)0x00000000U // MessageBox24
-                      | (uint32)0x00000000U // MessageBox25
-                      | (uint32)0x00000000U // MessageBox26
-                      | (uint32)0x00000000U // MessageBox27
-                      | (uint32)0x00000000U // MessageBox28
-                      | (uint32)0x00000000U // MessageBox29
-                      | (uint32)0x00000000U // MessageBox30
-                      | (uint32)0x00000000U;// MessageBox31
-
+    if(node == canREG1)
+    {
+        node->INTMUXx[0U] = (uint32)0x00000000U
+                          | (uint32)0x00000000U // MessageBox1
+                          | (uint32)0x00000000U // MessageBox2
+                          | (uint32)0x00000000U // MessageBox3
+                          | (uint32)0x00000000U // MessageBox4
+                          | (uint32)0x00000000U // MessageBox5
+                          | (uint32)0x00000000U // MessageBox6
+                          | (uint32)0x00000000U // MessageBox7
+                          | (uint32)0x00000000U // MessageBox8
+                          | (uint32)0x00000000U // MessageBox9
+                          | (uint32)0x00000000U // MessageBox10
+                          | (uint32)0x00000000U // MessageBox11
+                          | (uint32)0x00000000U // MessageBox12
+                          | (uint32)0x00000000U // MessageBox13
+                          | (uint32)0x00004000U // MessageBox14
+                          | (uint32)0x00008000U // MessageBox15
+                          | (uint32)0x00010000U // MessageBox16
+                          | (uint32)0x00000000U // MessageBox17
+                          | (uint32)0x00000000U // MessageBox18
+                          | (uint32)0x00000000U // MessageBox19
+                          | (uint32)0x00000000U // MessageBox20
+                          | (uint32)0x00000000U // MessageBox21
+                          | (uint32)0x00000000U // MessageBox22
+                          | (uint32)0x00000000U // MessageBox23
+                          | (uint32)0x00000000U // MessageBox24
+                          | (uint32)0x00000000U // MessageBox25
+                          | (uint32)0x00000000U // MessageBox26
+                          | (uint32)0x00000000U // MessageBox27
+                          | (uint32)0x00000000U // MessageBox28
+                          | (uint32)0x00000000U // MessageBox29
+                          | (uint32)0x00000000U // MessageBox30
+                          | (uint32)0x00000000U;// MessageBox31
+    }
+    else
+    {
+        node->INTMUXx[0U] = (uint32)0x00000000U
+                              | (uint32)0x00000000U // MessageBox1
+                              | (uint32)0x00000000U // MessageBox2
+                              | (uint32)0x00000000U // MessageBox3
+                              | (uint32)0x00000000U // MessageBox4
+                              | (uint32)0x00000000U // MessageBox5
+                              | (uint32)0x00000000U // MessageBox6
+                              | (uint32)0x00000000U // MessageBox7
+                              | (uint32)0x00000000U // MessageBox8
+                              | (uint32)0x00000000U // MessageBox9
+                              | (uint32)0x00000000U // MessageBox10
+                              | (uint32)0x00000000U // MessageBox11
+                              | (uint32)0x00000000U // MessageBox12
+                              | (uint32)0x00000000U // MessageBox13
+                              | (uint32)0x00000000U // MessageBox14
+                              | (uint32)0x00000000U // MessageBox15
+                              | (uint32)0x00000000U // MessageBox16
+                              | (uint32)0x00000000U // MessageBox17
+                              | (uint32)0x00000000U // MessageBox18
+                              | (uint32)0x00000000U // MessageBox19
+                              | (uint32)0x00000000U // MessageBox20
+                              | (uint32)0x00000000U // MessageBox21
+                              | (uint32)0x00000000U // MessageBox22
+                              | (uint32)0x00000000U // MessageBox23
+                              | (uint32)0x00000000U // MessageBox24
+                              | (uint32)0x00000000U // MessageBox25
+                              | (uint32)0x00000000U // MessageBox26
+                              | (uint32)0x00000000U // MessageBox27
+                              | (uint32)0x00000000U // MessageBox28
+                              | (uint32)0x00000000U // MessageBox29
+                              | (uint32)0x00000000U // MessageBox30
+                              | (uint32)0x00000000U;// MessageBox31
+    }
     /** - Setup auto bus on timer period */
     node->ABOTR = (uint32)0U;
 

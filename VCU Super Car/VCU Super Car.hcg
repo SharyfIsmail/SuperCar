@@ -12,10 +12,10 @@
   <HET>
     <FILENAME>
       <HET1ASMHDR>
-        <NAME/>
+        <NAME>include\1Wire.h</NAME>
       </HET1ASMHDR>
       <HET1ASMSRC>
-        <NAME/>
+        <NAME>source\1Wire.c</NAME>
       </HET1ASMSRC>
     </FILENAME>
     <FILENAMES>
@@ -37,6 +37,12 @@
       <HDRHTU>
         <PATH>include\htu.h</PATH>
       </HDRHTU>
+      <HET1ASMHDR>
+        <PATH>include\1Wire.h</PATH>
+      </HET1ASMHDR>
+      <HET1ASMSRC>
+        <PATH>source\1Wire.c</PATH>
+      </HET1ASMSRC>
     </FILENAMES>
   </HET>
   <SYSTEM>
@@ -277,8 +283,7 @@
         <NAME>lin.h</NAME>
       </HDRLIN>
       <SRCLIN>
-        <NAME>lin.c</NAME>
-      </SRCLIN>
+        </SRCLIN>
       <HDRSCI_R>
         <NAME>reg_sci.h</NAME>
       </HDRSCI_R>
@@ -293,8 +298,7 @@
         <NAME>mibspi.h</NAME>
       </HDRMIBSPI>
       <SRCMIBSPI>
-        <NAME>mibspi.c</NAME>
-      </SRCMIBSPI>
+        </SRCMIBSPI>
       <HDRSPI_R>
         <NAME>reg_spi.h</NAME>
       </HDRSPI_R>
@@ -302,8 +306,7 @@
         <NAME>spi.h</NAME>
       </HDRSPI>
       <SRCSPI>
-        <NAME>spi.c</NAME>
-      </SRCSPI>
+        </SRCSPI>
       <HDRCAN_R>
         <NAME>reg_can.h</NAME>
       </HDRCAN_R>
@@ -321,10 +324,10 @@
       </HDRADC>
       <SRCADC/>
       <HET1ASMHDR>
-        <NAME/>
+        <NAME>include\1Wire.h</NAME>
       </HET1ASMHDR>
       <HET1ASMSRC>
-        <NAME/>
+        <NAME>source\1Wire.c</NAME>
       </HET1ASMSRC>
       <STDHDRHET>
         <NAME>std_nhet.h</NAME>
@@ -360,8 +363,7 @@
         <NAME>dcc.h</NAME>
       </HDRDCC>
       <SRCDCC>
-        <NAME>dcc.c</NAME>
-      </SRCDCC>
+        </SRCDCC>
       <HDRCRC_R>
         <NAME>reg_crc.h</NAME>
       </HDRCRC_R>
@@ -369,8 +371,7 @@
         <NAME>crc.h</NAME>
       </HDRCRC>
       <SRCCRC>
-        <NAME>crc.c</NAME>
-      </SRCCRC>
+        </SRCCRC>
       <HDREQEP_R>
         <NAME>reg_eqep.h</NAME>
       </HDREQEP_R>
@@ -378,8 +379,7 @@
         <NAME>eqep.h</NAME>
       </HDREQEP>
       <SRCEQEP>
-        <NAME>eqep.c</NAME>
-      </SRCEQEP>
+        </SRCEQEP>
       <HDR1FEE>
         <NAME>Device_TMS570LS04.h</NAME>
       </HDR1FEE>
@@ -533,7 +533,7 @@
         <PATH>include\lin.h</PATH>
       </HDRLIN>
       <SRCLIN>
-        <PATH>source\lin.c</PATH>
+        <PATH></PATH>
       </SRCLIN>
     </FILENAMES>
   </LIN>
@@ -559,7 +559,7 @@
         <PATH>include\mibspi.h</PATH>
       </HDRMIBSPI>
       <SRCMIBSPI>
-        <PATH>source\mibspi.c</PATH>
+        <PATH></PATH>
       </SRCMIBSPI>
     </FILENAMES>
   </MIBSPI>
@@ -572,7 +572,7 @@
         <PATH>include\spi.h</PATH>
       </HDRSPI>
       <SRCSPI>
-        <PATH>source\spi.c</PATH>
+        <PATH></PATH>
       </SRCSPI>
     </FILENAMES>
   </SPI>
@@ -624,7 +624,7 @@
         <PATH>include\dcc.h</PATH>
       </HDRDCC>
       <SRCDCC>
-        <PATH>source\dcc.c</PATH>
+        <PATH></PATH>
       </SRCDCC>
     </FILENAMES>
   </DCC>
@@ -637,7 +637,7 @@
         <PATH>include\crc.h</PATH>
       </HDRCRC>
       <SRCCRC>
-        <PATH>source\crc.c</PATH>
+        <PATH></PATH>
       </SRCCRC>
     </FILENAMES>
   </CRC>
@@ -650,7 +650,7 @@
         <PATH>include\eqep.h</PATH>
       </HDREQEP>
       <SRCEQEP>
-        <PATH>source\eqep.c</PATH>
+        <PATH></PATH>
       </SRCEQEP>
     </FILENAMES>
   </EQEP>

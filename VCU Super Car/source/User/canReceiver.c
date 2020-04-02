@@ -24,7 +24,7 @@ void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
         canGetData(canREG2, canMESSAGE_BOX9, semicronTxCanFrame.p.data);
         xQueueSendFromISR(xQueueSemikronTx, &semicronTxCanFrame, &xHigherPriorityTaskWoken );
     }/* else not needed */
-    if(canIsRxMessageArrived(canREG2, canMESSAGE_BOX10))
+    else if(canIsRxMessageArrived(canREG2, canMESSAGE_BOX10))
     {
         semicronTxCanFrame.id = canGetID(canREG2, canMESSAGE_BOX10) >> 18U;
         canGetData(canREG2, canMESSAGE_BOX10, semicronTxCanFrame.p.data);
@@ -38,6 +38,7 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
     static portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
     acceleratorBrakeJoystick_t acceleratorBrakeJoystick ;
     CommandToExtMemory_t commandToExternalMemory;
+
     if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX15))
     {
         acceleratorBrakeJoystick.id = canGetID(canREG1, canMESSAGE_BOX15) >> 18U;
@@ -45,10 +46,10 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
         xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken);
     }/* else not needed */
 
-    if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX16))
+    else if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX14))
     {
         uint8_t data[2] = {0};
-        canGetData(canREG1, canMESSAGE_BOX16, data);
+        canGetData(canREG1, canMESSAGE_BOX14, data);
         byteToError(data, &commandToExternalMemory);
         xQueueSendFromISR(xQueueCommandToExtMemory, &commandToExternalMemory, &xHigherPriorityTaskWoken);
 
