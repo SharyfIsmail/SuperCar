@@ -88,7 +88,7 @@ static void messageBoxInitReg1()
 
     /*Low level */
     messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
-    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x00, (uint32_t)  0x00, RECEIVEING_NODE); //Selector , joystick, brake: 11F
 
 }
 
@@ -231,10 +231,10 @@ void boardCanInit(canBASE_t *node)
      *     - Setup baud rate prescaler
      */
     node->BTR = (uint32)((uint32)0U << 16U) |
-            (uint32)((uint32)(6U - 1U) << 12U) |
-            (uint32)((uint32)((3U + 6U) - 1U) << 8U) |
-            (uint32)((uint32)(4U - 1U) << 6U) |
-            (uint32)19U;
+               (uint32)((uint32)(6U - 1U) << 12U) |
+               (uint32)((uint32)((3U + 6U) - 1U) << 8U) |
+               (uint32)((uint32)(4U - 1U) << 6U) |
+               (uint32)19U;
 
 
 

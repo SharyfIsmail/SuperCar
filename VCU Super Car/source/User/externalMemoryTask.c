@@ -9,6 +9,7 @@
 #include "reg_spi.h"
 #include "crc8.h"
 #include "newCanLib.h"
+#include "string.h"
 
 #define HEADER_SIZE_BYTES  ((uint8_t) 4)
 #define ERROR_SIZE_BYTES   ((uint8_t) 6)
@@ -126,12 +127,20 @@ static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
 }
 static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan)
 {
+    uint8_t headerByte[4] = {0};
+
     canMessage_t canMessage =
     {
      .id  = 0x00,
      .dlc = 8,
      .ide = (uint8_t)CAN_Id_Extended,
     };
+
+    if(!longMemoryReading(0, headerByte, HEADER_SIZE_BYTES))
+    {
+        vTaskDelay(portMAX_DELAY);
+    }/* else not needed */
+     headerFromBytes(headerByte, &extMemoryHeader);
 
     if(extMemoryHeader.errorQuantity == 0)
     {
@@ -142,17 +151,25 @@ static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan)
 
     if(errorDataTocan->error == 0x00)
     {
-        headerToBytes(extMemoryHeader, canMessage.data)
+        headerToBytes(&extMemoryHeader, canMessage.data);
         newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
     }
     else
     {
         for(uint16_t errorIndex = 1 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
         {
-            if( !longMemoryReading( addr, errorBytes, ERROR_SIZE_IN_BYTES ) )
+            uint16_t addr = ERROR_ADDRESS(errorIndex);
+            if( !longMemoryReading( addr, canMessage.data, ERROR_SIZE_BYTES ))
             {
                 vTaskDelay( portMAX_DELAY );
-            }
+            }/* else not needed */
+            ErrorDataToExtMemory_t errorDataFromExtMemory;
+            errorFromByte(canMessage.data, &errorDataFromExtMemory);
+            if(errorDataFromExtMemory.error == errorDataTocan->error )
+            {
+                newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
+            }/* else not needed */
+
         }
     }
 }
@@ -247,12 +264,4 @@ static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size
         vTaskDelay( 50 );
     }
     return result;
-}
-static void errorsToSend(const ErrorDataToExtMemory_t *errorDataTocan, canMessage_t *canMessage)
-{
-    switch(*errorDataTocan)
-    {
-    case EVERYTHING_IS_FINE :
-        break;
-    }
 }
