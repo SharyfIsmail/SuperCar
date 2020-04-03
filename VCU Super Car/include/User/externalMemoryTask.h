@@ -96,5 +96,4 @@ typedef struct
 }CommandToExtMemory_t;
 
 
-
 #endif /* INCLUDE_USER_EXTERNALMEMORYTASK_H_ */

@@ -46,11 +46,11 @@ void canLowLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
         xQueueSendFromISR(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, &xHigherPriorityTaskWoken);
     }/* else not needed */
 
-    else if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX14))
+    else if(canIsRxMessageArrived(canREG1, canMESSAGE_BOX16))
     {
         uint8_t data[8] = {0};
-        canGetData(canREG1, canMESSAGE_BOX14, data);
-        canGetID(canREG1, canMESSAGE_BOX14) >> 18U;
+        canGetData(canREG1, canMESSAGE_BOX16, data);
+        canGetID(canREG1, canMESSAGE_BOX16) >> 18U;
         byteToError(data, &commandToExternalMemory);
         xQueueSendFromISR(xQueueCommandToExtMemory, &commandToExternalMemory, &xHigherPriorityTaskWoken);
 

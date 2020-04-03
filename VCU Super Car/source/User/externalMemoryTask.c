@@ -20,14 +20,43 @@ QueueHandle_t xQueueCommandToExtMemory = NULL;
 typedef struct
 {
     uint16_t errorQuantity;
-    uint8_t rewritringToExternalMemory;
+    uint8_t quantityOfRewritring;
     uint8_t crc8;
 }ExtMemoryHeader_t;
 
+static inline causingOfError_t getError(ErrorDataToExtMemory_t *errorDataTocan)
+{
+    return errorDataTocan->error;
+}
+static inline uint16_t getHeaderErrorQuantity(ExtMemoryHeader_t *extMemoryHeader)
+{
+    return extMemoryHeader->errorQuantity;
+}
+static inline void setHeaderErrorQuantity(ExtMemoryHeader_t *extMemoryHeader, uint16_t value)
+{
+    extMemoryHeader->errorQuantity = value;
+}
+static inline uint8_t getHeaderCrc8(ExtMemoryHeader_t *extMemoryHeader)
+{
+    return extMemoryHeader->crc8;
+}
+static inline void setHeaderCrc8(ExtMemoryHeader_t *extMemoryHeader, uint8_t value)
+{
+    extMemoryHeader->crc8 = value;
+}
+static inline void setHeaderQuantityOfRewriting(ExtMemoryHeader_t *extMemoryHeader, uint16_t value)
+{
+    extMemoryHeader->quantityOfRewritring = value;
+}
+//static inline uint8_t getHeaderQuantityOfRewriting(ExtMemoryHeader_t *extMemoryHeader)
+//{
+//    return extMemoryHeader->quantityOfRewritring;
+//}
 void vExternalMemoryTask(void *pvParameters);
 static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData );
 static void clearExternalMemory();
-static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan);
+static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataTocan);
+static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan);
 
 static void errorToBytes(const ErrorDataToExtMemory_t *errorData, uint8_t data[]);
 static void errorFromByte(const uint8_t data[], ErrorDataToExtMemory_t *errorData);
@@ -38,8 +67,14 @@ static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size
 static void headerToBytes(const ExtMemoryHeader_t *extMemoryHeader, uint8_t header[]);
 static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHeader);
 
-
 static ExtMemoryHeader_t extMemoryHeader = {0};
+static canMessage_t errorCanMessage =
+{
+    .id  = 0x00,
+    .dlc = 8,
+    .ide = (uint8_t)CAN_Id_Extended,
+    .data = {0},
+};
 
 void spiEndNotification(spiBASE_t *spi)
 {
@@ -74,9 +109,9 @@ void vExternalMemoryTask(void *pvParameters)
         vTaskDelay(portMAX_DELAY);
     }/* else not needed */
     headerFromBytes(headerByte, &extMemoryHeader);
-    if(crc8(headerByte, 3) != extMemoryHeader.crc8)
+    if(crc8(headerByte, 3) != getHeaderCrc8(&extMemoryHeader))
     {
-        extMemoryHeader.errorQuantity = 0;
+        setHeaderErrorQuantity(&extMemoryHeader, 0);
     }
 
     CommandToExtMemory_t command;
@@ -103,7 +138,7 @@ static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
 {
     uint8_t data[6] = {0};
     errorToBytes(errorData, data);
-    uint16_t addr = ERROR_ADDRESS(extMemoryHeader.errorQuantity);
+    uint16_t addr = ERROR_ADDRESS(getHeaderErrorQuantity(&extMemoryHeader));
 
     if(!longMemoryWriting(addr, data, ERROR_SIZE_BYTES))
     {
@@ -111,11 +146,16 @@ static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
     }/* else not needed */
 
     if(extMemoryHeader.errorQuantity < 7999)
-        extMemoryHeader.errorQuantity++;
+    {
+       // extMemoryHeader.errorQuantity++;
+        setHeaderErrorQuantity(&extMemoryHeader, getHeaderErrorQuantity(&extMemoryHeader) + 1);
+    }
     else
     {
-        extMemoryHeader.errorQuantity = 0;
-        extMemoryHeader.rewritringToExternalMemory++;
+       setHeaderErrorQuantity(&extMemoryHeader, 0);
+       setHeaderQuantityOfRewriting(&extMemoryHeader, getHeaderCrc8(&extMemoryHeader)+1);
+       // extMemoryHeader.errorQuantity = 0;
+       // extMemoryHeader.quantityOfRewritring++;
     }
 
     uint8_t headerByte[4] = {0};
@@ -125,75 +165,34 @@ static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
         vTaskDelay(portMAX_DELAY);
     }/* else not needed */
 }
-static void sendErrorFromExtMemory(const ErrorDataToExtMemory_t *errorDataTocan)
+static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataTocan)
 {
     uint8_t headerByte[4] = {0};
-
-    canMessage_t canMessage =
-    {
-     .id  = 0x00,
-     .dlc = 8,
-     .ide = (uint8_t)CAN_Id_Extended,
-    };
-
     if(!longMemoryReading(0, headerByte, HEADER_SIZE_BYTES))
     {
         vTaskDelay(portMAX_DELAY);
     }/* else not needed */
+
      headerFromBytes(headerByte, &extMemoryHeader);
 
-    if(extMemoryHeader.errorQuantity == 0)
+    if(getHeaderErrorQuantity(&extMemoryHeader) == 0)
     {
-        memset(&canMessage.data, 0, sizeof(canMessage.data));
-        newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
+        memset(&errorCanMessage.data, 0, sizeof(errorCanMessage.data));
+        newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
         return;
     }/* else not needed */
 
-    if(errorDataTocan->error == 0x00)
-    {
-        headerToBytes(&extMemoryHeader, canMessage.data);
-        newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
-    }
-    else if (errorDataTocan->error == 0xFF)
-    {
-        for(uint16_t errorIndex = 1 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
-        {
-            uint16_t addr = ERROR_ADDRESS(errorIndex);
-            if( !longMemoryReading( addr, canMessage.data, ERROR_SIZE_BYTES ))
-            {
-                vTaskDelay( portMAX_DELAY );
-            }/* else not needed */
-            ErrorDataToExtMemory_t errorDataFromExtMemory;
-            errorFromByte(canMessage.data, &errorDataFromExtMemory);
-            newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
-            vTaskDelay(pdMS_TO_TICKS(5));
-        }
-    }
-    else
-    {
-        for(uint16_t errorIndex = 1 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
-        {
-            uint16_t addr = ERROR_ADDRESS(errorIndex);
-            if( !longMemoryReading( addr, canMessage.data, ERROR_SIZE_BYTES ))
-            {
-                vTaskDelay( portMAX_DELAY );
-            }/* else not needed */
-            ErrorDataToExtMemory_t errorDataFromExtMemory;
-            errorFromByte(canMessage.data, &errorDataFromExtMemory);
-            if(errorDataFromExtMemory.error == errorDataTocan->error )
-            {
-                newCanTransmit(canREG1, canMESSAGE_BOX4, &canMessage);
-                vTaskDelay(pdMS_TO_TICKS(5));
-            }/* else not needed */
+    sendTheChoosenError(errorDataTocan);
 
-        }
-    }
 }
 static void clearExternalMemory()
 {
-    extMemoryHeader.errorQuantity = 0;
-    extMemoryHeader.crc8 = 0xFF;
-    extMemoryHeader.rewritringToExternalMemory = 0;
+    setHeaderErrorQuantity(&extMemoryHeader, 0);
+    setHeaderCrc8(&extMemoryHeader, 0xFF);
+    setHeaderQuantityOfRewriting(&extMemoryHeader, 0);
+    //extMemoryHeader.errorQuantity = 0;
+    //extMemoryHeader.crc8 = 0xFF;
+    //extMemoryHeader.rewritringToExternalMemory = 0;
 
     uint8_t headerByte[4] = {0};
     headerToBytes(&extMemoryHeader, headerByte);
@@ -226,15 +225,15 @@ static void headerToBytes(const ExtMemoryHeader_t *extMemoryHeader, uint8_t head
 {
     header[0] = (uint8_t)extMemoryHeader->errorQuantity;
     header[1] = (uint8_t)(extMemoryHeader->errorQuantity >> 8);
-    header[2] = (uint8_t)extMemoryHeader->rewritringToExternalMemory;
+    header[2] = (uint8_t)extMemoryHeader->quantityOfRewritring;
     header[3] = crc8(header, 3);
 }
 static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHeader)
 {
-    extMemoryHeader->errorQuantity              = (uint16_t)data[0] |
+    extMemoryHeader->errorQuantity        = (uint16_t)data[0] |
                                                   ((uint16_t)data[1] >> 8);
-    extMemoryHeader->rewritringToExternalMemory = (uint8_t)data[2];
-    extMemoryHeader->crc8                       = (uint8_t)data[3];
+    extMemoryHeader->quantityOfRewritring = (uint8_t)data[2];
+    extMemoryHeader->crc8                 = (uint8_t)data[3];
 }
 static bool longMemoryWriting( uint16_t address, uint8_t tx_data[], uint8_t size)
 {
@@ -280,4 +279,42 @@ static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size
         vTaskDelay( 50 );
     }
     return result;
+}
+
+static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan)
+{
+    ErrorDataToExtMemory_t errorDataFromExtMemory;
+    causingOfError_t idErrorFromCan = getError(errorDataTocan);
+    if(idErrorFromCan == EVERYTHING_IS_FINE)
+    {
+        headerToBytes(&extMemoryHeader, errorCanMessage.data);
+        newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+        return;
+    }
+    for(uint16_t errorIndex = 0 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
+    {
+        uint16_t addr = ERROR_ADDRESS(errorIndex);
+        if( !longMemoryReading( addr, errorCanMessage.data, ERROR_SIZE_BYTES ))
+        {
+            vTaskDelay( portMAX_DELAY );
+        }/* else not needed */
+        errorFromByte(errorCanMessage.data, &errorDataFromExtMemory);
+        if(crc8(errorCanMessage.data, 5) != errorDataFromExtMemory.crc)
+        {
+            memset(&errorCanMessage.data, 0, sizeof(errorCanMessage.data));
+            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            vTaskDelay(pdMS_TO_TICKS(5));
+            continue;
+        }
+        if(idErrorFromCan == ALL_ERRORS)
+        {
+            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }
+        else if(getError(&errorDataFromExtMemory) == idErrorFromCan )
+        {
+            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }/* else not needed */
+    }
 }

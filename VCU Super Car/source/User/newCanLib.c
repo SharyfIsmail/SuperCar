@@ -88,7 +88,7 @@ static void messageBoxInitReg1()
 
     /*Low level */
     messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
-    messageBoxInitialize(canREG1, canMESSAGE_BOX14, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t)0x16, RECEIVEING_NODE); //Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t)0x16, RECEIVEING_NODE); //Selector , joystick, brake: 11F
 
 }
 
@@ -179,7 +179,7 @@ void boardCanInit(canBASE_t *node)
                           | (uint32)0x00000000U // MessageBox11
                           | (uint32)0x00000000U // MessageBox12
                           | (uint32)0x00000000U // MessageBox13
-                          | (uint32)0x00004000U // MessageBox14
+                          | (uint32)0x00000000U // MessageBox14
                           | (uint32)0x00008000U // MessageBox15
                           | (uint32)0x00010000U // MessageBox16
                           | (uint32)0x00000000U // MessageBox17
