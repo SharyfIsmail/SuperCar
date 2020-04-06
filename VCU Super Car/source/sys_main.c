@@ -65,6 +65,9 @@
 #include "vcuStateManagement.h"
 #include "memory_access.h"
 #include "externalMemoryTask.h"
+#include "n2het_onewire.h"
+#include "ds1904.h"
+#include "timeTask.h"
 #include "strings.h"
 #include <stdio.h>
 
@@ -87,6 +90,7 @@ int main(void)
 {
 /* USER CODE BEGIN (3) */
     memoryAccessInit();
+    hetInit();
     boardCanInit(canREG1);
     boardCanInit(canREG2);
     semikronRxInit();
@@ -97,11 +101,11 @@ int main(void)
     canMessageLostCheckInit();
     vcuStateManagementInit();
     externalMemoryTaskInit();
+    timerTaskInit();
     /*creating event group*/
     canMessageLostCheckEventGroup = xEventGroupCreate();
 
     _enable_interrupt_();
-
     /*start Scheduler */
     vTaskStartScheduler();
 

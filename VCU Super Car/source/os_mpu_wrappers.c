@@ -73,10 +73,11 @@
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 #include "FreeRTOS.h"
-#include "os_task.h"
-#include "os_queue.h"
-#include "os_timer.h"
-#include "os_event_groups.h"
+#include "task.h"
+#include "queue.h"
+#include "timers.h"
+#include "event_groups.h"
+#include "mpu_wrappers.h"
 
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 

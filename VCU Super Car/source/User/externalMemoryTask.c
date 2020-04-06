@@ -9,6 +9,7 @@
 #include "reg_spi.h"
 #include "crc8.h"
 #include "newCanLib.h"
+#include "timeTask.h"
 #include "string.h"
 
 #define HEADER_SIZE_BYTES  ((uint8_t) 4)
@@ -53,7 +54,7 @@ static inline void setHeaderQuantityOfRewriting(ExtMemoryHeader_t *extMemoryHead
 //    return extMemoryHeader->quantityOfRewritring;
 //}
 void vExternalMemoryTask(void *pvParameters);
-static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData );
+static void writeErrorToExtMemory(ErrorDataToExtMemory_t *errorData );
 static void clearExternalMemory();
 static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataTocan);
 static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan);
@@ -134,9 +135,10 @@ void vExternalMemoryTask(void *pvParameters)
         }/* else not needed */
     }
 }
-static void writeErrorToExtMemory(const ErrorDataToExtMemory_t *errorData)
+static void writeErrorToExtMemory(ErrorDataToExtMemory_t *errorData)
 {
     uint8_t data[6] = {0};
+  //  xQueuePeek(xQueueRealTime, &errorData->time, pdMS_TO_TICKS(0));
     errorToBytes(errorData, data);
     uint16_t addr = ERROR_ADDRESS(getHeaderErrorQuantity(&extMemoryHeader));
 

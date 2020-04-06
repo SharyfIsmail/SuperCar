@@ -71,8 +71,8 @@ datetime_t getDifferenceDateAndTime()
     startingPointDateTime->tm_hour = 0;
     startingPointDateTime->tm_mday = 1;
     startingPointDateTime->tm_mon = 0;
-    startingPointDateTime->tm_year = 119; /* 2019 - 1900 */
-    startingPointDateTime->tm_wday = 1;
+    startingPointDateTime->tm_year = 120; /* 2019 - 1900 */
+    startingPointDateTime->tm_wday = 0;
     startingPointDateTime->tm_yday = 0;
 
     /* Convert structure tm to time_t */

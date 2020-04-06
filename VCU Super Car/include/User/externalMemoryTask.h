@@ -70,6 +70,7 @@ typedef enum
     BRAKE_CANMESSAGE_LOST         =  0xF2,
     JOYSTICK_CANMESSAGE_LOST      =  0xF3,
     DCDC_CANMESSAGE_LOST          =  0xF4,
+    N2HET_ERROR                   =  0xF5,
 
     UNKNOWN_ERROR                 =  0xFE,
 

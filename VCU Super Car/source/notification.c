@@ -52,16 +52,12 @@
 #include "sys_selftest.h"
 #include "can.h"
 #include "gio.h"
-#include "lin.h"
-#include "mibspi.h"
-#include "sci.h"
 #include "spi.h"
 #include "het.h"
-#include "dcc.h"
-#include "crc.h"
-#include "eqep.h"
 
 /* USER CODE BEGIN (0) */
+#include "n2het_onewire.h"
+
 /* USER CODE END */
 #pragma WEAK(esmGroup1Notification)
 void esmGroup1Notification(uint32 channel)
@@ -139,16 +135,6 @@ void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
 
 }
 /* USER CODE END */
-#pragma WEAK(dccNotification)
-void dccNotification(dccBASE_t  *dcc,uint32 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (17) */
-/* USER CODE END */
-}
-
-/* USER CODE BEGIN (18) */
-/* USER CODE END */
 #pragma WEAK(gioNotification)
 void gioNotification(gioPORT_t *port, uint32 bit)
 {
@@ -159,46 +145,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 
 /* USER CODE BEGIN (20) */
 /* USER CODE END */
-#pragma WEAK(linNotification)
-void linNotification(linBASE_t *lin, uint32 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (23) */
-/* USER CODE END */
-}
 
-/* USER CODE BEGIN (24) */
-/* USER CODE END */
-#pragma WEAK(mibspiNotification)
-void mibspiNotification(mibspiBASE_t *mibspi, uint32 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (25) */
-/* USER CODE END */
-}
-
-/* USER CODE BEGIN (26) */
-/* USER CODE END */
-#pragma WEAK(mibspiGroupNotification)
-void mibspiGroupNotification(mibspiBASE_t *mibspi, uint32 group)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (27) */
-/* USER CODE END */
-}
-/* USER CODE BEGIN (28) */
-/* USER CODE END */
-
-#pragma WEAK(sciNotification)
-void sciNotification(sciBASE_t *sci, uint32 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (29) */
-/* USER CODE END */
-}
-
-/* USER CODE BEGIN (30) */
-/* USER CODE END */
 #pragma WEAK(spiNotification)
 void spiNotification(spiBASE_t *spi, uint32 flags)
 {
@@ -245,21 +192,13 @@ void hetNotification(hetBASE_t *het, uint32 offset)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (39) */
+   N2Het_OneWireInterruptHandle(offset);
 /* USER CODE END */
 }
 
 /* USER CODE BEGIN (40) */
 /* USER CODE END */
 
-#pragma WEAK(crcNotification)
-void crcNotification(crcBASE_t *crc, uint32 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (41) */
-/* USER CODE END */
-}
-/* USER CODE BEGIN (42) */
-/* USER CODE END */
 
 /* USER CODE BEGIN (43) */
 /* USER CODE END */
@@ -268,15 +207,6 @@ void crcNotification(crcBASE_t *crc, uint32 flags)
 /* USER CODE BEGIN (47) */
 /* USER CODE END */
 
-#pragma WEAK(eqepNotification)
-void eqepNotification(eqepBASE_t *eqep,uint16 flags)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (48) */
-/* USER CODE END */
-}
-/* USER CODE BEGIN (49) */
-/* USER CODE END */
 
 /* USER CODE BEGIN (50) */
 /* USER CODE END */

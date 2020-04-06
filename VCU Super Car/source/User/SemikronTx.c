@@ -13,6 +13,7 @@
 #include "sys_main.h"
 #include "vcuStateManagement.h"
 #include "externalMemoryTask.h"
+#include ""
 #include "string.h"
 
 void vSemicronTxHandler (void *pvParameters);
@@ -128,6 +129,7 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
 static void logError(causingOfError_t cause)
 {
     uint32_t errorTime = 0;
+    ReadRealTime(&errorTime);
     CommandToExtMemory_t command =
     {
      .type = EXT_MEMROY_WRITE,

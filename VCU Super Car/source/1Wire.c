@@ -11,7 +11,7 @@ HET_MEMORY const HET_INIT0_PST[41] =
 		0x00000000
 	}, 
 
- /* hetlabel_1_0 */
+ 	/* hetlabel_1_0 */ 
 	{
 		0x00010100, 
 		0x00004004, 

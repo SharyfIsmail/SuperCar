@@ -14,6 +14,7 @@
 #include "vcuStateManagement.h"
 #include "SemikronRx.h"
 #include "externalMemoryTask.h"
+#include "timeTask.h"
 
 TaskHandle_t xCanMessageLostCheckHandler;
 TaskHandle_t xLostComponentSendExternal;
@@ -137,6 +138,7 @@ void vLostComponentSendExternal(void *pvParameters)
 static void logError(causingOfError_t cause)
 {
     uint32_t errorTime = 0;
+    ReadRealTime(&errorTime);
     CommandToExtMemory_t command =
     {
      .type = EXT_MEMROY_WRITE,

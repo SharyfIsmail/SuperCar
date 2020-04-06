@@ -12,10 +12,10 @@
   <HET>
     <FILENAME>
       <HET1ASMHDR>
-        <NAME>include\1Wire.h</NAME>
+        <NAME>..\1Wire.h</NAME>
       </HET1ASMHDR>
       <HET1ASMSRC>
-        <NAME>source\1Wire.c</NAME>
+        <NAME>..\1Wire.c</NAME>
       </HET1ASMSRC>
     </FILENAME>
     <FILENAMES>
@@ -306,7 +306,8 @@
         <NAME>spi.h</NAME>
       </HDRSPI>
       <SRCSPI>
-        </SRCSPI>
+        <NAME>spi.c</NAME>
+      </SRCSPI>
       <HDRCAN_R>
         <NAME>reg_can.h</NAME>
       </HDRCAN_R>
@@ -324,10 +325,10 @@
       </HDRADC>
       <SRCADC/>
       <HET1ASMHDR>
-        <NAME>include\1Wire.h</NAME>
+        <NAME>..\1Wire.h</NAME>
       </HET1ASMHDR>
       <HET1ASMSRC>
-        <NAME>source\1Wire.c</NAME>
+        <NAME>..\1Wire.c</NAME>
       </HET1ASMSRC>
       <STDHDRHET>
         <NAME>std_nhet.h</NAME>
@@ -572,7 +573,7 @@
         <PATH>include\spi.h</PATH>
       </HDRSPI>
       <SRCSPI>
-        <PATH></PATH>
+        <PATH>source\spi.c</PATH>
       </SRCSPI>
     </FILENAMES>
   </SPI>
