@@ -13,13 +13,14 @@
 #include "sys_main.h"
 #include "vcuStateManagement.h"
 #include "externalMemoryTask.h"
+#include "currentErrorViewer.h"
 #include "string.h"
 
 void vSemicronTxHandler (void *pvParameters);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
 static uint8_t errorSeek(causingOfError_t *cause);
 static void errorOccured(uint8_t errorIndex);
-
+static void semicronBitsErrorSet(uint8_t errorIndex);
 static  semicronErrorWrite_t semicronErrorIsWrote =
 {
  .arr = {false}
@@ -140,10 +141,11 @@ static void errorOccured(uint8_t errorIndex)
 {
     memset(semicronErrorIsWrote.arr, false, sizeof(semicronErrorIsWrote.arr));
     semicronErrorIsWrote.arr[errorIndex] = true;
+    semicronBitsErrorSet(errorIndex);
 }
 
-static void semicronBitErrorIndicator(uint8_t errorIndex)
+static void semicronBitsErrorSet(uint8_t errorIndex)
 {
-    uint64_t semicronBitError = ((uint64_t)1)<< (errorIndex - 1));
-    xQueueOverwrite()
+    uint64_t semicronBitError = ((uint64_t)1) << (errorIndex - 1);
+    xQueueOverwrite(queueCurrentSemicronError, &semicronBitError);
 }

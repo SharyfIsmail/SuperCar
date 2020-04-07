@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-#define LOST_PERIOD_CAN_SEND   ((uint32_t) 1000)
+#define LOST_COMPONENT_WATCHER_PERIOD   ((uint32_t) 1000)
 enum componentIndex
 {
     INVERTOR_INDEX    = 0,
@@ -69,12 +69,12 @@ inline bool getDcLost(EventBits_t value)
     return (bool) ((value & 0x20) >> 5);
 }
 
-inline void setLostComponents(canMessage_t* ptr ,EventBits_t value)
+inline void setLostComponents(uint8_t *ptr ,EventBits_t value)
 {
-     ptr->data[0] = (ptr->data[0] & 0x00) | (uint8_t) (value & 0x3F);
+     *ptr = (*ptr & 0x00) | (uint8_t) (value & 0x3F);
 }
-inline uint8_t getLostComponenst(canMessage_t* ptr)
+inline uint8_t getLostComponenst(EventBits_t value)
 {
-    return (uint8_t) (ptr->data[0] & 0x3F);
+    return (uint8_t) (value & 0x3F);
 }
 #endif /* INCLUDE_USER_CANMESSAGELOSTCHECK_H_ */

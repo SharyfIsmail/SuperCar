@@ -9,6 +9,7 @@
 #include "task.h"
 #include "timeTask.h"
 #include "externalMemoryTask.h"
+#include "currentErrorViewer.h"
 
 #define DS1904_FAMILYCODE  ((uint8_t) 0x24)
 #define TIME_TASK_PERIOD ((uint32_t) 500)
@@ -37,7 +38,7 @@ void vTimeTask(void *pvParameters)
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters);
     causingOfError_t causingOfError = EVERYTHING_IS_FINE;
 
-    bool hetIsFine = false;
+    uint8_t hetIsFine = 0;
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
@@ -45,7 +46,7 @@ void vTimeTask(void *pvParameters)
         const owDeviceCode_t *deviceCode = OneWire_ReadROM();
         if(deviceCode->familyCode == DS1904_FAMILYCODE)
         {
-               hetIsFine = true;
+               hetIsFine = 0;
                ReadRealTime(&realTime);
                errorlogIsWrote = false;
         }
@@ -58,10 +59,11 @@ void vTimeTask(void *pvParameters)
                 logError(causingOfError);
             }/* else not needed */
             errorlogIsWrote = true;
-            hetIsFine = false;
+            hetIsFine = 1;
         }
 
         xQueueOverwrite(xQueueRealTime, &realTime);
+        xQueueOverwrite(queueHetError, &hetIsFine);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }

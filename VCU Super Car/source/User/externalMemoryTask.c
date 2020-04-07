@@ -10,6 +10,7 @@
 #include "crc8.h"
 #include "newCanLib.h"
 #include "timeTask.h"
+#include "currentErrorViewer.h"
 #include "string.h"
 
 #define HEADER_SIZE_BYTES  ((uint8_t) 4)
@@ -166,7 +167,7 @@ static void writeErrorToExtMemory(ErrorDataToExtMemory_t *errorData)
         vTaskDelay(portMAX_DELAY);
     }/* else not needed */
 }
-static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataTocan)
+static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataFromcan)
 {
     uint8_t headerByte[4] = {0};
     if(!longMemoryReading(0, headerByte, HEADER_SIZE_BYTES))
@@ -183,7 +184,7 @@ static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataTocan)
         return;
     }/* else not needed */
 
-    sendTheChoosenError(errorDataTocan);
+    sendTheChoosenError(errorDataFromcan);
 
 }
 static void clearExternalMemory()
@@ -282,11 +283,11 @@ static bool longMemoryReading( uint16_t address, uint8_t rx_data[], uint8_t size
     return result;
 }
 
-static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan)
+static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataFromcan)
 {
     ErrorDataToExtMemory_t errorDataFromExtMemory;
-    causingOfError_t idErrorFromCan = getError(errorDataTocan);
-    if(idErrorFromCan == EVERYTHING_IS_FINE)
+    causingOfError_t idErrorToCan = getError(errorDataFromcan);
+    if(idErrorToCan == EVERYTHING_IS_FINE)
     {
         headerToBytes(&extMemoryHeader, errorCanMessage.data);
         newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
@@ -307,12 +308,12 @@ static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan)
             vTaskDelay(pdMS_TO_TICKS(5));
             continue;
         }
-        if(idErrorFromCan == ALL_ERRORS)
+        if(idErrorToCan == ALL_ERRORS)
         {
             newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
             vTaskDelay(pdMS_TO_TICKS(5));
         }
-        else if(getError(&errorDataFromExtMemory) == idErrorFromCan )
+        else if(getError(&errorDataFromExtMemory) == idErrorToCan )
         {
             newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
             vTaskDelay(pdMS_TO_TICKS(5));
