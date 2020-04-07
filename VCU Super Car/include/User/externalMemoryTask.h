@@ -14,8 +14,6 @@
 
 extern QueueHandle_t xQueueCommandToExtMemory;
 
-void externalMemoryTaskInit();
-
 
 typedef enum
 {
@@ -71,6 +69,7 @@ typedef enum
     JOYSTICK_CANMESSAGE_LOST      =  0xF3,
     DCDC_CANMESSAGE_LOST          =  0xF4,
     N2HET_ERROR                   =  0xF5,
+    EXTERNAL_MEMORY_ERROR         =  0xF6,
 
     UNKNOWN_ERROR                 =  0xFE,
 
@@ -96,5 +95,7 @@ typedef struct
     CommandToExtMemoryEnum_t type;
 }CommandToExtMemory_t;
 
+void logError(causingOfError_t cause);
+void externalMemoryTaskInit();
 
 #endif /* INCLUDE_USER_EXTERNALMEMORYTASK_H_ */

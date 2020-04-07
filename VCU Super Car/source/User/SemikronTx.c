@@ -13,16 +13,14 @@
 #include "sys_main.h"
 #include "vcuStateManagement.h"
 #include "externalMemoryTask.h"
-#include ""
 #include "string.h"
 
 void vSemicronTxHandler (void *pvParameters);
-static void logError(causingOfError_t cause);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
 static uint8_t errorSeek(causingOfError_t *cause);
 static void errorOccured(uint8_t errorIndex);
 
-static  semicronErrorWrite_t semicronErrorWrite =
+static  semicronErrorWrite_t semicronErrorIsWrote =
 {
  .arr = {false}
 };
@@ -119,27 +117,11 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
         xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
 
         uint8_t errorIndex = errorId[errorSeek(&causingOfError)];
-        if(!semicronErrorWrite.arr[errorIndex])
+        if(!semicronErrorIsWrote.arr[errorIndex])
             logError(causingOfError); /* else not needed */
 
         errorOccured(errorIndex);
     }/* else not needed */
-}
-
-static void logError(causingOfError_t cause)
-{
-    uint32_t errorTime = 0;
-    ReadRealTime(&errorTime);
-    CommandToExtMemory_t command =
-    {
-     .type = EXT_MEMROY_WRITE,
-     .errorData =
-     {
-      .time = errorTime,
-      .error = cause,
-     }
-    };
-    xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
 }
 
 static uint8_t errorSeek(causingOfError_t *cause)
@@ -156,6 +138,12 @@ static uint8_t errorSeek(causingOfError_t *cause)
 }
 static void errorOccured(uint8_t errorIndex)
 {
-    memset(errorId, false, sizeof(errorId));
-    errorId[errorIndex] = true;
+    memset(semicronErrorIsWrote.arr, false, sizeof(semicronErrorIsWrote.arr));
+    semicronErrorIsWrote.arr[errorIndex] = true;
+}
+
+static void semicronBitErrorIndicator(uint8_t errorIndex)
+{
+    uint64_t semicronBitError = ((uint64_t)1)<< (errorIndex - 1));
+    xQueueOverwrite()
 }

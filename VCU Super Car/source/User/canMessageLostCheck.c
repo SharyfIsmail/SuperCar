@@ -21,7 +21,7 @@ TaskHandle_t xLostComponentSendExternal;
 
 void vCanMessageLostCheckHandler(void *pvParameters);
 void vLostComponentSendExternal(void *pvParameters);
-static void logError(causingOfError_t cause);
+//static void logError(causingOfError_t cause);
 static void setVcuRawStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus);
 static void invertorLostHandler(VcuStateMangement_t *vcuStatus);
 static void bmsLostHandler(VcuStateMangement_t *vcuStatus);
@@ -89,13 +89,11 @@ void canMessageLostCheckInit(void)
 void vCanMessageLostCheckHandler(void *pvParameters)
 {
     VcuStateMangement_t vcuStatus = VCU_Status_Init;
-
     const EventBits_t numberOfLost = 0x7F;
-    EventBits_t  getLost = 0;
 
     for(;;)
     {
-        getLost = xEventGroupWaitBits(canMessageLostCheckEventGroup, numberOfLost, pdFALSE, pdFALSE, portMAX_DELAY);
+        EventBits_t  getLost = xEventGroupWaitBits(canMessageLostCheckEventGroup, numberOfLost, pdFALSE, pdFALSE, portMAX_DELAY);
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(6U));
 
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
@@ -117,7 +115,6 @@ void vCanMessageLostCheckHandler(void *pvParameters)
             vcuStatus = VCU_Status_Init;
         }/* else not needed */
         xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
-
     }
 }
 
@@ -135,10 +132,10 @@ void vLostComponentSendExternal(void *pvParameters)
     }
 }
 
-static void logError(causingOfError_t cause)
+/*static void logError(causingOfError_t cause)
 {
     uint32_t errorTime = 0;
-    ReadRealTime(&errorTime);
+   // ReadRealTime(&errorTime);
     CommandToExtMemory_t command =
     {
      .type = EXT_MEMROY_WRITE,
@@ -149,7 +146,7 @@ static void logError(causingOfError_t cause)
      }
     };
     xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
-}
+}*/
 static void setVcuRawStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
 {
     switch(cause)

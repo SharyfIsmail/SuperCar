@@ -138,7 +138,6 @@ void vExternalMemoryTask(void *pvParameters)
 static void writeErrorToExtMemory(ErrorDataToExtMemory_t *errorData)
 {
     uint8_t data[6] = {0};
-  //  xQueuePeek(xQueueRealTime, &errorData->time, pdMS_TO_TICKS(0));
     errorToBytes(errorData, data);
     uint16_t addr = ERROR_ADDRESS(getHeaderErrorQuantity(&extMemoryHeader));
 
@@ -319,4 +318,20 @@ static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataTocan)
             vTaskDelay(pdMS_TO_TICKS(5));
         }/* else not needed */
     }
+}
+void logError(causingOfError_t cause)
+{
+    uint32_t errorTime = 0 ;
+    xQueuePeek(xQueueRealTime, &errorTime, pdMS_TO_TICKS(0));
+
+    CommandToExtMemory_t command =
+    {
+     .type = EXT_MEMROY_WRITE,
+     .errorData =
+     {
+      .time = errorTime,
+      .error = cause,
+     }
+    };
+    xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
 }

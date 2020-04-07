@@ -11,11 +11,12 @@
 #include "externalMemoryTask.h"
 
 #define DS1904_FAMILYCODE  ((uint8_t) 0x24)
-#define TIME_TASK_PERIOD ((uint32_t) 1000)
+#define TIME_TASK_PERIOD ((uint32_t) 500)
 
 void vTimeTask(void *pvParameters);
-static void logError(causingOfError_t cause);
 
+static void ReadRealTime(datetime_t *realTime);
+static bool errorlogIsWrote = false;
 QueueHandle_t xQueueRealTime = NULL;
 
 void timerTaskInit(void)
@@ -23,7 +24,7 @@ void timerTaskInit(void)
     OneWire_Init();
     OneWire_TryReset();
 
-    if(xTaskCreate(vTimeTask, "TimeTask", configMINIMAL_STACK_SIZE, (void*)TIME_TASK_PERIOD, 1, NULL) != pdTRUE)
+    if(xTaskCreate(vTimeTask, "TimeTask", configMINIMAL_STACK_SIZE, (void*)TIME_TASK_PERIOD, 2, NULL) != pdTRUE)
     {
         /*Task couldn't be created */
         while(1);
@@ -37,7 +38,6 @@ void vTimeTask(void *pvParameters)
     causingOfError_t causingOfError = EVERYTHING_IS_FINE;
 
     bool hetIsFine = false;
-
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
@@ -47,12 +47,17 @@ void vTimeTask(void *pvParameters)
         {
                hetIsFine = true;
                ReadRealTime(&realTime);
+               errorlogIsWrote = false;
         }
         else
         {
             realTime = 0xFFFFFFFF;
             causingOfError = N2HET_ERROR;
-            logError(causingOfError);
+            if(errorlogIsWrote == false)
+            {
+                logError(causingOfError);
+            }/* else not needed */
+            errorlogIsWrote = true;
             hetIsFine = false;
         }
 
@@ -60,21 +65,7 @@ void vTimeTask(void *pvParameters)
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
-static void logError(causingOfError_t cause)
-{
-    uint32_t errorTime = 0xFFFF;
-    CommandToExtMemory_t command =
-    {
-     .type = EXT_MEMROY_WRITE,
-     .errorData =
-     {
-      .time = errorTime,
-      .error = cause,
-     }
-    };
-    xQueueSend(xQueueCommandToExtMemory, &command, portMAX_DELAY);
-}
-void ReadRealTime(datetime_t *realTime)
+static void ReadRealTime(datetime_t *realTime)
 {
     OneWire_TryReset();
     OneWire_SkipROM();
