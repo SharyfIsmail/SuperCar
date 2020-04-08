@@ -129,7 +129,7 @@ static void LostComponentsBitSet(EventBits_t value)
 {
     uint8_t lostComponentsBits = 0;
     setLostComponents(&lostComponentsBits, value);
-    xQueueOverwrite(queueCurrentSemicronError, &lostComponentsBits);
+    xQueueOverwrite(queueLostComponentsError, &lostComponentsBits);
 }
 static void setVcuRawStatus(causingOfError_t cause, VcuStateMangement_t *vcuStatus)
 {

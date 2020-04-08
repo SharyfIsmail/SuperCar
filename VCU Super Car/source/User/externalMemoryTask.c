@@ -74,7 +74,7 @@ static canMessage_t errorCanMessage =
 {
     .id  = 0x00,
     .dlc = 8,
-    .ide = (uint8_t)CAN_Id_Extended,
+    .ide = (uint8_t)CAN_Id_Standard,
     .data = {0},
 };
 
@@ -170,6 +170,8 @@ static void writeErrorToExtMemory(ErrorDataToExtMemory_t *errorData)
 static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataFromcan)
 {
     uint8_t headerByte[4] = {0};
+    memset(&errorCanMessage.data, 0, sizeof(errorCanMessage.data));
+
     if(!longMemoryReading(0, headerByte, HEADER_SIZE_BYTES))
     {
         vTaskDelay(portMAX_DELAY);
@@ -179,7 +181,6 @@ static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataFromcan)
 
     if(getHeaderErrorQuantity(&extMemoryHeader) == 0)
     {
-        memset(&errorCanMessage.data, 0, sizeof(errorCanMessage.data));
         newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
         return;
     }/* else not needed */
@@ -207,33 +208,33 @@ static void clearExternalMemory()
 
 static void errorToBytes(const ErrorDataToExtMemory_t *errorData, uint8_t data[])
 {
-    data[0] = (uint8_t) errorData->time;
-    data[1] = (uint8_t)(errorData->time >> 8);
-    data[2] = (uint8_t)(errorData->time >> 16);
-    data[3] = (uint8_t)(errorData->time >> 24);
+    data[3] = (uint8_t) errorData->time;
+    data[2] = (uint8_t)(errorData->time >> 8);
+    data[1] = (uint8_t)(errorData->time >> 16);
+    data[0] = (uint8_t)(errorData->time >> 24);
     data[4] = errorData->error;
     data[5] = crc8(data, 5);
 }
 static void errorFromByte(const uint8_t data[], ErrorDataToExtMemory_t *errorData)
 {
-    errorData->time = (uint32_t)data[0]         |
-                      ((uint32_t)data[1] >> 8)  |
-                      ((uint32_t)data[2] >> 16) |
-                      ((uint32_t)data[3] >> 24);
+    errorData->time =  (uint32_t)data[3]        |
+                      ((uint32_t)data[2] >> 8)  |
+                      ((uint32_t)data[1] >> 16) |
+                      ((uint32_t)data[0] >> 24);
     errorData->error   = (causingOfError_t)data[4];
     errorData->crc = data[5];
 }
 static void headerToBytes(const ExtMemoryHeader_t *extMemoryHeader, uint8_t header[])
 {
-    header[0] = (uint8_t)extMemoryHeader->errorQuantity;
-    header[1] = (uint8_t)(extMemoryHeader->errorQuantity >> 8);
+    header[1] = (uint8_t)extMemoryHeader->errorQuantity;
+    header[0] = (uint8_t)(extMemoryHeader->errorQuantity >> 8);
     header[2] = (uint8_t)extMemoryHeader->quantityOfRewritring;
     header[3] = crc8(header, 3);
 }
 static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHeader)
 {
-    extMemoryHeader->errorQuantity        = (uint16_t)data[0] |
-                                                  ((uint16_t)data[1] >> 8);
+    extMemoryHeader->errorQuantity        = (uint16_t)data[1] |
+                                           ((uint16_t)data[0] << 8);
     extMemoryHeader->quantityOfRewritring = (uint8_t)data[2];
     extMemoryHeader->crc8                 = (uint8_t)data[3];
 }

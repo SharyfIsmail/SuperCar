@@ -114,15 +114,20 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
     if(causingOfError != EVERYTHING_IS_FINE)
     {
         vcuStatus = VCU_CLEAR_ERROR;
-
-        xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
-
-        uint8_t errorIndex = errorId[errorSeek(&causingOfError)];
+        uint8_t errorIndex = errorSeek(&causingOfError);
         if(!semicronErrorIsWrote.arr[errorIndex])
             logError(causingOfError); /* else not needed */
 
         errorOccured(errorIndex);
-    }/* else not needed */
+    }
+    else
+    {
+   //     xQueueOverwrite(queueCurrentSemicronError, (uint64_t)0);
+        vcuStatus = VCU_Status_Init;
+    }
+
+    xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
+
 }
 
 static uint8_t errorSeek(causingOfError_t *cause)

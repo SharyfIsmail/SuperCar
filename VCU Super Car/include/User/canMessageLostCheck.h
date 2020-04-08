@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-#define LOST_COMPONENT_WATCHER_PERIOD   ((uint32_t) 1000)
+#define LOST_COMPONENT_WATCHER_PERIOD   ((uint32_t) 100)
 enum componentIndex
 {
     INVERTOR_INDEX    = 0,

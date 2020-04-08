@@ -31,9 +31,9 @@ maxTimeOutTime_t maxTimeOutTime =
 {
  .maxTime =
  {
-     1000,  // accelerator
-     1000,  // Brake
-     1000,  // Joystick
+     500,  // accelerator
+     500,  // Brake
+     500,  // Joystick
  }
 };
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
@@ -70,7 +70,7 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 
     for(;;)
     {
-        if(xQueueReceive(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, pdMS_TO_TICKS(500)))
+        if(xQueueReceive(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, pdMS_TO_TICKS(250)))
         {
             if(acceleratorBrakeJoystick.id == SELECTOR_TX)
             {
@@ -97,19 +97,19 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 
 static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime)
 {
-    if(accelerator <= checkingTime)
+    if(accelerator < checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
 
 
-    if(brake <= checkingTime)
+    if(brake < checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
 
 
-    if(joystick <= checkingTime)
+    if(joystick < checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
      else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));

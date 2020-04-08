@@ -68,6 +68,7 @@
 #include "n2het_onewire.h"
 #include "ds1904.h"
 #include "timeTask.h"
+#include "currentErrorViewer.h"
 #include "strings.h"
 #include <stdio.h>
 
@@ -102,6 +103,7 @@ int main(void)
     vcuStateManagementInit();
     externalMemoryTaskInit();
     timerTaskInit();
+    currentErrorViewerInit();
     /*creating event group*/
     canMessageLostCheckEventGroup = xEventGroupCreate();
 
@@ -111,8 +113,6 @@ int main(void)
 
     while(1);
 /* USER CODE END */
-
-    return 0;
 }
 
 

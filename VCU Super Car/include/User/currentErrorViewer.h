@@ -17,4 +17,6 @@ extern QueueHandle_t queueLostComponentsError;
 extern QueueHandle_t queueHetError;
 extern QueueHandle_t queueExternalMemoryError;
 
+void currentErrorViewerInit(void);
+
 #endif /* INCLUDE_USER_CURRENTERRORVIEWER_H_ */

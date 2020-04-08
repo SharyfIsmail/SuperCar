@@ -48,6 +48,11 @@ static void setVcuStatus()
 {
     switch(rawVcuStatus)
     {
+    case VCU_EVERY_COMPONENT_IS_PRESENTED:
+
+        break;
+    case NO_ERROR_ON_INVERTOR:
+            break;
     case VCU_Status_Init:
         if(currentVcuStatus == VCU_Status_ErrorStop)
         {
