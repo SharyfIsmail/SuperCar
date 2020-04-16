@@ -34,6 +34,7 @@ static uint8_t errorId[SEMICRON_ERROR_COUNT] =
   0x33, 0x36, 0x37, 0x49, 0x4F, 0x65, 0x67, 0x7F, 0x9F, 0xA1,
   0xE1, 0xE8, 0xFF
 };
+static SemicronStatus_t SemicronStatus = NO_CRASH_SEMICRON;
 
 TaskHandle_t xSemicronTxHandler;
 QueueHandle_t xQueueSemikronTx = NULL;
@@ -108,12 +109,11 @@ void vSemicronTxHandler (void *pvParameters)
 
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
 {
-    VcuStateMangement_t vcuStatus;
     causingOfError_t causingOfError = EVERYTHING_IS_FINE;
     causingOfError = (causingOfError_t)getTx_PDO_01_CausingError(emdTxPdo_01);
     if(causingOfError != EVERYTHING_IS_FINE)
     {
-        vcuStatus = VCU_CLEAR_ERROR;
+        SemicronStatus = CLEAR_ERROR_SEMICRON;
         uint8_t errorIndex = errorSeek(&causingOfError);
         if(!semicronErrorIsWrote.arr[errorIndex])
             logError(causingOfError); /* else not needed */
@@ -122,11 +122,10 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
     }
     else
     {
-   //     xQueueOverwrite(queueCurrentSemicronError, (uint64_t)0);
-        vcuStatus = VCU_Status_Init;
+        SemicronStatus = NO_CRASH_SEMICRON;
     }
 
-    xQueueOverwrite(xQueueVcuStatusManagement, &vcuStatus);
+    xQueueOverwrite(xQueueSemicronRawStatus, &SemicronStatus);
 
 }
 

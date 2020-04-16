@@ -83,7 +83,7 @@ void vSemicronRxHandler (void *pvParameters)
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
 
-    VcuStateMangement_t  vcuStatus = VCU_Status_Init;;
+  //  VcuStateMangement_t  vcuStatus = VCU_Status_Init;;
     int torqueValue = 0 ;
 
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;

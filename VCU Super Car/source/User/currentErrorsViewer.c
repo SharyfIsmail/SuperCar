@@ -50,7 +50,6 @@ void currentErrorViewerInit(void)
 
 void vErrorViewer(void *pvParameters)
 {
-
     TickType_t lastWakeTime ;
     TickType_t transmitPeriod = pdMS_TO_TICKS((uint32_t) pvParameters);
     uint64_t semicronBitError = 0;
@@ -62,6 +61,7 @@ void vErrorViewer(void *pvParameters)
         xQueuePeek(queueCurrentSemicronError, &semicronBitError, pdMS_TO_TICKS(0));
         xQueuePeek(queueLostComponentsError, &lostComponentsError, pdMS_TO_TICKS(0));
         xQueuePeek(queueHetError, &hetError, pdMS_TO_TICKS(0));
+
         parseError(&currentErrors, semicronBitError, lostComponentsError, hetError);
         newCanTransmit(canREG1, canMESSAGE_BOX3, &currentErrors);
         vTaskDelayUntil(&lastWakeTime, transmitPeriod);
@@ -73,12 +73,13 @@ static void parseError(canMessage_t* currentErrors ,const uint64_t semicronBitEr
 {
     currentErrors->data[0] = lostComponentsError  |
                      (hetError << 6)      ;
-    currentErrors->data[1] = (uint8_t)  semicronBitError;
-    currentErrors->data[2] = (uint8_t) (semicronBitError >> 8);
-    currentErrors->data[3] = (uint8_t) (semicronBitError >> 16);
-    currentErrors->data[4] = (uint8_t) (semicronBitError >> 24);
-    currentErrors->data[5] = (uint8_t) (semicronBitError >> 32);
-    currentErrors->data[6] = (uint8_t) (semicronBitError >> 40);
+    //currentErrors->data[1]                            // RESERVE
+    currentErrors->data[2] = (uint8_t)  semicronBitError;
+    currentErrors->data[3] = (uint8_t) (semicronBitError >> 8);
+    currentErrors->data[4] = (uint8_t) (semicronBitError >> 16);
+    currentErrors->data[5] = (uint8_t) (semicronBitError >> 24);
+    currentErrors->data[6] = (uint8_t) (semicronBitError >> 32);
+    currentErrors->data[7] = (uint8_t) (semicronBitError >> 40);
 }
 
 

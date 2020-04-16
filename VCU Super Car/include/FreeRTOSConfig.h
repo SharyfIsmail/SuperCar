@@ -137,6 +137,8 @@
 #define configTIMER_TASK_STACK_DEPTH    ( 0 )
 
 /* USER CODE BEGIN (3) */
+/* Queue */
+#define  configUSE_QUEUE_SETS             ( 1 )
 /* USER CODE END */
 
 /* Set the following definitions to 1 to include the API function, or zero to exclude the API function. */
