@@ -26,11 +26,18 @@ typedef enum
     VCU_CLEAR_ERROR                          = 0x01,
     VCU_Status_Charge                        = 0x02,
     VCU_Status_Sleep                         = 0x03,
-    VCU_Status_Parking                       = 0x04,
-    VCU_Status_Neutral                       = 0x05,
-    vCU_STATUS_DRIVE                         = 0x13,
-    VCU_Status_Forward                       = 0x06,
-    VCU_Status_Reverse                       = 0x07,
+    VCU_BATTERY_OFF                          = 0x04,
+    VCU_BATTERY_ON                           = 0x05,
+    VCU_BATTERY_TURNING_ON                   = 0x06,
+
+    //VCU_Status_Parking                       = 0x04,
+    //VCU_Status_Neutral                       = 0x05,
+
+    VCU_STATUS_DRIVE                         = 0x13,
+    VCU_STATUS_STOP                          = 0x14,
+
+    //VCU_Status_Forward                       = 0x06,
+    //VCU_Status_Reverse                       = 0x07,
 
     VCU_Status_ErrorDrive                    = 0x08,
     //VCU_Status_ErrorDrive_FORWARD            = 0x09,
@@ -65,6 +72,8 @@ typedef enum
 typedef enum
 {
     BATTERY_OFF,
+    TURNING_BATTERY_OFF,
+    TURNING_BATTERY_ON,
     BATTERY_ON,
     BATTERY_ERROR
 }VcuRawStatusBattery_t;

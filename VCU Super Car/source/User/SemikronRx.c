@@ -108,8 +108,7 @@ void vSemicronRxHandler (void *pvParameters)
         if (vcuStatus == VCU_CLEAR_ERROR)
             clearErrorAction(&rxPdo_03);
 
-        else if (vcuStatus == VCU_Status_Forward  ||
-                 vcuStatus == VCU_Status_Reverse  ||
+        else if (vcuStatus == VCU_STATUS_DRIVE  ||
                  vcuStatus == VCU_Status_ErrorDrive)
         {
             xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
@@ -199,9 +198,9 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
 
-        if(vcuStatus == VCU_Status_Parking || vcuStatus == VCU_Status_Neutral)
+        if(vcuStatus == VCU_STATUS_STOP)
             nmtNodeGuardingState = OPERATIONAL;
-        else if (vcuStatus ==  VCU_Status_Init)
+        else if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_Sleep)
             nmtNodeGuardingState = PRE_OPERATIONAL;
 
         if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))

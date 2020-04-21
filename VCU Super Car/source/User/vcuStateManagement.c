@@ -111,8 +111,7 @@ static VcuStateMangement_t setVcuRawStatusLostComponents(VcuStateMangement_t cur
         currentStatus = VCU_Status_Init;
         break;
     case CRASH_LEVEL_ERRORDRIVE:
-        if(currentStatus == VCU_Status_Parking || currentStatus == VCU_Status_Neutral
-                || currentStatus == VCU_Status_Init)
+        if(currentStatus == VCU_STATUS_STOP || currentStatus == VCU_Status_Init)
         {
             currentStatus = VCU_Status_ErrorStop;
         }
@@ -135,8 +134,7 @@ static VcuStateMangement_t setVcuRawStatusSemicron(VcuStateMangement_t currentSt
         currentStatus = VCU_Status_Init;
         break;
     case CLEAR_ERROR_SEMICRON:
-        if(currentStatus == VCU_Status_Parking || currentStatus == VCU_Status_Neutral
-                       || currentStatus == VCU_Status_Init)
+        if(currentStatus == VCU_STATUS_STOP || currentStatus == VCU_Status_Init)
         {
             currentStatus = VCU_CLEAR_ERROR;
         }
@@ -158,16 +156,26 @@ static VcuStateMangement_t setVcuRawStatusSemicron(VcuStateMangement_t currentSt
 //}
 static void setCurrentVcuStatus(VcuStateMangement_t LostComponents, VcuStateMangement_t Semicron, VcuStateMangement_t joystick, VcuStateMangement_t battery)
 {
-    if(LostComponents == NO_CRASH_SEMICRON && Semicron == NO_CRASH_lOST_MESSAGE &&
-            battery == BATTERY_OFF)
+    if(LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
+       battery == VCU_Status_Init && (joystick == VCU_STATUS_DRIVE || joystick == VCU_STATUS_STOP))
     {
         currentVcuStatus = VCU_Status_Init;
     }
-   // else if (LostComponents ==  VCU_Status_ErrorDrive && Semicron == NO_CRASH_lOST_MESSAGE &&
- //           battery == BATTERY_ON && (joystick ==  || joystick== ) )
-  //  {
-   //     currentVcuStatus = VCU_Status_ErrorDrive;
-   // }
+    else if (LostComponents ==  VCU_Status_Init && Semicron == VCU_Status_Init &&
+             battery == VCU_BATTERY_ON &&  joystick == VCU_STATUS_DRIVE)
+    {
+        currentVcuStatus = VCU_STATUS_DRIVE;
+    }
+    else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
+             battery == VCU_BATTERY_ON && joystick == VCU_STATUS_STOP)
+    {
+    currentVcuStatus = VCU_STATUS_STOP;
+    }
+    else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
+             battery == VCU_Status_Sleep && (joystick == VCU_STATUS_STOP || joystick == VCU_STATUS_DRIVE))
+    {
+    currentVcuStatus = VCU_Status_Sleep;
+    }
 //    switch(rawVcuStatus)
 //    {
 //    case VCU_EVERY_COMPONENT_IS_PRESENTED:
