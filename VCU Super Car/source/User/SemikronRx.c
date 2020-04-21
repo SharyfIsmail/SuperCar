@@ -203,6 +203,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
         else if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_Sleep)
             nmtNodeGuardingState = PRE_OPERATIONAL;
 
+
         if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
         {
             xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
