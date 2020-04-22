@@ -198,7 +198,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
 
-        if(vcuStatus == VCU_STATUS_STOP)
+        if(vcuStatus == VCU_STATUS_DRIVE)
             nmtNodeGuardingState = OPERATIONAL;
         else if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_Sleep)
             nmtNodeGuardingState = PRE_OPERATIONAL;

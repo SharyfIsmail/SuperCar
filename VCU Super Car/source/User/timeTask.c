@@ -10,15 +10,43 @@
 #include "timeTask.h"
 #include "externalMemoryTask.h"
 #include "currentErrorViewer.h"
+#include "newCanLib.h"
 
 #define DS1904_FAMILYCODE  ((uint8_t) 0x24)
-#define TIME_TASK_PERIOD ((uint32_t) 500)
+#define TIME_TASK_PERIOD ((uint32_t) 1000)
 
-void vTimeTask(void *pvParameters);
+struct
+{
+    uint8_t tm_sec;      /* seconds after the minute   - [0,59]  */
+    uint8_t tm_min;      /* minutes after the hour     - [0,59]  */
+    uint8_t tm_hour;     /* hours after the midnight   - [0,23]  */
+    uint8_t tm_mday;     /* day of the month           - [1,31]  */
+    uint8_t tm_mon;      /* months since January       - [0,11]  */
+    uint8_t tm_year;     /* years since 1900                     */
+}currentDate ;
 
-static void ReadRealTime(datetime_t *realTime);
+static canMessage_t dataTime =
+{
+    .id  = 0x6DD,
+    .dlc = 8,
+    .ide = (uint8_t)CAN_Id_Standard,
+    .data = {0},
+};
+
 static bool errorlogIsWrote = false;
 QueueHandle_t xQueueRealTime = NULL;
+
+void vTimeTask(void *pvParameters);
+static void ReadRealTime(datetime_t *realTime);
+//static void setTimeInDate();
+static uint8_t getYears(datetime_t realTime);
+static uint8_t getMonths(datetime_t realTime);
+static uint8_t getDays(datetime_t realTime);
+static uint8_t getHours(datetime_t realTime);
+static uint8_t getMinutes(datetime_t realTime);
+static uint8_t getSeconds(datetime_t realTime);
+static void parseTime(canMessage_t* ptr);
+static void setTimeInDate(datetime_t realTime);
 
 void timerTaskInit(void)
 {
@@ -37,8 +65,8 @@ void vTimeTask(void *pvParameters)
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters);
     causingOfError_t causingOfError = EVERYTHING_IS_FINE;
-
     uint8_t hetIsFine = 0;
+
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
@@ -48,6 +76,7 @@ void vTimeTask(void *pvParameters)
         {
                hetIsFine = 0;
                ReadRealTime(&realTime);
+               setTimeInDate(realTime);
                errorlogIsWrote = false;
         }
         else
@@ -64,6 +93,11 @@ void vTimeTask(void *pvParameters)
 
         xQueueOverwrite(xQueueRealTime, &realTime);
         xQueueOverwrite(queueHetError, &hetIsFine);
+       // setTimeInDate();
+
+        parseTime(&dataTime);
+        newCanTransmit(canREG1, canMESSAGE_BOX5, &dataTime);
+
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
@@ -72,4 +106,245 @@ static void ReadRealTime(datetime_t *realTime)
     OneWire_TryReset();
     OneWire_SkipROM();
     DS1904_ReadDateTime(realTime);
+}
+/*static void setTimeInDate()
+{
+    currentDate.tm_sec += 1;
+    if(currentDate.tm_sec == 60)
+    {
+        currentDate.tm_sec = 0;
+        currentDate.tm_min +=1;
+        if(currentDate.tm_min == 60)
+        {
+            currentDate.tm_min = 0;
+            currentDate.tm_hour +=1;
+            if(currentDate.tm_hour == 24)
+            {
+                currentDate.tm_hour = 0;
+                currentDate.tm_mday += 1;
+                switch(currentDate.tm_mon)
+                {
+                    case 1:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 2:
+                        if( currentDate.tm_mday == 28)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 3:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 4:
+                        if( currentDate.tm_mday == 30)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 5:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 6:
+                        if( currentDate.tm_mday == 30)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 7:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 8:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 9:
+                        if( currentDate.tm_mday == 30)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 10:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 11:
+                        if( currentDate.tm_mday == 30)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                        }
+                        break;
+                    case 12:
+                        if( currentDate.tm_mday == 31)
+                        {
+                            currentDate.tm_mday = 0;
+                            currentDate.tm_mon +=1;
+                            if( currentDate.tm_mon == 13)
+                            {
+                                currentDate.tm_mon = 1;
+                                currentDate.tm_year +=1;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+    }
+}*/
+static uint8_t getYears(datetime_t realTime)
+{
+    return (20 + (realTime/ 31556926));
+}
+static uint8_t getMonths(datetime_t realTime)
+{
+    uint8_t tempMonth = realTime/ 2629743;
+    while(tempMonth > 12)
+    {
+        tempMonth = tempMonth - 12;
+    }
+    return  1 + tempMonth;
+}
+static uint8_t getDays(datetime_t realTime)
+{
+    uint8_t _temp_ = 1;
+    uint8_t temp = 31;
+    uint16_t tempDay = realTime/ 86400 ;
+    while(tempDay > 31)
+    {
+        switch(_temp_)
+        {
+              case 1:
+                  temp = 31;
+                  _temp_++;
+                  break;
+              case 2:
+                  temp = 28;
+                  _temp_++;
+                  break;
+              case 3:
+                  temp = 31;
+                  _temp_++;
+                  break;
+              case 4:
+                  temp = 30;
+                  _temp_++;
+
+                  break;
+              case 5:
+                  temp = 31;
+                  _temp_++;
+
+                  break;
+              case 6:
+                  temp = 30;
+                  _temp_++;
+
+                  break;
+              case 7:
+                  temp = 31;
+                  _temp_++;
+
+                  break;
+              case 8:
+                  temp = 31;
+                  _temp_++;
+
+                  break;
+              case 9:
+                  temp = 30;
+                  _temp_++;
+
+                  break;
+              case 10:
+                  temp = 31;
+                  _temp_++;
+
+                  break;
+              case 11:
+                  temp = 30;
+                  _temp_++;
+
+                  break;
+              case 12:
+                  temp = 31;
+                  _temp_ = 1;;
+                  break;
+
+        }
+        tempDay = tempDay - temp;
+    }
+    return (uint8_t) tempDay;
+}
+
+static uint8_t getHours(datetime_t realTime)
+{
+    uint16_t tempHour = realTime/ 3600;
+     while(tempHour > 23)
+     {
+         tempHour = tempHour - 24;
+     }
+     return (uint8_t) tempHour;
+}
+static uint8_t getMinutes(datetime_t realTime)
+{
+    uint32_t tempMinute = realTime/ 60;
+    while(tempMinute > 59)
+    {
+        tempMinute = tempMinute - 60;
+    }
+    return (uint8_t)(1 + tempMinute);
+}
+static uint8_t getSeconds(datetime_t realTime)
+{
+    while(realTime > 59)
+    {
+        realTime = realTime - 60;
+    }
+    return  realTime;
+}
+static void parseTime(canMessage_t* ptr)
+{
+    ptr->data[0] = currentDate.tm_year;
+    ptr->data[1] = currentDate.tm_mon;
+    ptr->data[2] = currentDate.tm_mday;
+    ptr->data[3] = currentDate.tm_hour;
+    ptr->data[4] = currentDate.tm_min;
+    ptr->data[5] = currentDate.tm_sec;
+
+}
+static void setTimeInDate(datetime_t realTime)
+{
+    currentDate.tm_year = getYears(realTime);
+    currentDate.tm_mon =  getMonths(realTime);
+    currentDate.tm_mday = getDays(realTime);
+    currentDate.tm_hour = getHours(realTime);
+    currentDate.tm_min = getMinutes(realTime);
+    currentDate.tm_sec = getSeconds(realTime);
 }

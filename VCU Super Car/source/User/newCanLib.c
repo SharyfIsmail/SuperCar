@@ -82,13 +82,15 @@ static void messageBoxInitReg1()
     messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Heart Beat
     messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Rx Handler
     messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // All current error
-    messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  //Error from external memory
+    messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Error from external memory
+    messageBoxInitialize(canREG1, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Real Time in y:m:d:h:m:s;
+
     /*Receiving node */
     /*High level */
 
     /*Low level */
-    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); //Selector , joystick, brake: 11F
-    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t)0x16, RECEIVEING_NODE); //Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); // Selector , joystick, brake: 11F
+    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t) 0x16, RECEIVEING_NODE);   // Command to external memory
 
 }
 

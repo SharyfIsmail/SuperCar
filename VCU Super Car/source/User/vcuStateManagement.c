@@ -169,13 +169,18 @@ static void setCurrentVcuStatus(VcuStateMangement_t LostComponents, VcuStateMang
     else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
              battery == VCU_BATTERY_ON && joystick == VCU_STATUS_STOP)
     {
-    currentVcuStatus = VCU_STATUS_STOP;
+        currentVcuStatus = VCU_STATUS_STOP;
     }
     else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
              battery == VCU_Status_Sleep && (joystick == VCU_STATUS_STOP || joystick == VCU_STATUS_DRIVE))
     {
-    currentVcuStatus = VCU_Status_Sleep;
+        currentVcuStatus = VCU_Status_Sleep;
     }
+//    else if (LostComponents == VCU_Status_ErrorStop && Semicron == VCU_Status_Init &&
+//                battery == VCU_Status_Sleep && (joystick == VCU_STATUS_STOP || joystick == VCU_STATUS_DRIVE))
+//    {
+//        currentVcuStatus = VCU_Status_Sleep;
+//    }
 //    switch(rawVcuStatus)
 //    {
 //    case VCU_EVERY_COMPONENT_IS_PRESENTED:
