@@ -14,15 +14,18 @@
 #endif
 
 
-static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t ide, uint32_t mask, uint32_t filter, uint32_t nodeType )
+static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t ide, uint32_t mask, uint32_t filter, nodType_t nodeType )
 {
     if ( messageBox % 2 == 0)
     {
         if(nodeType == SENDING_NODE)
         {
+            node->IF2MSK  = 0x00;
+            node->IF2ARB  = 0x00;
             node->IF2MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF2CMD  = (uint8) 0xF8U;
             node->IF2NO   = messageBox;
+
         }
 
         else
@@ -44,11 +47,16 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
                 node->IF2NO   = messageBox;
             }
         }
+        while ((node->IF2STAT & 0x80U) == 0x80U)
+        {
+        } /* Wait */
     }
     else
     {
         if(nodeType == SENDING_NODE)
         {
+            node->IF1MSK  = 0x00;
+            node->IF1ARB  = 0x00;
             node->IF1MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF1CMD  = (uint8) 0xF8U;
             node->IF1NO   = messageBox;
@@ -73,6 +81,9 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
                 node->IF1NO   = messageBox;
             }
         }
+        while ((node->IF1STAT & 0x80U) ==0x80U)
+        {
+        } /* Wait */
     }
 }
 static void messageBoxInitReg1()

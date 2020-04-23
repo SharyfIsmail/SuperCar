@@ -40,11 +40,11 @@ typedef enum can_identifier
     CAN_Id_Standard,
     CAN_Id_Extended = 4
 } can_identifier_t;
-enum
+typedef enum
 {
     SENDING_NODE = 0x0,
     RECEIVEING_NODE = 0x400
-};
+}nodType_t;
 uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr);
 void boardCanInit(canBASE_t *node);
 
