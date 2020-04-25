@@ -105,17 +105,17 @@ void vSemicronRxHandler (void *pvParameters)
     for(;;)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
-        if (vcuStatus == VCU_CLEAR_ERROR)
+       if (vcuStatus == VCU_Status_Init)
             clearErrorAction(&rxPdo_03);
-
-        else if (vcuStatus == VCU_STATUS_DRIVE  ||
-                 vcuStatus == VCU_Status_ErrorDrive)
-        {
-            xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
-            carInMotion(&rxPdo_03, torqueValue);
-        }
-
-        else
+//
+//        else if (vcuStatus == VCU_Status_FORWARD  ||
+//                 vcuStatus == VCU_Status_FORWARD)
+//        {
+//            xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
+//            carInMotion(&rxPdo_03, torqueValue);
+//        }
+//
+//        else
             carStop(&rxPdo_03);
 
         newCanTransmit(canREG2, canMESSAGE_BOX4, &rxPdo_03);
@@ -165,7 +165,7 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t  NodeGuardingS
         if(NodeGuardingState == OPERATIONAL)
             *nmtCommandSpecifier = START_REMOTE_NODE;
         else if(NodeGuardingState == PRE_OPERATIONAL)
-            *nmtCommandSpecifier = RESET_NODE;
+            *nmtCommandSpecifier = RESET_COMMUNICATION;
         else
             *nmtCommandSpecifier = STOP_REMOTE_NODE;
 
@@ -198,11 +198,11 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
 
-        if(vcuStatus == VCU_STATUS_DRIVE)
-            nmtNodeGuardingState = OPERATIONAL;
-        else if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_Sleep)
-            nmtNodeGuardingState = PRE_OPERATIONAL;
 
+         if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_SLEEP)
+            nmtNodeGuardingState = PRE_OPERATIONAL;
+         else
+             nmtNodeGuardingState = OPERATIONAL;
 
         if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
         {

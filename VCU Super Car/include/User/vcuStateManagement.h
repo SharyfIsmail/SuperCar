@@ -34,6 +34,20 @@ typedef enum
 
 typedef enum
 {
+    VCU_NO_ERROR        = 0x00,
+    VCU_ERROR_WORK      = 0x01,
+    VCU_ERROR_STOP      = 0x02,
+    VCU_ERROR_UNDEFINED = 0x03
+}VcuErrorStatus_t;
+
+typedef struct
+{
+    VcuStateMangement_t vcuStateMangement;
+    VcuErrorStatus_t    errorStatus;
+
+}VcuStatusStruct_t;
+typedef enum
+{
     NO_CRASH_lOST_MESSAGE,
     CRASH_LEVEL_ERRORDRIVE,
     CRASH_LEVEL_ERRORSTOP

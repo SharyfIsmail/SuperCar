@@ -30,14 +30,17 @@ static QueueSetMemberHandle_t activatedMember;
 static QueueSetHandle_t xqueueSetvcuRawStatuses;
 
 static void setCurrentVcuStatus(VcuStateMangement_t LostComponents, VcuStateMangement_t Semicron, VcuStateMangement_t joystick, VcuStateMangement_t battery);
-static VcuStateMangement_t setVcuRawStatusLostComponents(VcuStateMangement_t currentStatus, lostComponentsStatus_t LostComponentsStatus);
-static VcuStateMangement_t setVcuRawStatusSemicron(VcuStateMangement_t currentStatus, SemicronStatus_t SemicronStatus);
+static VcuErrorStatus_t setVcuRawStatusLostComponents(VcuStateMangement_t currentVcuStatus, lostComponentsStatus_t LostComponentsStatus);
+static VcuErrorStatus_t setVcuRawStatusSemicron(VcuStateMangement_t currentVcuStatus, SemicronStatus_t SemicronStatus);
+static VcuStateMangement_t setVcuRawStatusJoyStick(VcuStateMangement_t currentVcuStatus, VcuRawStatusJoystick_t joystickPosition);
 
 static VcuRawStatuses_t vcuRawStatuses = { NO_CRASH_lOST_MESSAGE,
                                            NO_CRASH_SEMICRON,
-                                           JOYSTICK_NEUTRAL,
-                                           BATTERY_OFF};
-VcuStateMangement_t currentVcuStatus = VCU_Status_Init;
+                                           JOYSTICK_INIT,
+                                           BATTERY_INIT};
+VcuStatusStruct_t currentVcuStatusStruct = { VCU_Status_Init,
+                                             VCU_NO_ERROR
+                                           };
 
 void vVcuStateManagement(void *pvParameters);
 
@@ -52,7 +55,7 @@ void vcuStateManagementInit(void)
 
     xQueueLostComponentRawStatus = xQueueCreate(QUEUE_LOST_COMPONENT_RAWSTATUS_LENGTH, sizeof(lostComponentsStatus_t));
     xQueueSemicronRawStatus = xQueueCreate(QUEUE_SEMICRON_RAWSTATUS_LENGTH, sizeof(SemicronStatus_t));
-    xQueueJoystickRawStatus = xQueueCreate(QUEUE_JOYSTICK_RAWSTATUS_LENGTH, sizeof(VcuStateMangement_t));
+    xQueueJoystickRawStatus = xQueueCreate(QUEUE_JOYSTICK_RAWSTATUS_LENGTH, sizeof(VcuRawStatusJoystick_t));
 
     xQueueAddToSet(xQueueLostComponentRawStatus, xqueueSetvcuRawStatuses);
     xQueueAddToSet(xQueueSemicronRawStatus, xqueueSetvcuRawStatuses);
@@ -64,9 +67,12 @@ void vcuStateManagementInit(void)
 void vVcuStateManagement(void *pvParameters)
 {
 
-     VcuStateMangement_t rawVcuStatusLostComponents = VCU_Status_Init;
-     VcuStateMangement_t rawVcuStatusSemicron = VCU_Status_Init;
+     VcuErrorStatus_t rawVcuStatusLostComponents = VCU_NO_ERROR;
+     VcuErrorStatus_t rawVcuStatusSemicron = VCU_ERROR_UNDEFINED;
+
+     //VcuStateMangement_t rawVcuStatusSemicron = VCU_Status_Init;
      VcuStateMangement_t rawVcuStatusJoyStick = VCU_Status_Init;
+
      VcuStateMangement_t rawVcuStatusBattery  =  VCU_Status_Init;
      //VcuRawStatuses_t  VcuRawStatuses ;
 
@@ -77,17 +83,18 @@ void vVcuStateManagement(void *pvParameters)
         if(activatedMember == xQueueLostComponentRawStatus)
         {
             xQueueReceive(xQueueLostComponentRawStatus, &vcuRawStatuses.lostComponentsStatus, 0);
-            rawVcuStatusLostComponents = setVcuRawStatusLostComponents(currentVcuStatus, vcuRawStatuses.lostComponentsStatus);
+            rawVcuStatusLostComponents = setVcuRawStatusLostComponents(currentVcuStatusStruct.vcuStateMangement ,vcuRawStatuses.lostComponentsStatus);
 
         }
         else if (activatedMember == xQueueSemicronRawStatus)
         {
             xQueueReceive(xQueueSemicronRawStatus, &vcuRawStatuses.SemicronStatus, 0);
-            rawVcuStatusSemicron =  setVcuRawStatusSemicron(currentVcuStatus, vcuRawStatuses.SemicronStatus);
+            rawVcuStatusSemicron =  setVcuRawStatusSemicron(currentVcuStatusStruct.vcuStateMangement, vcuRawStatuses.SemicronStatus);
         }
         else if (activatedMember == xQueueJoystickRawStatus)
         {
-
+            xQueueReceive(xQueueJoystickRawStatus, &vcuRawStatuses.vcuRawStatusJoystick, 0);
+            rawVcuStatusJoyStick = setVcuRawStatusJoyStick(currentVcuStatusStruct.vcuStateMangement, vcuRawStatuses.vcuRawStatusJoystick);
         }
         else if (activatedMember == xQueueJoystickRawStatus)
         {
@@ -99,83 +106,106 @@ void vVcuStateManagement(void *pvParameters)
                         being ready to process. */
         }
 
-        setCurrentVcuStatus(rawVcuStatusLostComponents, rawVcuStatusSemicron, rawVcuStatusJoyStick, rawVcuStatusBattery);
-        xQueueOverwrite(xQueueVcuStatus, &currentVcuStatus);
+     //   setCurrentVcuStatus(rawVcuStatusLostComponents, rawVcuStatusSemicron, rawVcuStatusJoyStick, rawVcuStatusBattery);
+    //    xQueueOverwrite(xQueueVcuStatus, &currentVcuStatus);
     }
 }
-static VcuStateMangement_t setVcuRawStatusLostComponents(VcuStateMangement_t currentStatus, lostComponentsStatus_t LostComponentsStatus)
+static VcuErrorStatus_t setVcuRawStatusLostComponents(VcuStateMangement_t currentVcuStatus, lostComponentsStatus_t LostComponentsStatus)
 {
+    VcuErrorStatus_t vcuErrorStatus;
     switch(LostComponentsStatus)
     {
     case NO_CRASH_lOST_MESSAGE:
-        currentStatus = VCU_Status_Init;
+        vcuErrorStatus = VCU_NO_ERROR;
         break;
     case CRASH_LEVEL_ERRORDRIVE:
-        if(currentStatus == VCU_STATUS_STOP || currentStatus == VCU_Status_Init)
+        if(currentVcuStatus == VCU_Status_REVERCE || currentVcuStatus == VCU_Status_FORWARD  ||
+           currentVcuStatus == VCU_Status_CHARGING )
         {
-            currentStatus = VCU_Status_ErrorStop;
+            vcuErrorStatus = VCU_ERROR_WORK;
         }
         else
         {
-            currentStatus = VCU_Status_ErrorDrive;
+            vcuErrorStatus = VCU_ERROR_STOP;
         }
         break;
     case CRASH_LEVEL_ERRORSTOP:
-        currentStatus = VCU_Status_ErrorStop;
+        vcuErrorStatus = VCU_ERROR_STOP;
         break;
     }
-    return currentStatus;
+    return vcuErrorStatus;
 }
-static VcuStateMangement_t setVcuRawStatusSemicron(VcuStateMangement_t currentStatus, SemicronStatus_t SemicronStatus)
+static VcuErrorStatus_t setVcuRawStatusSemicron(VcuStateMangement_t currentVcuStatus, SemicronStatus_t SemicronStatus)
 {
+    VcuErrorStatus_t vcuErrorStatus;
+    static uint8_t errorCount = 10;
     switch(SemicronStatus)
     {
     case NO_CRASH_SEMICRON:
-        currentStatus = VCU_Status_Init;
+        vcuErrorStatus = VCU_NO_ERROR;
+        errorCount = 10;
         break;
     case CLEAR_ERROR_SEMICRON:
-        if(currentStatus == VCU_STATUS_STOP || currentStatus == VCU_Status_Init)
+        if(currentVcuStatus == VCU_Status_Init && errorCount != 0)
         {
-            currentStatus = VCU_CLEAR_ERROR;
+            vcuErrorStatus = VCU_ERROR_WORK;
+            vcuErrorStatus--;
         }
         else
-        {
-           currentStatus = VCU_Status_ErrorDrive;
-        }
+            vcuErrorStatus = VCU_ERROR_STOP;
+
         break;
     }
-    return currentStatus;
+    return vcuErrorStatus;
 }
-//static VcuStateMangement_t setVcuRawStatusJoyStick(VcuStateMangement_t currentVcuStatus, VcuRawStatusLostComponents_t LostComponentsStatus)
-//{
-
-//}
+static VcuStateMangement_t setVcuRawStatusJoyStick(VcuStateMangement_t currentVcuStatus, VcuRawStatusJoystick_t joystickPosition)
+{
+    VcuStateMangement_t vcuStatus;
+    switch(joystickPosition)
+    {
+    case JOYSTICK_INIT :
+        break;
+    case JOYSTCK_PARKING :
+        vcuStatus = VCU_Status_PARKING;
+        break;
+    case JOYSTICK_NEUTRAL :
+        vcuStatus = VCU_Status_NEUTRAL;
+        break;
+    case JOYSTICK_FORWARD:
+        vcuStatus = VCU_Status_FORWARD;
+        break;
+    case JOYSTICK_REVERSE :
+        vcuStatus = VCU_Status_REVERCE;
+        break;
+    }
+    return vcuStatus;
+}
 //static VcuStateMangement_t setVcuRawStatusBattery(VcuStateMangement_t currentVcuStatus, VcuRawStatusLostComponents_t LostComponentsStatus)
 //{
 
 //}
 static void setCurrentVcuStatus(VcuStateMangement_t LostComponents, VcuStateMangement_t Semicron, VcuStateMangement_t joystick, VcuStateMangement_t battery)
 {
-    if(LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
-       battery == VCU_Status_Init && (joystick == VCU_STATUS_DRIVE || joystick == VCU_STATUS_STOP))
+    /*if(LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
+       battery == VCU_Status_Init && (joystick == VCU_Status_REVERCE || joystick == VCU_Status_REVERCE))
     {
         currentVcuStatus = VCU_Status_Init;
     }
     else if (LostComponents ==  VCU_Status_Init && Semicron == VCU_Status_Init &&
-             battery == VCU_BATTERY_ON &&  joystick == VCU_STATUS_DRIVE)
+             battery == VCU_Status_REVERCE &&  joystick == VCU_Status_REVERCE)
     {
-        currentVcuStatus = VCU_STATUS_DRIVE;
+        currentVcuStatus = VCU_Status_REVERCE;
     }
     else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
-             battery == VCU_BATTERY_ON && joystick == VCU_STATUS_STOP)
+             battery == VCU_Status_REVERCE && joystick == VCU_Status_REVERCE)
     {
-        currentVcuStatus = VCU_STATUS_STOP;
+        currentVcuStatus = VCU_Status_REVERCE;
     }
     else if (LostComponents == VCU_Status_Init && Semicron == VCU_Status_Init &&
-             battery == VCU_Status_Sleep && (joystick == VCU_STATUS_STOP || joystick == VCU_STATUS_DRIVE))
+             battery == VCU_Status_SLEEP && (joystick == VCU_Status_REVERCE || joystick == VCU_Status_REVERCE))
     {
-        currentVcuStatus = VCU_Status_Sleep;
-    }
+        currentVcuStatus = VCU_Status_REVERCE;
+    }*/
 //    else if (LostComponents == VCU_Status_ErrorStop && Semicron == VCU_Status_Init &&
 //                battery == VCU_Status_Sleep && (joystick == VCU_STATUS_STOP || joystick == VCU_STATUS_DRIVE))
 //    {

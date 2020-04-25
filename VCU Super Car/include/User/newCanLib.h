@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "can.h"
+
 /** @struct can_message
  *  @brief CAN message structure definition
  */

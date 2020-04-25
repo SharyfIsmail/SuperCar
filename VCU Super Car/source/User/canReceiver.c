@@ -10,7 +10,6 @@
 #include "acceleratorBrakeJoystick.h"
 #include "externalMemoryTask.h"
 
-
 static void byteToError(const uint8_t data[],CommandToExtMemory_t *memoryCommand);
 
 void canHighLevelIrqMessageNotification(canBASE_t *node, uint32 messageBox)
