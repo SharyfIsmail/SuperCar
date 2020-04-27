@@ -17,6 +17,9 @@ extern QueueHandle_t xQueueVcuStatus;
 extern QueueHandle_t xQueueLostComponentRawStatus;
 extern QueueHandle_t xQueueSemicronRawStatus;
 extern QueueHandle_t xQueueJoystickRawStatus;
+extern QueueHandle_t xQueueBatteryRawStatus ;
+
+extern QueueHandle_t xQueueSemicronStart;
 
 void vcuStateManagementInit(void);
 
@@ -63,20 +66,24 @@ typedef enum
 typedef enum
 {
     JOYSTICK_INIT ,
-    JOYSTCK_PARKING,
+    JOYSTICK_PARKING,
     JOYSTICK_NEUTRAL,
     JOYSTICK_FORWARD,
     JOYSTICK_REVERSE,
     JOYSTICK_UNDEFINED
 }VcuRawStatusJoystick_t;
 
+/**
+ * @typedef VcuRawStatusBattery_t
+ * @brief Switching the battery state
+ * */
 typedef enum
 {
-    BATTERY_INIT,
-    BATTERY_HV_ACTIVE,
-    BATTERY_CHARGING,
-    BATTERY_NORMAL_OFF,
-    BATTERY_EMEGENCY_OFF
+    BATTERY_INIT         = 0x00,  /*!< Specifies init mode. */
+    BATTERY_HV_ACTIVE    = 0x01,  /*!< Specifies on mode. */
+    BATTERY_CHARGING     = 0x02,  /*!< Specifies charging mode. */
+    BATTERY_NORMAL_OFF   = 0x03,  /*!< Specifies oFF mode. */
+    BATTERY_EMEGENCY_OFF = 0x04   /*!< Specifies oFF mode when error accured. */
 }VcuRawStatusBattery_t;
 
 typedef struct
@@ -86,8 +93,5 @@ typedef struct
     VcuRawStatusJoystick_t vcuRawStatusJoystick;
     VcuRawStatusBattery_t vcuRawStatusBattery   ;
 } VcuRawStatuses_t;
-
-
-
 
 #endif /* INCLUDE_USER_VCUSTATEMANAGEMENT_H_ */

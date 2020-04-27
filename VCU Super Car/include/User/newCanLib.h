@@ -39,7 +39,7 @@ typedef struct canMessage
 typedef enum can_identifier
 {
     CAN_Id_Standard,
-    CAN_Id_Extended = 4
+    CAN_Id_Extended = 0x04
 } can_identifier_t;
 typedef enum
 {

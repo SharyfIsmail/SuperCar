@@ -13,62 +13,33 @@
 
 void BmsRxInit(void);
 
-#define CAN_PERIOD_MS_BMS_HEARTBEAT           ((uint32_t) 200)
-#define BMS_HEARTBEAT                         ((uint32_t) 0x18FF0213)
-#define BMS_HEARTBEAT_DLC                     ((uint8_t) 2)
-
-#define CAN_PERIOD_MS_BMS_CONTACTOR_REQUEST   ((uint32_t) 200)
-#define BMS_CONTACTOR_REQUEST                 ((uint32_t) 0x18FF0203)
+#define CAN_PERIOD_MS_BMS_CONTACTOR_REQUEST   ((uint32_t) 20)
+#define BMS_CONTACTOR_REQUEST                 ((uint32_t) 0x800F3D0)
 #define BMS_CONTACTOR_REQUEST_DLC             ((uint8_t) 3)
 
 
-/**
- * @typedef BmsContactorRequest_t
- * @brief Switching the battery
- * */
-typedef enum
+inline void setVcuBmsMessageCounter(canMessage_t* ptr, uint8_t value)
 {
-    CONTACTOR_OFF = 0x00, /*!< Specifies off mode. */
-    CONTACTOR_ON = 0x01  /*!< Specifies on mode. */
-}BmsContactorRequest_t;
-
-/**
- * @typedef PcuFault_t
- * @brief fixing the fault
- * */
-typedef enum
+    ptr->data[1] = (ptr->data[1] & 0xF0) | (value & 0x0F);
+}
+inline uint8_t getVcuBmsMessageCounter(canMessage_t* ptr)
 {
-    NO_PCU_FAULT = 0x0,
-    PCU_FAULT = 0x1
-}PcuFault_t;
-
-/**
- * @typedef CriticalPcuFault_t
- * @brief fixing the critical fault
- * */
-typedef enum
-{
-    NO_CRITICAL_PCU_FAULT = 0x0,/*!< Specifies that errors are not presented. */
-    CRITICAL_PCU_FAULT    = 0x1/*!< Specifies that errors are presented. */
-}CriticalPcuFault_t;
-
-/*Contactor request length : 1 start bit : 8*/
-inline void setBmsContactorRequest(canMessage_t *ptr, uint8_t value)
-{
-    ptr->data[1] = (ptr->data[1] & 0xFE ) |  ((uint8_t) value & 0x01);
+    return ptr->data[1] & 0x0F;
 }
 
-/*Pcu Fault length : 1 start bit : 16*/
-inline void setPcuFault(canMessage_t *ptr, uint8_t value)
+inline void increaseVcuBmsMessageCounter(canMessage_t* ptr, uint8_t value)
 {
-    ptr->data[2] = (ptr->data[2] & 0xFE ) |  ((uint8_t) value & 0x01);
+    setVcuBmsMessageCounter(ptr, getVcuBmsMessageCounter(ptr) + value);
 }
 
-/*Pcu Critical Fault length : 1 start bit : 20*/
-inline void setPcuCriticalFault(canMessage_t *ptr, uint8_t value)
+inline void setVcuRequestModeBms(canMessage_t* ptr, uint8_t value)
 {
-    ptr->data[2] = (ptr->data[2] & 0xEF ) |  ((uint8_t) value & 0x10);
+    ptr->data[1] = (ptr->data[1] & 0x0F) | ((value & 0x0F) << 4);
 }
 
+inline void setVcuIsolationMeasSwitchOff(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[2] =  (ptr->data[2] & 0xFE) | (value & 0x01);
+}
 
 #endif /* INCLUDE_USER_BMSRX_H_ */

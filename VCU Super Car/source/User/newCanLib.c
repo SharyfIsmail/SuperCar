@@ -9,10 +9,10 @@
 #include "newCanLib.h"
 #include "stdarg.h"
 
-//static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox);
-//static void initializeReceivingMessageBoxStd(canBASE_t *node, uint32 messageBox, uint32_t mask, uint32_t filter);
-//static void initializeReceivingMessageBoxExt(canBASE_t *node, uint32 messageBox, uint32_t mask, uint32_t filter);
-//static void setMessageBoxLowInterrupt(canBASE_t *node ,uint8_t number, ...);
+static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_identifier_t canId);
+static void initializeReceivingMessageBoxStd(canBASE_t *node, uint32 messageBox, uint32_t mask, uint32_t filter);
+static void initializeReceivingMessageBoxExt(canBASE_t *node, uint32 messageBox, uint32_t mask, uint32_t filter);
+static void setMessageBoxLowInterrupt(canBASE_t *node ,uint8_t number, ...);
 
 
 #if ((__little_endian__ == 1) || (__LITTLE_ENDIAN__ == 1))
@@ -26,8 +26,8 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
     {
         if(nodeType == SENDING_NODE)
         {
-            node->IF2MSK  = 0x00;
-            node->IF2ARB  = 0x00;
+           // node->IF2MSK  = 0x00;
+          //  node->IF2ARB  = 0x00;
             node->IF2MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF2CMD  = (uint8) 0xF8U;
             node->IF2NO   = messageBox;
@@ -61,8 +61,8 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
     {
         if(nodeType == SENDING_NODE)
         {
-            node->IF1MSK  = 0x00;
-            node->IF1ARB  = 0x00;
+          //  node->IF1MSK  = 0x00;
+           // node->IF1ARB  = 0x00;
             node->IF1MCTL = 0x00001000U | (uint32)nodeType | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF1CMD  = (uint8) 0xF8U;
             node->IF1NO   = messageBox;
@@ -95,45 +95,45 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
 static void messageBoxInitReg1()
 {
     /*Sending node*/
-    messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Heart Beat
-    messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Rx Handler
-    messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // All current error
-    messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Error from external memory
-    messageBoxInitialize(canREG1, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Real Time in y:m:d:h:m:s;
-  // initializeSendingMessageBox(canREG1, canMESSAGE_BOX1);
-   // initializeSendingMessageBox(canREG1, canMESSAGE_BOX2);
-    //initializeSendingMessageBox(canREG1, canMESSAGE_BOX3);
-   // initializeSendingMessageBox(canREG1, canMESSAGE_BOX4);
-   // initializeSendingMessageBox(canREG1, canMESSAGE_BOX5);
+  //  messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Heart Beat
+   // messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Rx Handler
+    //messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // All current error
+    //messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Error from external memory
+   // messageBoxInitialize(canREG1, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Real Time in y:m:d:h:m:s;
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Extended);
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX2, CAN_Id_Extended);
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX3, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX4, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX5, CAN_Id_Standard);
 
     /*Receiving node */
     /*High level */
 
     /*Low level */
-    messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); // Selector , joystick, brake: 11F
-    messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t) 0x16, RECEIVEING_NODE);   // Command to external memory
-   // initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0x7CF, (uint32_t) 0x10F);
-   // initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7ff, (uint32_t) 0x16);
+   // messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); // Selector , joystick, brake: 11F
+  //  messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t) 0x16, RECEIVEING_NODE);   // Command to external memory
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0x7CF, (uint32_t) 0x10F);
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7ff, (uint32_t) 0x16);
 
 }
 
 static void messageBoxInitReg2()
 {
     /*Sending node*/
-    messageBoxInitialize(canREG2, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
-    messageBoxInitialize(canREG2, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
-    messageBoxInitialize(canREG2, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
-    messageBoxInitialize(canREG2, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
-    //initializeSendingMessageBox(canREG2, canMESSAGE_BOX1);
-    //initializeSendingMessageBox(canREG2, canMESSAGE_BOX2);
-    //initializeSendingMessageBox(canREG2, canMESSAGE_BOX3);
-    //initializeSendingMessageBox(canREG2, canMESSAGE_BOX4);
+  //  messageBoxInitialize(canREG2, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_Command
+  //  messageBoxInitialize(canREG2, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
+  //  messageBoxInitialize(canREG2, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
+   // messageBoxInitialize(canREG2, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
+    initializeSendingMessageBox(canREG2, canMESSAGE_BOX1, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG2, canMESSAGE_BOX2, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG2, canMESSAGE_BOX3, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG2, canMESSAGE_BOX4, CAN_Id_Standard);
     /*Receiving node */
     /*High level */
-    messageBoxInitialize(canREG2, canMESSAGE_BOX9, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
-    messageBoxInitialize(canREG2, canMESSAGE_BOX10, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
-    //initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX9, (uint32_t) 0xFF, (uint32_t) 0xFA);
-   // initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX10, (uint32_t) 0x7FF, (uint32_t) 0x1BA);
+  //  messageBoxInitialize(canREG2, canMESSAGE_BOX9, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
+   // messageBoxInitialize(canREG2, canMESSAGE_BOX10, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
+    initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX9, (uint32_t) 0xFF, (uint32_t) 0xFA);
+    initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX10, (uint32_t) 0x7FF, (uint32_t) 0x1BA);
 }
 uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
 {
@@ -195,75 +195,11 @@ void boardCanInit(canBASE_t *node)
     /** - Assign interrupt level for messages */
     if(node == canREG1)
     {
-        node->INTMUXx[0U] = (uint32)0x00000000U
-                          | (uint32)0x00000000U // MessageBox1
-                          | (uint32)0x00000000U // MessageBox2
-                          | (uint32)0x00000000U // MessageBox3
-                          | (uint32)0x00000000U // MessageBox4
-                          | (uint32)0x00000000U // MessageBox5
-                          | (uint32)0x00000000U // MessageBox6
-                          | (uint32)0x00000000U // MessageBox7
-                          | (uint32)0x00000000U // MessageBox8
-                          | (uint32)0x00000000U // MessageBox9
-                          | (uint32)0x00000000U // MessageBox10
-                          | (uint32)0x00000000U // MessageBox11
-                          | (uint32)0x00000000U // MessageBox12
-                          | (uint32)0x00000000U // MessageBox13
-                          | (uint32)0x00000000U // MessageBox14
-                          | (uint32)0x00008000U // MessageBox15
-                          | (uint32)0x00010000U // MessageBox16
-                          | (uint32)0x00000000U // MessageBox17
-                          | (uint32)0x00000000U // MessageBox18
-                          | (uint32)0x00000000U // MessageBox19
-                          | (uint32)0x00000000U // MessageBox20
-                          | (uint32)0x00000000U // MessageBox21
-                          | (uint32)0x00000000U // MessageBox22
-                          | (uint32)0x00000000U // MessageBox23
-                          | (uint32)0x00000000U // MessageBox24
-                          | (uint32)0x00000000U // MessageBox25
-                          | (uint32)0x00000000U // MessageBox26
-                          | (uint32)0x00000000U // MessageBox27
-                          | (uint32)0x00000000U // MessageBox28
-                          | (uint32)0x00000000U // MessageBox29
-                          | (uint32)0x00000000U // MessageBox30
-                          | (uint32)0x00000000U;// MessageBox31
-        //setMessageBoxLowInterrupt(node, 2,canMESSAGE_BOX15, canMESSAGE_BOX16);
+        setMessageBoxLowInterrupt(node, 2,canMESSAGE_BOX15, canMESSAGE_BOX16);
     }
     else
     {
-        node->INTMUXx[0U] = (uint32)0x00000000U
-                          | (uint32)0x00000000U // MessageBox1
-                          | (uint32)0x00000000U // MessageBox2
-                          | (uint32)0x00000000U // MessageBox3
-                          | (uint32)0x00000000U // MessageBox4
-                          | (uint32)0x00000000U // MessageBox5
-                          | (uint32)0x00000000U // MessageBox6
-                          | (uint32)0x00000000U // MessageBox7
-                          | (uint32)0x00000000U // MessageBox8
-                          | (uint32)0x00000000U // MessageBox9
-                          | (uint32)0x00000000U // MessageBox10
-                          | (uint32)0x00000000U // MessageBox11
-                          | (uint32)0x00000000U // MessageBox12
-                          | (uint32)0x00000000U // MessageBox13
-                          | (uint32)0x00000000U // MessageBox14
-                          | (uint32)0x00000000U // MessageBox15
-                          | (uint32)0x00000000U // MessageBox16
-                          | (uint32)0x00000000U // MessageBox17
-                          | (uint32)0x00000000U // MessageBox18
-                          | (uint32)0x00000000U // MessageBox19
-                          | (uint32)0x00000000U // MessageBox20
-                          | (uint32)0x00000000U // MessageBox21
-                          | (uint32)0x00000000U // MessageBox22
-                          | (uint32)0x00000000U // MessageBox23
-                          | (uint32)0x00000000U // MessageBox24
-                          | (uint32)0x00000000U // MessageBox25
-                          | (uint32)0x00000000U // MessageBox26
-                          | (uint32)0x00000000U // MessageBox27
-                          | (uint32)0x00000000U // MessageBox28
-                          | (uint32)0x00000000U // MessageBox29
-                          | (uint32)0x00000000U // MessageBox30
-                          | (uint32)0x00000000U;// MessageBox31
-      //  setMessageBoxLowInterrupt(node, 1, 0);
+        setMessageBoxLowInterrupt(node, canMESSAGE_BOX15, canMESSAGE_BOX16);
     }
     /** - Setup auto bus on timer period */
     node->ABOTR = (uint32)0U;
@@ -326,27 +262,55 @@ void boardCanInit(canBASE_t *node)
     node->CTL &= ~(uint32)(0x00000041U);
 }
 
-/*static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox)
+static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_identifier_t canId)
 {
     do
     {
-        if((node->IF1STAT & 0x80U) != 0x80U)
+        if(canId == CAN_Id_Extended)
         {
-            node->IF1MSK  = 0x00;
-            node->IF1ARB  = 0x00;
-            node->IF1MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-            node->IF1CMD  = (uint8) 0xF8U;
-            node->IF1NO   = messageBox;
-            break;
+            if((node->IF1STAT & 0x80U) != 0x80U)
+            {
+                // node->IF1MSK  = 0x00;
+                //node->IF1ARB  = 0x00;
+                node->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x1FFFFFFFU) << (uint32)0U);
+                node->IF1MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
+                node->IF1CMD  = (uint8) 0xF8U;
+                node->IF1NO   = messageBox;
+                break;
+            }
+            if((node->IF2STAT & 0x80U) != 0x80U)
+            {
+               // node->IF2MSK  = 0x00;
+                //node->IF2ARB  = 0x00;
+                node->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x1FFFFFFFU) << (uint32)0U);
+                node->IF2MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
+                node->IF2CMD  = (uint8) 0xF8U;
+                node->IF2NO   = messageBox;
+                break;
+            }
         }
-        if((node->IF2STAT & 0x80U) != 0x80U)
+        else
         {
-            node->IF2MSK  = 0x00;
-            node->IF2ARB  = 0x00;
-            node->IF2MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
-            node->IF2CMD  = (uint8) 0xF8U;
-            node->IF2NO   = messageBox;
-            break;
+            if((node->IF1STAT & 0x80U) != 0x80U)
+            {
+                // node->IF1MSK  = 0x00;
+                //node->IF1ARB  = 0x00;
+                canREG1->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
+                node->IF1MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
+                node->IF1CMD  = (uint8) 0xF8U;
+                node->IF1NO   = messageBox;
+                break;
+            }
+            if((node->IF2STAT & 0x80U) != 0x80U)
+            {
+                // node->IF2MSK  = 0x00;
+                //node->IF2ARB  = 0x00;
+                canREG1->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
+                node->IF2MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
+                node->IF2CMD  = (uint8) 0xF8U;
+                node->IF2NO   = messageBox;
+                break;
+            }
         }
     }while(1);
 }
@@ -411,4 +375,4 @@ static void setMessageBoxLowInterrupt(canBASE_t *node ,uint8_t number, ...)
         node->INTMUXx[0U] |= (uint32_t)(1 << (data));
     }
     va_end(args);
-}*/
+}

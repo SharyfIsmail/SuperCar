@@ -52,6 +52,18 @@ static const uint8_t Crc8Table[256] =
     0x82, 0xB3, 0xE0, 0xD1, 0x46, 0x77, 0x24, 0x15,
     0x3B, 0x0A, 0x59, 0x68, 0xFF, 0xCE, 0x9D, 0xAC
 };
+static uint8_t CanCrc8(const uint8_t data[], uint8_t dlc)
+{
+    uint8_t crc = 0xFF;
+    uint8_t i;
+
+    for(i = 1; i < dlc; i++)
+    {
+        crc = Crc8Table[crc ^ data[i]];
+    }
+
+    return crc;
+}
 
 uint8_t crc8(const uint8_t *pcBlock, uint32_t len)
 {
@@ -61,4 +73,14 @@ uint8_t crc8(const uint8_t *pcBlock, uint32_t len)
         crc = Crc8Table[crc ^ *pcBlock++];
 
     return crc;
+}
+
+void WriteToCanFrameCrc8(uint8_t data[], uint8_t dlc)
+{
+    data[0] = CanCrc8(data, dlc);
+}
+
+bool CheckCanFrameCrc8(const uint8_t data[], uint8_t dlc)
+{
+    return data[0] == CanCrc8(data, dlc);
 }

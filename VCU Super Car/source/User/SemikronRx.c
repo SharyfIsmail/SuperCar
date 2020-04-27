@@ -24,7 +24,10 @@ MessageBufferHandle_t xMessageBuffer;
 TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
 
-static VcuStateMangement_t  vcuStatus = VCU_Status_Init;
+static VcuStatusStruct_t  vcuStatus = {
+                                       VCU_Status_Init ,
+                                       VCU_NO_ERROR
+};
 void semikronRxInit(void)
 {
     if(xTaskCreate(vSemicronRxHandler, "SemicronRxHandler", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_SEMICRON_HANDLER, 1, &xSemicronRxHandler) != pdTRUE)
@@ -105,7 +108,7 @@ void vSemicronRxHandler (void *pvParameters)
     for(;;)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
-       if (vcuStatus == VCU_Status_Init)
+       if (vcuStatus.vcuStateMangement == VCU_Status_Init)
             clearErrorAction(&rxPdo_03);
 //
 //        else if (vcuStatus == VCU_Status_FORWARD  ||
@@ -185,7 +188,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 
     nmtNodeGuardingState_t  nmtNodeGuardingState = PRE_OPERATIONAL;
     nmtCommandSpecifier_t nmtCommandSpecifier;
-
+    VcuRawStatusBattery_t batteryStatus = BATTERY_INIT;
     canMessage_t semicronNodeGuarding =
     {
          .id = SEMICRON_RX_NMT_NODE_GUARDING,
@@ -197,11 +200,11 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
     for(;;)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
+        xQueuePeek(xQueueBatteryRawStatus, &batteryStatus, pdMS_TO_TICKS(0));
 
-
-         if (vcuStatus ==  VCU_Status_Init || vcuStatus == VCU_Status_SLEEP)
+         if (vcuStatus.vcuStateMangement ==  VCU_Status_Init && batteryStatus == BATTERY_NORMAL_OFF)
             nmtNodeGuardingState = PRE_OPERATIONAL;
-         else
+         else if(vcuStatus.vcuStateMangement ==  VCU_Status_Init && batteryStatus == BATTERY_HV_ACTIVE)
              nmtNodeGuardingState = OPERATIONAL;
 
         if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))

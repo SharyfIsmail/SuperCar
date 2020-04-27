@@ -72,7 +72,7 @@ static void headerFromBytes(const uint8_t data[], ExtMemoryHeader_t *extMemoryHe
 static ExtMemoryHeader_t extMemoryHeader = {0};
 static canMessage_t errorCanMessage =
 {
-    .id  = 0x00,
+    .id  = 0x79,
     .dlc = 8,
     .ide = (uint8_t)CAN_Id_Standard,
     .data = {0},
