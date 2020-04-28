@@ -12,32 +12,34 @@
 #include "newCanLib.h"
 #include "acceleratorBrakeJoystick.h"
 
-#define NUMBER_OF_HeartBEAT   3
+#define NUMBER_OF_HeartBEAT   2
 
 typedef struct
 {
     TickType_t maxTime[NUMBER_OF_HeartBEAT];
 }maxTimeOutTime_t;
-
-TaskHandle_t xAcceleratorBrakeJoystickTxHandler;
-
-QueueHandle_t xQueueAcceleratorBrakeJoystickTx = NULL;
-
-QueueHandle_t xqueueJoystickMode = NULL;
-QueueHandle_t xqueueAcceleratorValue = NULL;
-QueueHandle_t xqueueBrakeValue = NULL;
-
 maxTimeOutTime_t maxTimeOutTime =
 {
  .maxTime =
  {
      500,  // accelerator
-     500,  // Brake
      500,  // Joystick
  }
 };
+
+TaskHandle_t xAcceleratorBrakeJoystickTxHandler;
+TaskHandle_t xSelectorRxHandler;
+
+QueueHandle_t xQueueABPeadlSelectorTx = NULL;
+QueueHandle_t xqueueSelectorMode = NULL;
+QueueHandle_t xqueueAcceleratorValue = NULL;
+
+static SelectorMode_t  selectorMode = SELECTOR_UNDEFINED;
+
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
-static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime);
+void vSelectorRxHandler(void *pvParameters);
+
+static void checkLostsOfComponents(TickType_t accelerator, TickType_t selector , TickType_t checkingTime);
 
 void acceleratorBrakeJoystickInit(void)
 {
@@ -47,69 +49,81 @@ void acceleratorBrakeJoystickInit(void)
         while(1);
     }/* else not needed */
 
-    xQueueAcceleratorBrakeJoystickTx = xQueueCreate(20U, sizeof(acceleratorBrakeJoystick_t));
-    xqueueJoystickMode = xQueueCreate(1U, sizeof(uint8_t));
+    if(xTaskCreate(vSelectorRxHandler, "SelectorRxHandler", configMINIMAL_STACK_SIZE, (void*)CAN_PERIOD_MS_SELECTOR_RX, 1, &xSelectorRxHandler) != pdTRUE)
+    {
+        /*Task couldn't be created */
+        while(1);
+    }/* else not needed */
+
+    xQueueABPeadlSelectorTx = xQueueCreate(20U, sizeof(ABPeadlSelector_t));
+    xqueueSelectorMode = xQueueCreate(1U, sizeof(uint8_t));
     xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int));
-    xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
+   // xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
 }
 
 
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 {
     TickType_t acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
-    TickType_t brakeTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
-    TickType_t joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
+    TickType_t selectorTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
     TickType_t checkingTime = 0U;
-    int torqueValue = 0 ;
+  //  int torqueValue = 0 ;
 
 
-    acceleratorBrakeJoystick_t acceleratorBrakeJoystick;
-    selectorTx_t *selectorTx = &acceleratorBrakeJoystick.p.selectorTx;
-    brakeTx_t *brakeTx = &acceleratorBrakeJoystick.p.brakeTx;
-    acceleratorTx_t *accelerator = &acceleratorBrakeJoystick.p.acceleratorTx;
+    ABPeadlSelector_t aBPeadlSelector;
+    selectorTx_t *selectorTx = &aBPeadlSelector.p.selectorTx;
+    ABPedalTx_t *aBPedalTx = &aBPeadlSelector.p.ABPedalTx;
 
     for(;;)
     {
-        if(xQueueReceive(xQueueAcceleratorBrakeJoystickTx, &acceleratorBrakeJoystick, pdMS_TO_TICKS(250)))
+        if(xQueueReceive(xQueueABPeadlSelectorTx, &aBPeadlSelector, pdMS_TO_TICKS(250)))
         {
-            if(acceleratorBrakeJoystick.id == SELECTOR_TX)
+            if(aBPeadlSelector.id == AB_PEDAL_TX)
             {
                 acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
             }
-            else if ( acceleratorBrakeJoystick.id == BRAKE_TX)
-            {
-                brakeTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
-            }
             else
             {
-                joystickTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[2];
-                xQueueOverwrite(xqueueAcceleratorValue, &torqueValue);
+                selectorTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
+                selectorMode = (SelectorMode_t) getSelectorVcuModeRequest(selectorTx);
+                //xQueueOverwrite(xqueueAcceleratorValue, &torqueValue);
             }
         }/* else not needed */
 
         /** Update CAN messages timeout value */
         checkingTime = xTaskGetTickCount();
-        checkLostsOfComponents(acceleratorTimeOutControl, brakeTimeOutControl, joystickTimeOutControl, checkingTime);
+        checkLostsOfComponents(acceleratorTimeOutControl, selectorTimeOutControl, checkingTime);
 
         taskYIELD();
     }
 }
 
-static void checkLostsOfComponents(TickType_t accelerator, TickType_t brake, TickType_t joystick , TickType_t checkingTime)
+void vSelectorRxHandler(void *pvParameters)
+{
+    TickType_t lastWeakTime;
+    TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
+    lastWeakTime = xTaskGetTickCount();
+    canMessage_t selectorRx =
+    {
+     .id  = SELECTOR_RX,
+     .dlc = SLECETOR_RX_DLC,
+     .ide = (uint8_t)CAN_Id_Extended,
+     .data = {0}
+    };
+    for(;;)
+    {
+        setVcuSelectorRequestedMode(&selectorRx, (uint8_t)selectorMode);
+        vTaskDelayUntil( &lastWeakTime, transmitPeriod);
+    }
+}
+static void checkLostsOfComponents(TickType_t accelerator, TickType_t selector , TickType_t checkingTime)
 {
     if(accelerator < checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(2U));
     else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(2U));
 
-
-    if(brake < checkingTime)
-        xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(3U));
-    else
-        xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(3U));
-
-
-    if(joystick < checkingTime)
+    if(selector < checkingTime)
         xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(4U));
      else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));

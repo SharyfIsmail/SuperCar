@@ -36,7 +36,7 @@ void vBmsRxHandler (void *pvParameters)
      .ide = (uint8_t)CAN_Id_Extended,
      .data = {0}
     };
-    VcuStatusStruct_t currentVcuStatusStruct = { VCU_Status_Init,
+    VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
                                                  VCU_ERROR_UNDEFINED
                                                };
     VcuRawStatusBattery_t vcuRawStatusBattery = BATTERY_INIT;
@@ -45,7 +45,7 @@ void vBmsRxHandler (void *pvParameters)
     {
         xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, 0);
 
-        if(currentVcuStatusStruct.vcuStateMangement == VCU_Status_Init &&
+        if(currentVcuStatusStruct.vcuStateMangement == VCU_STATUS_INIT &&
             currentVcuStatusStruct.errorStatus == VCU_NO_ERROR)
         {
             vcuRawStatusBattery = BATTERY_HV_ACTIVE;

@@ -10,6 +10,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "acceleratorBrakeJoystick.h"
 
 
 extern QueueHandle_t xQueueVcuStatus;
@@ -25,7 +26,7 @@ void vcuStateManagementInit(void);
 
 typedef enum
 {
-    VCU_Status_Init      = 0x00,
+    VCU_STATUS_INIT      = 0x00,
     VCU_Status_PARKING   = 0x01,
     VCU_Status_NEUTRAL   = 0x02,
     VCU_Status_FORWARD   = 0x03,
@@ -63,16 +64,6 @@ typedef enum
     ERROR_NOT_CLEANED
 }SemicronStatus_t;
 
-typedef enum
-{
-    JOYSTICK_INIT ,
-    JOYSTICK_PARKING,
-    JOYSTICK_NEUTRAL,
-    JOYSTICK_FORWARD,
-    JOYSTICK_REVERSE,
-    JOYSTICK_UNDEFINED
-}VcuRawStatusJoystick_t;
-
 /**
  * @typedef VcuRawStatusBattery_t
  * @brief Switching the battery state
@@ -90,7 +81,7 @@ typedef struct
 {
     lostComponentsStatus_t lostComponentsStatus ;
     SemicronStatus_t SemicronStatus ;
-    VcuRawStatusJoystick_t vcuRawStatusJoystick;
+    SelectorMode_t selectorMode;
     VcuRawStatusBattery_t vcuRawStatusBattery   ;
 } VcuRawStatuses_t;
 

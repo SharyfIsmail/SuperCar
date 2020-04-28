@@ -25,7 +25,7 @@ TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
 
 static VcuStatusStruct_t  vcuStatus = {
-                                       VCU_Status_Init ,
+                                       VCU_STATUS_INIT ,
                                        VCU_NO_ERROR
 };
 void semikronRxInit(void)
@@ -86,8 +86,8 @@ void vSemicronRxHandler (void *pvParameters)
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
 
-  //  VcuStateMangement_t  vcuStatus = VCU_Status_Init;;
-    int torqueValue = 0 ;
+  //  VcuStateMangement_t  vcuStatus = VCU_STATUS_INIT;;
+    //int torqueValue = 0 ;
 
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
     //clearError_t clearError = DO_NOT_CLEAR;
@@ -108,7 +108,7 @@ void vSemicronRxHandler (void *pvParameters)
     for(;;)
     {
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
-       if (vcuStatus.vcuStateMangement == VCU_Status_Init)
+       if (vcuStatus.vcuStateMangement == VCU_STATUS_INIT)
             clearErrorAction(&rxPdo_03);
 //
 //        else if (vcuStatus == VCU_Status_FORWARD  ||
@@ -199,19 +199,19 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
 
     for(;;)
     {
-        xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
-        xQueuePeek(xQueueBatteryRawStatus, &batteryStatus, pdMS_TO_TICKS(0));
-
-         if (vcuStatus.vcuStateMangement ==  VCU_Status_Init && batteryStatus == BATTERY_NORMAL_OFF)
-            nmtNodeGuardingState = PRE_OPERATIONAL;
-         else if(vcuStatus.vcuStateMangement ==  VCU_Status_Init && batteryStatus == BATTERY_HV_ACTIVE)
-             nmtNodeGuardingState = OPERATIONAL;
-
-        if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
+        if(xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0)))
         {
-            xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
-        }/* else not needed */
+            xQueuePeek(xQueueBatteryRawStatus, &batteryStatus, pdMS_TO_TICKS(0));
+            if (vcuStatus.vcuStateMangement ==  VCU_STATUS_INIT && batteryStatus == BATTERY_NORMAL_OFF)
+                nmtNodeGuardingState = PRE_OPERATIONAL;
+            else if(vcuStatus.vcuStateMangement ==  VCU_STATUS_INIT && batteryStatus == BATTERY_HV_ACTIVE)
+                 nmtNodeGuardingState = OPERATIONAL;
 
+            if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
+            {
+                xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
+            }/* else not needed */
+        }
         setNmtNodeGuardingState(&semicronNodeGuarding, (uint8_t) nmtNodeGuardingState);
         ToggleNmtNodeGuardingToggleBit(&semicronNodeGuarding);
 
