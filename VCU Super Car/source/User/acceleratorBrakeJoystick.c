@@ -10,6 +10,7 @@
 #include "task.h"
 #include "sys_main.h"
 #include "newCanLib.h"
+#include "vcuStateManagement.h"
 #include "acceleratorBrakeJoystick.h"
 
 #define NUMBER_OF_HeartBEAT   2
@@ -31,10 +32,11 @@ TaskHandle_t xAcceleratorBrakeJoystickTxHandler;
 TaskHandle_t xSelectorRxHandler;
 
 QueueHandle_t xQueueABPeadlSelectorTx = NULL;
-QueueHandle_t xqueueSelectorMode = NULL;
 QueueHandle_t xqueueAcceleratorValue = NULL;
 
-static SelectorMode_t  selectorMode = SELECTOR_UNDEFINED;
+static SelectorStructModeTx_t  selectorMode = {.selectorMode = SELECTOR_MODE_INIT,
+                                               .selectorInitialization = SELECTOR_INIT_INIT
+};
 
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
 void vSelectorRxHandler(void *pvParameters);
@@ -56,7 +58,6 @@ void acceleratorBrakeJoystickInit(void)
     }/* else not needed */
 
     xQueueABPeadlSelectorTx = xQueueCreate(20U, sizeof(ABPeadlSelector_t));
-    xqueueSelectorMode = xQueueCreate(1U, sizeof(uint8_t));
     xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int));
    // xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
 }
@@ -67,8 +68,6 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
     TickType_t acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
     TickType_t selectorTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
     TickType_t checkingTime = 0U;
-  //  int torqueValue = 0 ;
-
 
     ABPeadlSelector_t aBPeadlSelector;
     selectorTx_t *selectorTx = &aBPeadlSelector.p.selectorTx;
@@ -85,8 +84,9 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
             else
             {
                 selectorTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
-                selectorMode = (SelectorMode_t) getSelectorVcuModeRequest(selectorTx);
-                //xQueueOverwrite(xqueueAcceleratorValue, &torqueValue);
+                selectorMode.selectorMode = (SelectorMode_t) getSelectorVcuModeRequest(selectorTx);
+                selectorMode.selectorInitialization = (SelectorInitialization_t)getSelectorVcuInit(selectorTx);
+                xQueueSend(xQueueSelectorMode, &selectorMode, pdMS_TO_TICKS(0));
             }
         }/* else not needed */
 
@@ -100,6 +100,9 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 
 void vSelectorRxHandler(void *pvParameters)
 {
+    VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
+                                                 VCU_NO_ERROR
+                                               };
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
     lastWeakTime = xTaskGetTickCount();
@@ -110,9 +113,15 @@ void vSelectorRxHandler(void *pvParameters)
      .ide = (uint8_t)CAN_Id_Extended,
      .data = {0}
     };
+    setVcuSelectorIlluminationMode(&selectorRx, 0x01);
+    setVcuSelectorLeverLocking(&selectorRx, 0x01);
     for(;;)
     {
-        setVcuSelectorRequestedMode(&selectorRx, (uint8_t)selectorMode);
+        if(xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, pdMS_TO_TICKS(0)));
+
+        setVcuSelectorCurrentMode(&selectorRx,(uint8_t) currentVcuStatusStruct.vcuStateMangement);
+        setVcuSelectorRequestedMode(&selectorRx, (uint8_t)selectorMode.selectorMode);
+
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }

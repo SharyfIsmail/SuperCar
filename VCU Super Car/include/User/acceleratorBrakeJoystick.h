@@ -21,14 +21,26 @@ void acceleratorBrakeJoystickInit(void);
 
 typedef enum
 {
-    SELECTOR_INIT ,
-    SELECTOR_PARKING,
-    SELECTOR_NEUTRAL,
-    SELECTOR_FORWARD,
-    SELECTOR_REVERSE,
-    SELECTOR_UNDEFINED
+    SELECTOR_MODE_INIT ,
+    SELECTOR_MODE_PARKING,
+    SELECTOR_MODE_NEUTRAL,
+    SELECTOR_MODE_FORWARD,
+    SELECTOR_MODE_REVERSE,
+    SELECTOR_MODE_UNDEFINED
 }SelectorMode_t;
 
+typedef enum
+{
+    SELECTOR_INIT_INIT,
+    SELECTOR_INIT_OPERATIONAL,
+    SELECTOR_INIT_UNDEFINED,
+    SELECTOR_INIT_ERROR
+}SelectorInitialization_t;
+typedef struct
+{
+    SelectorMode_t selectorMode;
+    SelectorInitialization_t selectorInitialization;
+}SelectorStructModeTx_t;
 #define SELECTOR_TX      ((uint32_t) 0x800D028)
 #define SLECETOR_TX_DLC  ((uint8_t)4)
 

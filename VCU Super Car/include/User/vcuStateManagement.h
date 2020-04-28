@@ -17,7 +17,7 @@ extern QueueHandle_t xQueueVcuStatus;
 //extern QueueHandle_t xQueueVcuStatusManagement;
 extern QueueHandle_t xQueueLostComponentRawStatus;
 extern QueueHandle_t xQueueSemicronRawStatus;
-extern QueueHandle_t xQueueJoystickRawStatus;
+extern QueueHandle_t xQueueSelectorMode;
 extern QueueHandle_t xQueueBatteryRawStatus ;
 
 extern QueueHandle_t xQueueSemicronStart;
@@ -81,7 +81,7 @@ typedef struct
 {
     lostComponentsStatus_t lostComponentsStatus ;
     SemicronStatus_t SemicronStatus ;
-    SelectorMode_t selectorMode;
+    SelectorStructModeTx_t selectorModeStruct;
     VcuRawStatusBattery_t vcuRawStatusBattery   ;
 } VcuRawStatuses_t;
 
