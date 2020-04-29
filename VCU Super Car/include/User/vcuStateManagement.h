@@ -50,6 +50,7 @@ typedef struct
     VcuErrorStatus_t    errorStatus;
 
 }VcuStatusStruct_t;
+
 typedef enum
 {
     NO_CRASH_lOST_MESSAGE,
@@ -85,4 +86,5 @@ typedef struct
     VcuRawStatusBattery_t vcuRawStatusBattery   ;
 } VcuRawStatuses_t;
 
+const VcuStatusStruct_t* getVcuStatusStruct();
 #endif /* INCLUDE_USER_VCUSTATEMANAGEMENT_H_ */

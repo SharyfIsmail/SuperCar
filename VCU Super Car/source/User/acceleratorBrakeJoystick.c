@@ -12,6 +12,7 @@
 #include "newCanLib.h"
 #include "vcuStateManagement.h"
 #include "acceleratorBrakeJoystick.h"
+#include "crc8.h"
 
 #define NUMBER_OF_HeartBEAT   2
 
@@ -34,14 +35,27 @@ TaskHandle_t xSelectorRxHandler;
 QueueHandle_t xQueueABPeadlSelectorTx = NULL;
 QueueHandle_t xqueueAcceleratorValue = NULL;
 
-static SelectorStructModeTx_t  selectorMode = {.selectorMode = SELECTOR_MODE_INIT,
-                                               .selectorInitialization = SELECTOR_INIT_INIT
-};
+static const VcuStatusStruct_t *currentVcuStatusStruct;
+static SelectorStructModeTx_t  selectorMode = {
+                                                .selectorMode = SELECTOR_MODE_INIT,
+                                                .selectorInitialization = SELECTOR_INIT_INIT
+                                              };
+//static VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
+//                                                    VCU_NO_ERROR
+ //                                                 };
+static BpSwitch_t bPSwitch = BRAKE_CLOSE;
+static int8_t realAPposition = 0;
+static uint8_t receivedAPposition = 0;
+
 
 void vAcceleratorBrakeJoystickTxHandler(void *pvParameters);
 void vSelectorRxHandler(void *pvParameters);
 
 static void checkLostsOfComponents(TickType_t accelerator, TickType_t selector , TickType_t checkingTime);
+static void parseDataToCanSelector(canMessage_t * selectorRx);
+static void parseDataFromCanSelector(selectorTx_t *selectorTx);
+static void parseDataFromCanPedal(ABPedalTx_t *aBPedalTx);
+static void setRealAPPosition(uint8_t receivedAPposition);
 
 void acceleratorBrakeJoystickInit(void)
 {
@@ -56,9 +70,9 @@ void acceleratorBrakeJoystickInit(void)
         /*Task couldn't be created */
         while(1);
     }/* else not needed */
-
+    currentVcuStatusStruct = getVcuStatusStruct();
     xQueueABPeadlSelectorTx = xQueueCreate(20U, sizeof(ABPeadlSelector_t));
-    xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int));
+    xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int8_t));
    // xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
 }
 
@@ -80,12 +94,14 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
             if(aBPeadlSelector.id == AB_PEDAL_TX)
             {
                 acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
+                parseDataFromCanPedal(aBPedalTx);
+                setRealAPPosition(receivedAPposition);
+                xQueueOverwrite(xqueueAcceleratorValue,&realAPposition);
             }
             else
             {
                 selectorTimeOutControl =  xTaskGetTickCount() + maxTimeOutTime.maxTime[1];
-                selectorMode.selectorMode = (SelectorMode_t) getSelectorVcuModeRequest(selectorTx);
-                selectorMode.selectorInitialization = (SelectorInitialization_t)getSelectorVcuInit(selectorTx);
+                parseDataFromCanSelector(selectorTx);
                 xQueueSend(xQueueSelectorMode, &selectorMode, pdMS_TO_TICKS(0));
             }
         }/* else not needed */
@@ -100,9 +116,6 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
 
 void vSelectorRxHandler(void *pvParameters)
 {
-    VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
-                                                 VCU_NO_ERROR
-                                               };
     TickType_t lastWeakTime;
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
     lastWeakTime = xTaskGetTickCount();
@@ -117,11 +130,9 @@ void vSelectorRxHandler(void *pvParameters)
     setVcuSelectorLeverLocking(&selectorRx, 0x01);
     for(;;)
     {
-        if(xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, pdMS_TO_TICKS(0)));
+       // if(xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, pdMS_TO_TICKS(0)));
 
-        setVcuSelectorCurrentMode(&selectorRx,(uint8_t) currentVcuStatusStruct.vcuStateMangement);
-        setVcuSelectorRequestedMode(&selectorRx, (uint8_t)selectorMode.selectorMode);
-
+        parseDataToCanSelector(&selectorRx);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
@@ -137,4 +148,96 @@ static void checkLostsOfComponents(TickType_t accelerator, TickType_t selector ,
      else
         xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(4U));
 
+}
+
+static void parseDataToCanSelector(canMessage_t * selectorRx)
+{
+    increaseVcuSelectorMessageCounter(selectorRx, 1);
+    setVcuSelectorCurrentMode(selectorRx,(uint8_t) currentVcuStatusStruct->vcuStateMangement);
+    setVcuSelectorRequestedMode(selectorRx, (uint8_t)selectorMode.selectorMode);
+    WriteToCanFrameCrc8(selectorRx->data, selectorRx->dlc);
+}
+static void parseDataFromCanSelector(selectorTx_t *selectorTx)
+{
+    selectorMode.selectorMode = (SelectorMode_t) getSelectorVcuModeRequest(selectorTx);
+    selectorMode.selectorInitialization = (SelectorInitialization_t)getSelectorVcuInit(selectorTx);
+}
+static void parseDataFromCanPedal(ABPedalTx_t *aBPedalTx )
+{
+    receivedAPposition = getAPPosition(aBPedalTx);
+    bPSwitch = (BpSwitch_t) getBPSwitch(aBPedalTx);
+}
+static void setRealAPPosition(uint8_t receivedAPposition)
+{
+    switch(currentVcuStatusStruct->errorStatus)
+    {
+    case VCU_NO_ERROR:
+        if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_FORWARD)
+        {
+           if(receivedAPposition <= 10)
+           {
+               realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+           }
+           else if(receivedAPposition < 80)
+           {
+               realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
+           }
+           else
+           {
+               realAPposition = (receivedAPposition - 80) * 2 + 60;
+           }
+        }
+        else if (currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
+        {
+            if(receivedAPposition <= 10)
+            {
+                realAPposition = 20 - (receivedAPposition * 2);
+            }
+            else
+            {
+                realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
+            }
+        }
+        else
+        {
+            realAPposition = 0;
+        }
+        break;
+
+    case VCU_ERROR_WORK:
+        if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_FORWARD)
+        {
+            if(receivedAPposition <= 10)
+            {
+                realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+            }
+            else if (receivedAPposition < 80)
+            {
+                realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
+            }
+            else
+            {
+                realAPposition = 60;
+            }
+        }
+        else if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
+        {
+            if(receivedAPposition <= 10)
+            {
+                realAPposition = 20 - (receivedAPposition * 2);
+            }
+            else
+            {
+                realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
+            }
+        }
+        else
+        {
+            realAPposition = 0;
+        }
+        break;
+
+    case  VCU_ERROR_STOP :
+        realAPposition = 0;
+    }
 }

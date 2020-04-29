@@ -26,7 +26,7 @@ typedef enum
     SELECTOR_MODE_NEUTRAL,
     SELECTOR_MODE_FORWARD,
     SELECTOR_MODE_REVERSE,
-    SELECTOR_MODE_UNDEFINED
+    SELECTOR_MODE_UNDEFINED = 0x07
 }SelectorMode_t;
 
 typedef enum
@@ -144,6 +144,13 @@ typedef struct
     uint8_t data[5];
 }ABPedalTx_t;
 
+typedef enum
+{
+    BRAKE_OPEN,
+    BRAKE_CLOSE,
+    BRAKE_UNDEFINED,
+    BRAKE_ERROR
+}BpSwitch_t;
 /*Checksum length : 8 start bit 0 :*/
 inline uint8_t getABPedalTxChecksum(ABPedalTx_t *ptr)
 {
@@ -166,12 +173,12 @@ inline uint8_t getAPKickdown(ABPedalTx_t *ptr)
     return (uint8_t)(ptr->data[1] & 0xC0) >> 6;
 }
 
-inline uint8_t getAPPosition(ABPedalTx_t *ptr)
+inline uint8_t getBPPosition(ABPedalTx_t *ptr)
 {
     return (uint8_t) (ptr->data[2]);
 }
 
-inline uint8_t getBPPosition(ABPedalTx_t *ptr)
+inline uint8_t getAPPosition(ABPedalTx_t *ptr)
 {
     return (uint8_t) (ptr->data[3]);
 }
