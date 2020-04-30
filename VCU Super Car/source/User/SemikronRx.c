@@ -15,6 +15,8 @@
 #include "canMessageLostCheck.h"
 #include "vcuStateManagement.h"
 
+static const VcuStatusStruct_t *currentVcuStatusStruct;
+
 void vSemicronRxHandler (void *pvParameters);
 void vSemicronNmtCommand (void *pvParameters);
 void vSemicronSyn(void *pvParameters);
@@ -51,6 +53,7 @@ void semikronRxInit(void)
         while(1);
     }/* else not needed */
     xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4);
+    currentVcuStatusStruct = getVcuStatusStruct();
 
 }
 
@@ -87,7 +90,7 @@ void vSemicronRxHandler (void *pvParameters)
     TickType_t transmitPeriod = pdMS_TO_TICKS( (uint32_t) pvParameters );
 
   //  VcuStateMangement_t  vcuStatus = VCU_STATUS_INIT;;
-    //int torqueValue = 0 ;
+    int8_t torqueValue = 0 ;
 
     RX_PDO_03LimitationMode_t limitationMode = SYMMETRIC;
     //clearError_t clearError = DO_NOT_CLEAR;
@@ -107,12 +110,23 @@ void vSemicronRxHandler (void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
+        switch(currentVcuStatusStruct->errorStatus)
         xQueuePeek(xQueueVcuStatus, &vcuStatus, pdMS_TO_TICKS(0));
        if (vcuStatus.vcuStateMangement == VCU_STATUS_INIT)
             clearErrorAction(&rxPdo_03);
-//
-//        else if (vcuStatus == VCU_Status_FORWARD  ||
-//                 vcuStatus == VCU_Status_FORWARD)
+
+        else if (vcuStatus.vcuStateMangement == VCU_Status_NEUTRAL  ||
+                 vcuStatus.vcuStateMangement == VCU_Status_PARKING  ||
+                 vcuStatus.vcuStateMangement == VCU_Status_CHARGING ||
+                 vcuStatus.vcuStateMangement == VCU_Status_SLEEP)
+        {
+            carStop(&rxPdo_03);
+        }
+        else
+        {
+            xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
+            carInMotion(&rxPdo_03, torqueValue);
+        }
 //        {
 //            xQueuePeek(xqueueAcceleratorValue, &torqueValue, pdMS_TO_TICKS(0));
 //            carInMotion(&rxPdo_03, torqueValue);
