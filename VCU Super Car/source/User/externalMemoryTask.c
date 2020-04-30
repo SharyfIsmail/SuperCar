@@ -181,7 +181,7 @@ static void sendErrorFromExtMemory(ErrorDataToExtMemory_t *errorDataFromcan)
 
     if(getHeaderErrorQuantity(&extMemoryHeader) == 0)
     {
-        newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+        newCanTransmit(canREG1, canMESSAGE_BOX6, &errorCanMessage);
         return;
     }/* else not needed */
 
@@ -291,7 +291,7 @@ static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataFromcan)
     if(idErrorToCan == EVERYTHING_IS_FINE)
     {
         headerToBytes(&extMemoryHeader, errorCanMessage.data);
-        newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+        newCanTransmit(canREG1, canMESSAGE_BOX6, &errorCanMessage);
         return;
     }
     for(uint16_t errorIndex = 0 ; errorIndex < extMemoryHeader.errorQuantity ; errorIndex++)
@@ -305,18 +305,18 @@ static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataFromcan)
         if(crc8(errorCanMessage.data, 5) != errorDataFromExtMemory.crc)
         {
             memset(&errorCanMessage.data, 0, sizeof(errorCanMessage.data));
-            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            newCanTransmit(canREG1, canMESSAGE_BOX6, &errorCanMessage);
             vTaskDelay(pdMS_TO_TICKS(5));
             continue;
         }
         if(idErrorToCan == ALL_ERRORS)
         {
-            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            newCanTransmit(canREG1, canMESSAGE_BOX6, &errorCanMessage);
             vTaskDelay(pdMS_TO_TICKS(5));
         }
         else if(getError(&errorDataFromExtMemory) == idErrorToCan )
         {
-            newCanTransmit(canREG1, canMESSAGE_BOX4, &errorCanMessage);
+            newCanTransmit(canREG1, canMESSAGE_BOX6, &errorCanMessage);
             vTaskDelay(pdMS_TO_TICKS(5));
         }/* else not needed */
     }

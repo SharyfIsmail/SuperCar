@@ -125,7 +125,7 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
         SemicronStatus = NO_CRASH_SEMICRON;
     }
 
-    xQueueOverwrite(xQueueSemicronRawStatus, &SemicronStatus);
+    xQueueOverwrite(xQueueSemicronError, &SemicronStatus);
 
 }
 

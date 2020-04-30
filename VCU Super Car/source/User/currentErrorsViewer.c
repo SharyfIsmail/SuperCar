@@ -63,7 +63,7 @@ void vErrorViewer(void *pvParameters)
         xQueuePeek(queueHetError, &hetError, pdMS_TO_TICKS(0));
 
         parseError(&currentErrors, semicronBitError, lostComponentsError, hetError);
-        newCanTransmit(canREG1, canMESSAGE_BOX3, &currentErrors);
+        newCanTransmit(canREG1, canMESSAGE_BOX5, &currentErrors);
         vTaskDelayUntil(&lastWakeTime, transmitPeriod);
     }
 }

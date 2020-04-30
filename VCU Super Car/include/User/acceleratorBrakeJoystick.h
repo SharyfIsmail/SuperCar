@@ -19,6 +19,11 @@ extern QueueHandle_t xqueueSelectorMode;
 extern QueueHandle_t xqueueAcceleratorValue;
 void acceleratorBrakeJoystickInit(void);
 
+typedef struct
+{
+    int8_t realAPposition ;
+    int16_t speedLimit ;
+}SpeedTorque_t;
 typedef enum
 {
     SELECTOR_MODE_INIT ,
@@ -41,7 +46,7 @@ typedef struct
     SelectorMode_t selectorMode;
     SelectorInitialization_t selectorInitialization;
 }SelectorStructModeTx_t;
-#define SELECTOR_TX      ((uint32_t) 0x800D028)
+#define SELECTOR_TX      ((uint32_t) 0xC91D028)
 #define SLECETOR_TX_DLC  ((uint8_t)4)
 
 typedef struct
@@ -92,7 +97,7 @@ inline uint8_t getSelectorVcuModeRequest(selectorTx_t *ptr)
     return (uint8_t)(ptr->data[3] & 0xF0)>>4 ;
 }
 
-#define SELECTOR_RX               ((uint32_t) 0xC0028D0)
+#define SELECTOR_RX               ((uint32_t) 0x5228)
 #define CAN_PERIOD_MS_SELECTOR_RX ((uint32_t) 100)
 #define SLECETOR_RX_DLC             ((uint8_t)3)
 

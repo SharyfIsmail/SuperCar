@@ -47,6 +47,7 @@
 
 /* Include Files */
 
+#include <bms.h>
 #include "sys_common.h"
 
 /* USER CODE BEGIN (1) */
@@ -58,9 +59,8 @@
 #include "newCanLib.h"
 #include "SemikronRx.h"
 #include "SemikronTx.h"
-#include "bmsRx.h"
-#include "bmsTx.h"
 #include "acceleratorBrakeJoystick.h"
+#include "bms.h"
 #include "canMessageLostCheck.h"
 #include "vcuStateManagement.h"
 #include "memory_access.h"
@@ -93,11 +93,10 @@ int main(void)
     memoryAccessInit();
     hetInit();
     boardCanInit(canREG1);
-    boardCanInit(canREG2);
+  //  boardCanInit(canREG2);
     semikronRxInit();
     semikronTxInit();
-    BmsRxInit();
-    BmsTxInit();
+    BmsInit();
     acceleratorBrakeJoystickInit();
     canMessageLostCheckInit();
     vcuStateManagementInit();

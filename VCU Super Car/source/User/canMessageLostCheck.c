@@ -109,7 +109,7 @@ void vCanMessageLostCheckHandler(void *pvParameters)
         {
             lostComponentsStatus = NO_CRASH_lOST_MESSAGE;
         }/* else not needed */
-        xQueueOverwrite(xQueueLostComponentRawStatus, &lostComponentsStatus);
+        xQueueOverwrite(xQueueLostComponentError, &lostComponentsStatus);
     }
 }
 

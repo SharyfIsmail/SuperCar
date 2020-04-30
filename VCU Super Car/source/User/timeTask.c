@@ -38,14 +38,13 @@ QueueHandle_t xQueueRealTime = NULL;
 
 void vTimeTask(void *pvParameters);
 static void ReadRealTime(datetime_t *realTime);
-//static void setTimeInDate();
 static uint8_t getYears(datetime_t realTime);
 static uint8_t getMonths(datetime_t realTime);
 static uint8_t getDays(datetime_t realTime);
 static uint8_t getHours(datetime_t realTime);
 static uint8_t getMinutes(datetime_t realTime);
 static uint8_t getSeconds(datetime_t realTime);
-static void parseTime(canMessage_t* ptr);
+static void parseTimeToCan(canMessage_t* ptr);
 static void setTimeInDate(datetime_t realTime);
 
 void timerTaskInit(void)
@@ -93,10 +92,9 @@ void vTimeTask(void *pvParameters)
 
         xQueueOverwrite(xQueueRealTime, &realTime);
         xQueueOverwrite(queueHetError, &hetIsFine);
-       // setTimeInDate();
 
-        parseTime(&dataTime);
-        newCanTransmit(canREG1, canMESSAGE_BOX5, &dataTime);
+        parseTimeToCan(&dataTime);
+        newCanTransmit(canREG1, canMESSAGE_BOX7, &dataTime);
 
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
@@ -107,117 +105,7 @@ static void ReadRealTime(datetime_t *realTime)
     OneWire_SkipROM();
     DS1904_ReadDateTime(realTime);
 }
-/*static void setTimeInDate()
-{
-    currentDate.tm_sec += 1;
-    if(currentDate.tm_sec == 60)
-    {
-        currentDate.tm_sec = 0;
-        currentDate.tm_min +=1;
-        if(currentDate.tm_min == 60)
-        {
-            currentDate.tm_min = 0;
-            currentDate.tm_hour +=1;
-            if(currentDate.tm_hour == 24)
-            {
-                currentDate.tm_hour = 0;
-                currentDate.tm_mday += 1;
-                switch(currentDate.tm_mon)
-                {
-                    case 1:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 2:
-                        if( currentDate.tm_mday == 28)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 3:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 4:
-                        if( currentDate.tm_mday == 30)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 5:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 6:
-                        if( currentDate.tm_mday == 30)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 7:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 8:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 9:
-                        if( currentDate.tm_mday == 30)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 10:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 11:
-                        if( currentDate.tm_mday == 30)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                        }
-                        break;
-                    case 12:
-                        if( currentDate.tm_mday == 31)
-                        {
-                            currentDate.tm_mday = 0;
-                            currentDate.tm_mon +=1;
-                            if( currentDate.tm_mon == 13)
-                            {
-                                currentDate.tm_mon = 1;
-                                currentDate.tm_year +=1;
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-    }
-}*/
+
 static uint8_t getYears(datetime_t realTime)
 {
     return (20 + (realTime/ 31556926));
@@ -329,7 +217,7 @@ static uint8_t getSeconds(datetime_t realTime)
     }
     return  realTime;
 }
-static void parseTime(canMessage_t* ptr)
+static void parseTimeToCan(canMessage_t* ptr)
 {
     ptr->data[0] = currentDate.tm_year;
     ptr->data[1] = currentDate.tm_mon;

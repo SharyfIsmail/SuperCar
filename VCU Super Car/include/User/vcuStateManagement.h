@@ -10,15 +10,17 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "bms.h"
 #include "acceleratorBrakeJoystick.h"
 
 
-extern QueueHandle_t xQueueVcuStatus;
+
+//extern QueueHandle_t xQueueVcuStatus;
 //extern QueueHandle_t xQueueVcuStatusManagement;
-extern QueueHandle_t xQueueLostComponentRawStatus;
-extern QueueHandle_t xQueueSemicronRawStatus;
+extern QueueHandle_t xQueueLostComponentError;
+extern QueueHandle_t xQueueSemicronError;
 extern QueueHandle_t xQueueSelectorMode;
-extern QueueHandle_t xQueueBatteryRawStatus ;
+extern QueueHandle_t xQueueBatteryMode ;
 
 extern QueueHandle_t xQueueSemicronStart;
 
@@ -48,7 +50,6 @@ typedef struct
 {
     VcuStateMangement_t vcuStateMangement;
     VcuErrorStatus_t    errorStatus;
-
 }VcuStatusStruct_t;
 
 typedef enum
@@ -65,26 +66,13 @@ typedef enum
     ERROR_NOT_CLEANED
 }SemicronStatus_t;
 
-/**
- * @typedef VcuRawStatusBattery_t
- * @brief Switching the battery state
- * */
-typedef enum
-{
-    BATTERY_INIT         = 0x00,  /*!< Specifies init mode. */
-    BATTERY_HV_ACTIVE    = 0x01,  /*!< Specifies on mode. */
-    BATTERY_CHARGING     = 0x02,  /*!< Specifies charging mode. */
-    BATTERY_NORMAL_OFF   = 0x03,  /*!< Specifies oFF mode. */
-    BATTERY_EMEGENCY_OFF = 0x04   /*!< Specifies oFF mode when error accured. */
-}VcuRawStatusBattery_t;
-
 typedef struct
 {
     lostComponentsStatus_t lostComponentsStatus ;
     SemicronStatus_t SemicronStatus ;
     SelectorStructModeTx_t selectorModeStruct;
-    VcuRawStatusBattery_t vcuRawStatusBattery   ;
-} VcuRawStatuses_t;
+    bmsMode_State_t bmsModeState;
+}taskStatuses_t;
 
 const VcuStatusStruct_t* getVcuStatusStruct();
 #endif /* INCLUDE_USER_VCUSTATEMANAGEMENT_H_ */

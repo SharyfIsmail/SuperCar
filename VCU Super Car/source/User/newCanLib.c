@@ -95,25 +95,29 @@ static void messageBoxInitialize(canBASE_t *node, uint32 messageBox, uint32_t id
 static void messageBoxInitReg1()
 {
     /*Sending node*/
-  //  messageBoxInitialize(canREG1, canMESSAGE_BOX1 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Heart Beat
-   // messageBoxInitialize(canREG1, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Bms Rx Handler
-    //messageBoxInitialize(canREG1, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // All current error
-    //messageBoxInitialize(canREG1, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Error from external memory
-   // messageBoxInitialize(canREG1, canMESSAGE_BOX5 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE);  // Real Time in y:m:d:h:m:s;
-    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Extended);
-    initializeSendingMessageBox(canREG1, canMESSAGE_BOX2, CAN_Id_Extended);
-    initializeSendingMessageBox(canREG1, canMESSAGE_BOX3, CAN_Id_Standard);
-    initializeSendingMessageBox(canREG1, canMESSAGE_BOX4, CAN_Id_Standard);
-    initializeSendingMessageBox(canREG1, canMESSAGE_BOX5, CAN_Id_Standard);
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Standard); // Semicron NMT_Command
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX2, CAN_Id_Standard); // Semicron Sync
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX3, CAN_Id_Standard); // Semicron NMT_NodeGuarding
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX4, CAN_Id_Standard); // SemicronRx Handler
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX5, CAN_Id_Standard); // All current error
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX6, CAN_Id_Standard); // Error from external memory
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX7, CAN_Id_Standard); // Real Time in y:m:d:h:m:s;
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX8, CAN_Id_Extended); // vSelectorRxHandler
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX9, CAN_Id_Extended); // VCU BMS
+
+
+//    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Extended);// Bms Heart Beat
+//    initializeSendingMessageBox(canREG1, canMESSAGE_BOX2, CAN_Id_Extended);// Bms Rx Handler
 
     /*Receiving node */
     /*High level */
-
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0xFF, (uint32_t) 0xFA);
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7FF, (uint32_t) 0x1BA);
     /*Low level */
    // messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); // Selector , joystick, brake: 11F
   //  messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t) 0x16, RECEIVEING_NODE);   // Command to external memory
-    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0x7CF, (uint32_t) 0x10F);
-    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7ff, (uint32_t) 0x16);
+  //  initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0x7CF, (uint32_t) 0x10F);
+  //  initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7ff, (uint32_t) 0x16);
 
 }
 
@@ -124,16 +128,12 @@ static void messageBoxInitReg2()
   //  messageBoxInitialize(canREG2, canMESSAGE_BOX2 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron Sync
   //  messageBoxInitialize(canREG2, canMESSAGE_BOX3 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // Semicron NMT_NodeGuarding
    // messageBoxInitialize(canREG2, canMESSAGE_BOX4 ,(uint32_t) NULL,(uint32_t) NULL,(uint32_t) NULL, SENDING_NODE); // SemicronRx Handler
-    initializeSendingMessageBox(canREG2, canMESSAGE_BOX1, CAN_Id_Standard);
-    initializeSendingMessageBox(canREG2, canMESSAGE_BOX2, CAN_Id_Standard);
-    initializeSendingMessageBox(canREG2, canMESSAGE_BOX3, CAN_Id_Standard);
-    initializeSendingMessageBox(canREG2, canMESSAGE_BOX4, CAN_Id_Standard);
+
     /*Receiving node */
     /*High level */
   //  messageBoxInitialize(canREG2, canMESSAGE_BOX9, CAN_Id_Standard, (uint32_t) 0xFF , (uint32_t) 0xFA , RECEIVEING_NODE); //SEMICRON : 1FA, 2FA, 3FA, 4FA
    // messageBoxInitialize(canREG2, canMESSAGE_BOX10, CAN_Id_Standard, (uint32_t) 0x7FF, (uint32_t) 0x1BA, RECEIVEING_NODE); //SEMICRON : 1BA
-    initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX9, (uint32_t) 0xFF, (uint32_t) 0xFA);
-    initializeReceivingMessageBoxStd(canREG2, canMESSAGE_BOX10, (uint32_t) 0x7FF, (uint32_t) 0x1BA);
+
 }
 uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
 {
@@ -199,7 +199,7 @@ void boardCanInit(canBASE_t *node)
     }
     else
     {
-        setMessageBoxLowInterrupt(node, canMESSAGE_BOX15, canMESSAGE_BOX16);
+        //setMessageBoxLowInterrupt(node, canMESSAGE_BOX15, canMESSAGE_BOX16);
     }
     /** - Setup auto bus on timer period */
     node->ABOTR = (uint32)0U;
@@ -270,8 +270,6 @@ static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_
         {
             if((node->IF1STAT & 0x80U) != 0x80U)
             {
-                // node->IF1MSK  = 0x00;
-                //node->IF1ARB  = 0x00;
                 node->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x1FFFFFFFU) << (uint32)0U);
                 node->IF1MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
                 node->IF1CMD  = (uint8) 0xF8U;
@@ -280,8 +278,6 @@ static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_
             }
             if((node->IF2STAT & 0x80U) != 0x80U)
             {
-               // node->IF2MSK  = 0x00;
-                //node->IF2ARB  = 0x00;
                 node->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x1FFFFFFFU) << (uint32)0U);
                 node->IF2MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
                 node->IF2CMD  = (uint8) 0xF8U;
@@ -293,9 +289,7 @@ static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_
         {
             if((node->IF1STAT & 0x80U) != 0x80U)
             {
-                // node->IF1MSK  = 0x00;
-                //node->IF1ARB  = 0x00;
-                canREG1->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
+                node->IF1MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
                 node->IF1MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
                 node->IF1CMD  = (uint8) 0xF8U;
                 node->IF1NO   = messageBox;
@@ -303,9 +297,7 @@ static void initializeSendingMessageBox(canBASE_t *node, uint32 messageBox, can_
             }
             if((node->IF2STAT & 0x80U) != 0x80U)
             {
-                // node->IF2MSK  = 0x00;
-                //node->IF2ARB  = 0x00;
-                canREG1->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
+                node->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x000007FFU) << (uint32)18U);
                 node->IF2MCTL = 0x00001000U | (uint32)0x00 | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
                 node->IF2CMD  = (uint8) 0xF8U;
                 node->IF2NO   = messageBox;

@@ -44,7 +44,10 @@ static SelectorStructModeTx_t  selectorMode = {
 //                                                    VCU_NO_ERROR
  //                                                 };
 static BpSwitch_t bPSwitch = BRAKE_CLOSE;
-static int8_t realAPposition = 0;
+static SpeedTorque_t speedTorqueStruct = {
+                                          .realAPposition = 0,
+                                          .speedLimit = 0
+                                         };
 static uint8_t receivedAPposition = 0;
 
 
@@ -72,7 +75,7 @@ void acceleratorBrakeJoystickInit(void)
     }/* else not needed */
     currentVcuStatusStruct = getVcuStatusStruct();
     xQueueABPeadlSelectorTx = xQueueCreate(20U, sizeof(ABPeadlSelector_t));
-    xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(int8_t));
+    xqueueAcceleratorValue =  xQueueCreate(1U, sizeof(SpeedTorque_t));
    // xqueueBrakeValue = xQueueCreate(1U, sizeof(int));
 }
 
@@ -96,7 +99,7 @@ void vAcceleratorBrakeJoystickTxHandler(void *pvParameters)
                 acceleratorTimeOutControl = xTaskGetTickCount() + maxTimeOutTime.maxTime[0];
                 parseDataFromCanPedal(aBPedalTx);
                 setRealAPPosition(receivedAPposition);
-                xQueueOverwrite(xqueueAcceleratorValue,&realAPposition);
+                xQueueOverwrite(xqueueAcceleratorValue,&speedTorqueStruct);
             }
             else
             {
@@ -133,6 +136,7 @@ void vSelectorRxHandler(void *pvParameters)
        // if(xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, pdMS_TO_TICKS(0)));
 
         parseDataToCanSelector(&selectorRx);
+        newCanTransmit(canREG1, canMESSAGE_BOX8, &selectorRx);
         vTaskDelayUntil( &lastWeakTime, transmitPeriod);
     }
 }
@@ -176,31 +180,34 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
            if(receivedAPposition <= 10)
            {
-               realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+               speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
            }
            else if(receivedAPposition < 80)
            {
-               realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
+               speedTorqueStruct.realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
            }
            else
            {
-               realAPposition = (receivedAPposition - 80) * 2 + 60;
+               speedTorqueStruct.realAPposition = (receivedAPposition - 80) * 2 + 60;
            }
+           speedTorqueStruct.speedLimit = 9000;
         }
         else if (currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
         {
             if(receivedAPposition <= 10)
             {
-                realAPposition = 20 - (receivedAPposition * 2);
+                speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
             }
             else
             {
-                realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
+                speedTorqueStruct.realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
             }
+            speedTorqueStruct.speedLimit = -3000;
         }
         else
         {
-            realAPposition = 0;
+            speedTorqueStruct.realAPposition = 0;
+            speedTorqueStruct.speedLimit = 0;
         }
         break;
 
@@ -209,35 +216,40 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
             if(receivedAPposition <= 10)
             {
-                realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+                speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
             }
             else if (receivedAPposition < 80)
             {
-                realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
+                speedTorqueStruct.realAPposition = (uint8_t)((uint16_t)(receivedAPposition - 10) * 85/100);
             }
             else
             {
-                realAPposition = 60;
+                speedTorqueStruct.realAPposition = 60;
             }
+            speedTorqueStruct.speedLimit = 9000;
         }
         else if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
         {
             if(receivedAPposition <= 10)
             {
-                realAPposition = 20 - (receivedAPposition * 2);
+                speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
             }
             else
             {
-                realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
+                speedTorqueStruct.realAPposition = (int8_t)((int16_t)(10 - receivedAPposition) * 66/100);
             }
+            speedTorqueStruct.speedLimit = 3000;
         }
         else
         {
-            realAPposition = 0;
+            speedTorqueStruct.realAPposition = 0;
+            speedTorqueStruct.speedLimit = 0;
         }
         break;
 
     case  VCU_ERROR_STOP :
-        realAPposition = 0;
+        speedTorqueStruct.realAPposition = 0;
+        speedTorqueStruct.speedLimit = 0;
+        break;
     }
 }
