@@ -80,6 +80,7 @@ void vcuStateManagementInit(void)
    // xQueueVcuStatus = xQueueCreate(1U, sizeof(VcuStatusStruct_t));
 }
 
+
 void vVcuStateManagement(void *pvParameters)
 {
      VcuErrorStatus_t lostComponentError = VCU_NO_ERROR;
