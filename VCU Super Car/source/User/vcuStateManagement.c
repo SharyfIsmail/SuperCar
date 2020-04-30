@@ -49,11 +49,12 @@ static taskStatuses_t taskStatuses = {
 static VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
                                              VCU_NO_ERROR
                                            };
-static void setCurrentVcuStatus(VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t joystick, batteryMode_t battery);
+static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
+                                batteryMode_t batteryMode, VcuErrorStatus_t bmsError);
 static void setVcuErrorLostComponents(VcuErrorStatus_t *lostComponentError, VcuStateMangement_t currentVcuStatus, lostComponentsStatus_t LostComponentsStatus);
 static void setVcuErrorSemicron(VcuErrorStatus_t *semicronError, VcuStateMangement_t currentVcuStatus, SemicronStatus_t SemicronStatus);
 static void setvcuSelectorMode(SelectorMode_t *selectorMode, VcuStateMangement_t currentVcuStatus, SelectorStructModeTx_t selectorStructRequest);
-static void setVcuBmsMode(VcuErrorStatus_t *bmsError, bool error);
+static void setVcuBmsError(VcuErrorStatus_t *bmsError, bool error);
 
 void vVcuStateManagement(void *pvParameters);
 
@@ -83,10 +84,10 @@ void vcuStateManagementInit(void)
 
 void vVcuStateManagement(void *pvParameters)
 {
-     VcuErrorStatus_t lostComponentError = VCU_NO_ERROR;
+     VcuErrorStatus_t lostComponentError = VCU_ERROR_UNDEFINED;
      VcuErrorStatus_t SemicronError = VCU_ERROR_UNDEFINED;
      SelectorMode_t selectorMode = SELECTOR_MODE_UNDEFINED;
-     VcuErrorStatus_t batteryMode  =  VCU_ERROR_UNDEFINED;
+     VcuErrorStatus_t batteryError  =  VCU_ERROR_UNDEFINED;
 
     for(;;)
     {
@@ -111,8 +112,8 @@ void vVcuStateManagement(void *pvParameters)
         else if(activatedMember == xQueueBatteryMode)
         {
             xQueueReceive(xQueueBatteryMode, &taskStatuses.bmsModeState, 0);
-          //  batteryMode = taskStatuses.bmsModeState.battery;
-            setVcuBmsMode(&batteryMode, taskStatuses.bmsModeState.batteryState);
+          //  batteryError = taskStatuses.bmsModeState.battery;
+            setVcuBmsError(&batteryError, taskStatuses.bmsModeState.batteryState);
             xQueueOverwrite(xQueueSemicronStart, &taskStatuses.bmsModeState.batteryMode);
         }
         else
@@ -121,11 +122,10 @@ void vVcuStateManagement(void *pvParameters)
                         being ready to process. */
         }
 
-      //  setCurrentVcuStatus(rawVcuStatusLostComponents, rawVcuStatusSemicron, currentSelectorStatus, rawVcuStatusBattery);
-//   xQueueOverwrite(xQueueVcuStatus, &currentVcuStatusStruct);
+        setCurrentVcuStatus(&currentVcuStatusStruct, lostComponentError, SemicronError, selectorMode, taskStatuses.bmsModeState.batteryMode, batteryError);
     }
 }
-static void setVcuBmsMode(VcuErrorStatus_t *bmsError, bool error)
+static void setVcuBmsError(VcuErrorStatus_t *bmsError, bool error)
 {
     if(error)
     {
@@ -144,8 +144,8 @@ static void setVcuErrorLostComponents(VcuErrorStatus_t *lostComponentError,VcuSt
         *lostComponentError = VCU_NO_ERROR;
         break;
     case CRASH_LEVEL_ERRORDRIVE:
-        if(currentVcuStatus == VCU_Status_REVERCE || currentVcuStatus == VCU_Status_FORWARD  ||
-           currentVcuStatus == VCU_Status_CHARGING )
+        if(currentVcuStatus == VCU_STATUS_REVERCE || currentVcuStatus == VCU_STATUS_FORWARD  ||
+           currentVcuStatus == VCU_STATUS_CHARGING )
         {
             *lostComponentError = VCU_ERROR_WORK;
         }
@@ -192,18 +192,18 @@ static void setvcuSelectorMode(SelectorMode_t *selectorMode,VcuStateMangement_t 
             *selectorMode = SELECTOR_MODE_INIT;
             break;
         case SELECTOR_MODE_PARKING :
-            if(currentVcuStatus == VCU_Status_NEUTRAL)
+            if(currentVcuStatus == VCU_STATUS_NEUTRAL)
                 *selectorMode = SELECTOR_MODE_PARKING;
             break;
         case SELECTOR_MODE_NEUTRAL :
             *selectorMode = SELECTOR_MODE_NEUTRAL;
             break;
         case SELECTOR_MODE_FORWARD:
-            if(currentVcuStatus == VCU_Status_NEUTRAL)
+            if(currentVcuStatus == VCU_STATUS_NEUTRAL)
                 *selectorMode = SELECTOR_MODE_FORWARD;
             break;
         case SELECTOR_MODE_REVERSE :
-            if(currentVcuStatus == VCU_Status_NEUTRAL)
+            if(currentVcuStatus == VCU_STATUS_NEUTRAL)
                 *selectorMode = SELECTOR_MODE_REVERSE;
             break;
           }
@@ -217,33 +217,39 @@ static void setvcuSelectorMode(SelectorMode_t *selectorMode,VcuStateMangement_t 
         *selectorMode = SELECTOR_MODE_INIT;
     }
 }
-//static VcuStateMangement_t setVcuRawStatusBattery(VcuStateMangement_t currentVcuStatus, VcuRawStatusLostComponents_t LostComponentsStatus)
-//{
 
-//}
-static void setCurrentVcuStatus(VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector, batteryMode_t battery)
+static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
+                                batteryMode_t batteryMode, VcuErrorStatus_t bmsError)
 {
-    /*if(LostComponents == VCU_STATUS_INIT && Semicron == VCU_STATUS_INIT &&
-       battery == VCU_STATUS_INIT && (joystick == VCU_Status_REVERCE || joystick == VCU_Status_REVERCE))
+    if(LostComponents == VCU_NO_ERROR && Semicron ==  VCU_NO_ERROR && bmsError != VCU_ERROR_STOP &&(batteryMode == BATTERY_INIT || batteryMode == BATTERY_NORMAL_OFF))
     {
-        currentVcuStatus = VCU_STATUS_INIT;
+        vcuCurrentStatus->vcuStateMangement = VCU_STATUS_INIT;
+        vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
     }
-    else if (LostComponents ==  VCU_STATUS_INIT && Semicron == VCU_STATUS_INIT &&
-             battery == VCU_Status_REVERCE &&  joystick == VCU_Status_REVERCE)
+    else if(LostComponents == VCU_NO_ERROR && Semicron == VCU_NO_ERROR &&bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE )
     {
-        currentVcuStatus = VCU_Status_REVERCE;
-    }
-    else if (LostComponents == VCU_STATUS_INIT && Semicron == VCU_STATUS_INIT &&
-             battery == VCU_Status_REVERCE && joystick == VCU_Status_REVERCE)
-    {
-        currentVcuStatus = VCU_Status_REVERCE;
-    }
-    else if (LostComponents == VCU_STATUS_INIT && Semicron == VCU_STATUS_INIT &&
-             battery == VCU_Status_SLEEP && (joystick == VCU_Status_REVERCE || joystick == VCU_Status_REVERCE))
-    {
-        currentVcuStatus = VCU_Status_REVERCE;
-    }*/
+        switch(selector)
+        {
+        case SELECTOR_MODE_INIT:
+            vcuCurrentStatus->vcuStateMangement = VCU_STATUS_PARKING;
+            break;
+        default :
+            vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
+            break;
+        }
 
+        vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
+    }
+    else if (LostComponents == VCU_ERROR_WORK && Semicron == VCU_NO_ERROR && bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE)
+    {
+        vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
+        vcuCurrentStatus->errorStatus = VCU_ERROR_WORK;
+    }
+    else if (LostComponents == VCU_ERROR_STOP || Semicron == VCU_ERROR_STOP  || bmsError == VCU_ERROR_STOP)
+    {
+        vcuCurrentStatus->vcuStateMangement = VCU_STATUS_SLEEP;
+        vcuCurrentStatus->errorStatus = VCU_ERROR_STOP;
+    }
 }
 const VcuStatusStruct_t* getVcuStatusStruct()
 {

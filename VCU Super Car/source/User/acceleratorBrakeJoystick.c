@@ -176,7 +176,7 @@ static void setRealAPPosition(uint8_t receivedAPposition)
     switch(currentVcuStatusStruct->errorStatus)
     {
     case VCU_NO_ERROR:
-        if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_FORWARD)
+        if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_FORWARD)
         {
            if(receivedAPposition <= 10)
            {
@@ -192,7 +192,7 @@ static void setRealAPPosition(uint8_t receivedAPposition)
            }
            speedTorqueStruct.speedLimit = 9000;
         }
-        else if (currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
+        else if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_REVERCE)
         {
             if(receivedAPposition <= 10)
             {
@@ -212,7 +212,7 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         break;
 
     case VCU_ERROR_WORK:
-        if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_FORWARD)
+        if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_FORWARD)
         {
             if(receivedAPposition <= 10)
             {
@@ -228,7 +228,7 @@ static void setRealAPPosition(uint8_t receivedAPposition)
             }
             speedTorqueStruct.speedLimit = 9000;
         }
-        else if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_REVERCE)
+        else if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_REVERCE)
         {
             if(receivedAPposition <= 10)
             {

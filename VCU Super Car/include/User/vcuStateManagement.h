@@ -28,14 +28,14 @@ void vcuStateManagementInit(void);
 
 typedef enum
 {
-    VCU_STATUS_INIT      = 0x00,
-    VCU_Status_PARKING   = 0x01,
-    VCU_Status_NEUTRAL   = 0x02,
-    VCU_Status_FORWARD   = 0x03,
-    VCU_Status_REVERCE   = 0x04,
-    VCU_Status_CHARGING  = 0x05,
-    VCU_Status_SLEEP     = 0x06,
-    VCU_Status_UNDEFINED = 0x07
+    VCU_STATUS_INIT          = 0x00,
+    VCU_STATUS_PARKING       = 0x01,
+    VCU_STATUS_NEUTRAL       = 0x02,
+    VCU_STATUS_FORWARD       = 0x03,
+    VCU_STATUS_REVERCE       = 0x04,
+    VCU_STATUS_CHARGING      = 0x05,
+    VCU_STATUS_SLEEP         = 0x06,
+    VCU_STATUS_UNDEFINED = 0x07
 }VcuStateMangement_t;
 
 typedef enum

@@ -58,20 +58,25 @@ void vBmsRxHandler (void *pvParameters)
     lastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        //xQueuePeek(xQueueVcuStatus, &currentVcuStatusStruct, 0);
-
-        if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT &&
-            currentVcuStatusStruct->errorStatus == VCU_NO_ERROR)
+        switch(currentVcuStatusStruct->errorStatus)
         {
-            batteryMode = BATTERY_HV_ACTIVE;
-        }
-        else if (currentVcuStatusStruct->vcuStateMangement ==  VCU_Status_CHARGING)
-        {
-            batteryMode = BATTERY_CHARGING;
-        }
-        else if(currentVcuStatusStruct->vcuStateMangement == VCU_Status_SLEEP)
-        {
-            batteryMode = BATTERY_NORMAL_OFF;
+        case VCU_ERROR_STOP :
+            batteryMode = BATTERY_EMEGENCY_OFF;
+         break;
+        default :
+            if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT)
+            {
+                batteryMode = BATTERY_HV_ACTIVE;
+            }
+            else if (currentVcuStatusStruct->vcuStateMangement ==  VCU_STATUS_CHARGING)
+            {
+                batteryMode = BATTERY_CHARGING;
+            }
+            else if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_SLEEP)
+            {
+                batteryMode = BATTERY_NORMAL_OFF;
+            }
+            break;
         }
         parseDataToCanVcuBms(&vcuToBms);
         newCanTransmit(canREG1, canMESSAGE_BOX9, &vcuToBms);

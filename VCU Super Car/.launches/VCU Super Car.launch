@@ -11,7 +11,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.TMS570LS043x.ccxml.Texas Instruments XDS100v3 USB Debug Probe_0/CortexR4" value="VCU Super Car"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:VCU Super Car}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS043x.ccxml.Texas Instruments XDS100v2 USB Debug Probe/CortexR4" value="D:/My projects\Vcu Super Car\VCU Super Car\Debug\VCU Super Car.out"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS043x.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/CortexR4" value="D:/My projects\Vcu Super Car\VCU Super Car\Debug\VCU Super Car.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS043x.ccxml.Texas Instruments XDS100v2 USB Debug Probe_0/CortexR4" value="D:/SuperCar\VCU Super Car\Debug\VCU Super Car.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS043x.ccxml.Texas Instruments XDS100v3 USB Debug Probe_0/CortexR4" value="D:/My projects\Vcu Super Car\VCU Super Car\Debug\VCU Super Car.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/VCU Super Car"/>

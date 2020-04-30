@@ -101,10 +101,10 @@ void vSemicronRxHandler (void *pvParameters)
             if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT)
                     clearErrorAction(&rxPdo_03);
 
-            else if (currentVcuStatusStruct->vcuStateMangement == VCU_Status_NEUTRAL ||
-                    currentVcuStatusStruct->vcuStateMangement == VCU_Status_PARKING  ||
-                    currentVcuStatusStruct->vcuStateMangement == VCU_Status_CHARGING ||
-                    currentVcuStatusStruct->vcuStateMangement == VCU_Status_SLEEP)
+            else if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_NEUTRAL ||
+                    currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_PARKING  ||
+                    currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_CHARGING ||
+                    currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_SLEEP)
             {
                         carStop(&rxPdo_03);
             }
@@ -174,7 +174,7 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
             if(xQueuePeek(xQueueSemicronStart, &batteryStatus, pdMS_TO_TICKS(0)));
             {
                 if ((currentVcuStatusStruct->vcuStateMangement ==  VCU_STATUS_INIT && batteryStatus == BATTERY_NORMAL_OFF ) ||
-                   ( currentVcuStatusStruct->vcuStateMangement ==  VCU_Status_SLEEP && carIsActive == false))
+                   ( currentVcuStatusStruct->vcuStateMangement ==  VCU_STATUS_SLEEP && carIsActive == false))
                 {
                     nmtNodeGuardingState = PRE_OPERATIONAL;
                 }
