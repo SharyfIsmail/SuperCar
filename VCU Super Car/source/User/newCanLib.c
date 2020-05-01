@@ -104,6 +104,9 @@ static void messageBoxInitReg1()
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX7, CAN_Id_Standard); // Real Time in y:m:d:h:m:s;
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX8, CAN_Id_Extended); // vSelectorRxHandler
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX9, CAN_Id_Extended); // VCU BMS
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX10, CAN_Id_Extended); // VCU DCDC
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX11, CAN_Id_Extended); // VCU ALL 1
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX12, CAN_Id_Extended); // VCU ALL 2
 
 
 //    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Extended);// Bms Heart Beat
@@ -111,9 +114,17 @@ static void messageBoxInitReg1()
 
     /*Receiving node */
     /*High level */
-    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0xFF, (uint32_t) 0xFA);
-    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7FF, (uint32_t) 0x1BA);
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0xFF, (uint32_t) 0xFA); // semicron
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX16, (uint32_t) 0x7FF, (uint32_t) 0x1BA); // semicron
+    initializeReceivingMessageBoxExt(canREG1, canMESSAGE_BOX17, (uint32_t) 0xFF0FFFF,(uint32_t) 0xCB0D0F3); // bms
     /*Low level */
+    initializeReceivingMessageBoxExt(canREG1, canMESSAGE_BOX18, (uint32_t) 0x1FFFFFFF,(uint32_t) 0xC91D028); // selector
+    initializeReceivingMessageBoxExt(canREG1, canMESSAGE_BOX19, (uint32_t) 0x1FFFFFFF,(uint32_t) 0x800D025); // pedal
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX20, (uint32_t) 0x7FF,(uint32_t) 0x6DE); // external memory
+    initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX21, (uint32_t) 0x7FF,(uint32_t) 0x6DB); // time setter
+    initializeReceivingMessageBoxExt(canREG1, canMESSAGE_BOX22, (uint32_t) 0x1FFFFFFF,(uint32_t) 0x18C1D08F); // dcdc
+
+
    // messageBoxInitialize(canREG1, canMESSAGE_BOX15, CAN_Id_Standard, (uint32_t) 0x7CF, (uint32_t) 0x10F, RECEIVEING_NODE); // Selector , joystick, brake: 11F
   //  messageBoxInitialize(canREG1, canMESSAGE_BOX16, CAN_Id_Standard, (uint32_t) 0x7ff, (uint32_t) 0x16, RECEIVEING_NODE);   // Command to external memory
   //  initializeReceivingMessageBoxStd(canREG1, canMESSAGE_BOX15, (uint32_t) 0x7CF, (uint32_t) 0x10F);
@@ -195,7 +206,7 @@ void boardCanInit(canBASE_t *node)
     /** - Assign interrupt level for messages */
     if(node == canREG1)
     {
-        setMessageBoxLowInterrupt(node, 2,canMESSAGE_BOX15, canMESSAGE_BOX16);
+        setMessageBoxLowInterrupt(node, 5, canMESSAGE_BOX18, canMESSAGE_BOX19, canMESSAGE_BOX20, canMESSAGE_BOX21, canMESSAGE_BOX22);
     }
     else
     {
@@ -352,6 +363,7 @@ static void initializeReceivingMessageBoxExt(canBASE_t *node, uint32 messageBox,
             node->IF2MCTL = 0x00001000U | (uint32)0x400  | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
             node->IF2CMD  = (uint8) 0xF8U;
             node->IF2NO   = messageBox;
+            break;
         }
     }while(1);
 }

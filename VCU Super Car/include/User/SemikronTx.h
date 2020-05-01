@@ -282,5 +282,6 @@ typedef struct
         emdTxPdo05_t emdTxPdo05;
     }p;
 }semicronTxCanFrame_t;
+const int16_t* getSpeed();
 #endif /* INCLUDE_USER_SEMIKRONTX_H_ */
 

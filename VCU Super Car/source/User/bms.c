@@ -17,10 +17,10 @@
 static const VcuStatusStruct_t *currentVcuStatusStruct;
 static batteryMode_t batteryMode = BATTERY_INIT;
 static bmsMode_State_t batteryModeState;
-static uint8_t contactorState = 0;
 TaskHandle_t xBmsRxHandler;
 TaskHandle_t xBmsTxHandler;
 QueueHandle_t xQueueBmsTx = NULL;
+
 
 void vBmsTxHandler (void *pvParameters);
 void vBmsRxHandler (void *pvParameters);
@@ -51,7 +51,7 @@ void vBmsRxHandler (void *pvParameters)
     canMessage_t vcuToBms =
     {
      .id  = VCU_BMS_ID,
-     .dlc = BMS_VCU_DLC,
+     .dlc = VCU_BMS_DLC,
      .ide = (uint8_t)CAN_Id_Extended,
      .data = {0}
     };
@@ -118,7 +118,7 @@ void vBmsTxHandler (void *pvParameters)
                 }
                 else                                      // BMS_VCU_04_ID
                 {
-
+                    batteryModeState.voltFromBMS = getBmsVcu04Volt(BmsVcu_04);
                 }
             }
             else                                         // BMS_VCU_02_ID
@@ -146,5 +146,10 @@ static void parseDataFromCanBms_vcu_01(BmsVcu_01_t *BmsVcu_01)
 {
     batteryModeState.batteryMode = (batteryMode_t) getBmsVcu01BatteryMode(BmsVcu_01);
     batteryModeState.batteryState = (bool) getBmsVcu01IErrorPresents(BmsVcu_01);
-    contactorState = getBmsVcu01ContactorMode(BmsVcu_01);
+    batteryModeState.contactorStateFromBMS = getBmsVcu01ContactorMode(BmsVcu_01);
+}
+
+const bmsMode_State_t* getBatteryModeStateStruct()
+{
+    return &batteryModeState;
 }

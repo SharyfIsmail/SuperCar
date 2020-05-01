@@ -69,6 +69,8 @@
 #include "ds1904.h"
 #include "timeTask.h"
 #include "currentErrorViewer.h"
+#include "dcdc.h"
+#include "vcuAll.h"
 #include "strings.h"
 #include <stdio.h>
 
@@ -91,7 +93,7 @@ int main(void)
 {
 /* USER CODE BEGIN (3) */
     memoryAccessInit();
-    hetInit();
+   // hetInit();////////////////////////////
     boardCanInit(canREG1);
   //  boardCanInit(canREG2);
     semikronRxInit();
@@ -101,8 +103,10 @@ int main(void)
     canMessageLostCheckInit();
     vcuStateManagementInit();
     externalMemoryTaskInit();
-    timerTaskInit();
+  //  timerTaskInit();
     currentErrorViewerInit();
+    dcDcInit();
+    VcuAllInit();
     /*creating event group*/
     canMessageLostCheckEventGroup = xEventGroupCreate();
 

@@ -6,6 +6,7 @@
  */
 
 #include "vcuStateManagement.h"
+#include "gio.h"
 #include "task.h"
 
 #define QUEUE_LOST_COMPONENT_RAWSTATUS_LENGTH   (1U)
@@ -17,6 +18,8 @@
                           QUEUE_SEMICRON_RAWSTATUS_LENGTH + \
                           QUEUE_SELECTOR_MODE_LENGTH + \
                           QUEUE_BATTERY_RAWSTATUS_LENGTH )
+#define PIN (7)
+#define IS_Pressed (!gioGetBit(gioPORTA, PIN))
 
 TaskHandle_t xVcuStateManagement;
 
@@ -221,34 +224,40 @@ static void setvcuSelectorMode(SelectorMode_t *selectorMode,VcuStateMangement_t 
 static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
                                 batteryMode_t batteryMode, VcuErrorStatus_t bmsError)
 {
-    if(LostComponents == VCU_NO_ERROR && Semicron ==  VCU_NO_ERROR && bmsError != VCU_ERROR_STOP &&(batteryMode == BATTERY_INIT || batteryMode == BATTERY_NORMAL_OFF))
+    if(IS_Pressed)
     {
-        vcuCurrentStatus->vcuStateMangement = VCU_STATUS_INIT;
-        vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
-    }
-    else if(LostComponents == VCU_NO_ERROR && Semicron == VCU_NO_ERROR &&bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE )
-    {
-        switch(selector)
+        if(LostComponents == VCU_NO_ERROR && Semicron ==  VCU_NO_ERROR && bmsError != VCU_ERROR_STOP &&(batteryMode == BATTERY_INIT || batteryMode == BATTERY_NORMAL_OFF))
         {
-        case SELECTOR_MODE_INIT:
-            vcuCurrentStatus->vcuStateMangement = VCU_STATUS_PARKING;
-            break;
-        default :
-            vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
-            break;
+            vcuCurrentStatus->vcuStateMangement = VCU_STATUS_INIT;
+            vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
         }
+        else if(LostComponents == VCU_NO_ERROR && Semicron == VCU_NO_ERROR &&bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE )
+        {
+            switch(selector)
+            {
+            case SELECTOR_MODE_INIT:
+                vcuCurrentStatus->vcuStateMangement = VCU_STATUS_PARKING;
+                break;
+            default :
+                vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
+                break;
+            }
 
-        vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
-    }
-    else if (LostComponents == VCU_ERROR_WORK && Semicron == VCU_NO_ERROR && bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE)
-    {
-        vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
-        vcuCurrentStatus->errorStatus = VCU_ERROR_WORK;
-    }
-    else if (LostComponents == VCU_ERROR_STOP || Semicron == VCU_ERROR_STOP  || bmsError == VCU_ERROR_STOP)
+            vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
+        }
+        else if (LostComponents == VCU_ERROR_WORK && Semicron == VCU_NO_ERROR && bmsError != VCU_ERROR_STOP && batteryMode == BATTERY_HV_ACTIVE)
+        {
+            vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
+            vcuCurrentStatus->errorStatus = VCU_ERROR_WORK;
+        }
+        else if (LostComponents == VCU_ERROR_STOP || Semicron == VCU_ERROR_STOP  || bmsError == VCU_ERROR_STOP)
+        {
+            vcuCurrentStatus->vcuStateMangement = VCU_STATUS_SLEEP;
+            vcuCurrentStatus->errorStatus = VCU_ERROR_STOP;
+        }
+    }else
     {
         vcuCurrentStatus->vcuStateMangement = VCU_STATUS_SLEEP;
-        vcuCurrentStatus->errorStatus = VCU_ERROR_STOP;
     }
 }
 const VcuStatusStruct_t* getVcuStatusStruct()

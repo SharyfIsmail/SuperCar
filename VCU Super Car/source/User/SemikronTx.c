@@ -16,6 +16,7 @@
 #include "currentErrorViewer.h"
 #include "string.h"
 
+static int16_t Speed = 0;
 void vSemicronTxHandler (void *pvParameters);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
 static uint8_t errorSeek(causingOfError_t *cause);
@@ -84,7 +85,7 @@ void vSemicronTxHandler (void *pvParameters)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_3)    // emdTxPdo_03
                 {
-
+                    Speed = getTx_PDO_03_MotorSpeed(emdTxPdo_03);
                 }
                 else                                        // emdTxPdo_04
                 {
@@ -152,4 +153,8 @@ static void semicronBitsErrorSet(uint8_t errorIndex)
 {
     uint64_t semicronBitError = ((uint64_t)1) << (errorIndex - 1);
     xQueueOverwrite(queueCurrentSemicronError, &semicronBitError);
+}
+const int16_t* getSpeed()
+{
+    return &Speed;
 }

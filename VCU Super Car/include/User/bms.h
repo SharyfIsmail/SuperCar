@@ -12,10 +12,11 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "newCanLib.h"
+
 extern QueueHandle_t xQueueBmsTx;
 
+
 void BmsInit(void);
-void BmsTxInit(void);
 
 /**
  * @typedef batteryMode_t
@@ -34,11 +35,13 @@ typedef struct
 {
     batteryMode_t batteryMode;
     bool batteryState;
+    uint8_t contactorStateFromBMS;
+    uint16_t voltFromBMS;
 }bmsMode_State_t;
 
 #define CAN_PERIOD_MS_VCU_BMS   ((uint32_t) 20)
 #define VCU_BMS_ID              ((uint32_t) 0xC51F3D0)
-#define BMS_VCU_DLC             ((uint8_t) 3)
+#define VCU_BMS_DLC             ((uint8_t) 3)
 
 
 inline void setVcuBmsMessageCounter(canMessage_t* ptr, uint8_t value)
@@ -257,4 +260,5 @@ typedef struct
         BmsVcu_05_t BmsVcu_05;
     }p;
 }BmsTxCanFrame_t;
+const bmsMode_State_t* getBatteryModeStateStruct();
 #endif /* INCLUDE_USER_BMS_H_ */

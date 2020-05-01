@@ -27,7 +27,7 @@ QueueHandle_t queueExternalMemoryError = NULL;
 void vErrorViewer(void *pvParameters);
 static canMessage_t currentErrors =
 {
-    .id  = 0x01,
+    .id  = 0x6DC,
     .dlc = 8,
     .ide = (uint8_t)CAN_Id_Standard,
     .data = {0},

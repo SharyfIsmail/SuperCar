@@ -27,7 +27,7 @@ struct
 
 static canMessage_t dataTime =
 {
-    .id  = 0x6DD,
+    .id  = 0x6DA,
     .dlc = 8,
     .ide = (uint8_t)CAN_Id_Standard,
     .data = {0},
@@ -35,9 +35,12 @@ static canMessage_t dataTime =
 
 static bool errorlogIsWrote = false;
 QueueHandle_t xQueueRealTime = NULL;
+QueueHandle_t xQueueRealTimeSet = NULL;
 
 void vTimeTask(void *pvParameters);
+void vTimeTaskSet(void *pvParameters);
 static void ReadRealTime(datetime_t *realTime);
+static void writeRealTime (datetime_t realTime);
 static uint8_t getYears(datetime_t realTime);
 static uint8_t getMonths(datetime_t realTime);
 static uint8_t getDays(datetime_t realTime);
@@ -57,7 +60,31 @@ void timerTaskInit(void)
         /*Task couldn't be created */
         while(1);
     }/* else not needed */
+    if(xTaskCreate(vTimeTaskSet, "TimeTaskSet", configMINIMAL_STACK_SIZE, NULL, 1, NULL) != pdTRUE)
+    {
+        /*Task couldn't be created */
+        while(1);
+    }/* else not needed */
+
     xQueueRealTime = xQueueCreate(1U, sizeof(datetime_t));
+    xQueueRealTimeSet = xQueueCreate(1U, sizeof(TimeSet_t));
+}
+void vTimeTaskSet(void *pvParameters)
+{
+    TimeSet_t timeSet;
+    for(;;)
+    {
+        if(xQueueReceive(xQueueRealTimeSet, &timeSet, portMAX_DELAY))
+        {
+            uint32_t time = (uint32_t) timeSet.data[3]        |
+                            (uint32_t)(timeSet.data[2] << 8 ) |
+                            (uint32_t)(timeSet.data[1] << 16) |
+                            (uint32_t)(timeSet.data[0] << 24);
+
+            writeRealTime(time);
+        }
+        taskYIELD();
+    }
 }
 void vTimeTask(void *pvParameters)
 {
@@ -92,7 +119,7 @@ void vTimeTask(void *pvParameters)
 
         xQueueOverwrite(xQueueRealTime, &realTime);
         xQueueOverwrite(queueHetError, &hetIsFine);
-
+         //setTimeInDate();
         parseTimeToCan(&dataTime);
         newCanTransmit(canREG1, canMESSAGE_BOX7, &dataTime);
 
@@ -105,7 +132,14 @@ static void ReadRealTime(datetime_t *realTime)
     OneWire_SkipROM();
     DS1904_ReadDateTime(realTime);
 }
-
+static void writeRealTime (datetime_t realTime)
+{
+    OneWire_TryReset();
+    OneWire_SkipROM();
+    DS1904_WriteDateTime(realTime);
+   // realTime = getDifferenceDateAndTime();
+    //DS1904_WriteDateTime(realTime);
+}
 static uint8_t getYears(datetime_t realTime)
 {
     return (20 + (realTime/ 31556926));
