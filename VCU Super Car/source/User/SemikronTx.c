@@ -16,6 +16,7 @@
 #include "currentErrorViewer.h"
 #include "string.h"
 
+static int16_t Torque = 0;
 static int16_t Speed = 0;
 void vSemicronTxHandler (void *pvParameters);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
@@ -96,7 +97,7 @@ void vSemicronTxHandler (void *pvParameters)
 
             else                                            // emdTxPdo_02
             {
-
+                Torque = getTx_PDO_02_Torque(emdTxPdo_02);
             }
         }
         else
@@ -157,4 +158,9 @@ static void semicronBitsErrorSet(uint8_t errorIndex)
 const int16_t* getSpeed()
 {
     return &Speed;
+}
+
+const int16_t* getTorque()
+{
+    return &Torque;
 }

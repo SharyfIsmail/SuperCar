@@ -64,7 +64,7 @@ void vBmsRxHandler (void *pvParameters)
             batteryMode = BATTERY_EMEGENCY_OFF;
          break;
         default :
-            if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT)
+            if(currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT && batteryModeState.batteryMode == BATTERY_NORMAL_OFF)
             {
                 batteryMode = BATTERY_HV_ACTIVE;
             }

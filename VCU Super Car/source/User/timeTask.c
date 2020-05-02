@@ -11,6 +11,7 @@
 #include "externalMemoryTask.h"
 #include "currentErrorViewer.h"
 #include "newCanLib.h"
+#include "time.h"
 
 #define DS1904_FAMILYCODE  ((uint8_t) 0x24)
 #define TIME_TASK_PERIOD ((uint32_t) 1000)
@@ -24,7 +25,7 @@ struct
     uint8_t tm_mon;      /* months since January       - [0,11]  */
     uint8_t tm_year;     /* years since 1900                     */
 }currentDate ;
-
+static struct tm * currentDateTest;
 static canMessage_t dataTime =
 {
     .id  = 0x6DA,
@@ -96,12 +97,15 @@ void vTimeTask(void *pvParameters)
     lastWeakTime = xTaskGetTickCount();
     for(;;)
     {
+
         datetime_t realTime = (datetime_t) 0;
         const owDeviceCode_t *deviceCode = OneWire_ReadROM();
         if(deviceCode->familyCode == DS1904_FAMILYCODE)
         {
                hetIsFine = 0;
                ReadRealTime(&realTime);
+               //currentDateTest = localtime(&realTime);
+
                setTimeInDate(realTime);
                errorlogIsWrote = false;
         }
@@ -131,6 +135,7 @@ static void ReadRealTime(datetime_t *realTime)
     OneWire_TryReset();
     OneWire_SkipROM();
     DS1904_ReadDateTime(realTime);
+
 }
 static void writeRealTime (datetime_t realTime)
 {
@@ -259,6 +264,12 @@ static void parseTimeToCan(canMessage_t* ptr)
     ptr->data[3] = currentDate.tm_hour;
     ptr->data[4] = currentDate.tm_min;
     ptr->data[5] = currentDate.tm_sec;
+//      ptr->data[0] = currentDateTest->tm_yday;
+//      ptr->data[1] = currentDateTest->tm_mon;
+//      ptr->data[2] = currentDateTest->tm_mday;
+//      ptr->data[3] = currentDateTest->tm_hour;
+//      ptr->data[4] = currentDateTest->tm_min;
+//      ptr->data[5] = currentDateTest->tm_sec;
 
 }
 static void setTimeInDate(datetime_t realTime)

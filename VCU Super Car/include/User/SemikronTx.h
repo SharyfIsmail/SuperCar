@@ -283,5 +283,6 @@ typedef struct
     }p;
 }semicronTxCanFrame_t;
 const int16_t* getSpeed();
+const int16_t* getTorque();
 #endif /* INCLUDE_USER_SEMIKRONTX_H_ */
 

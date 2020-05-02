@@ -20,13 +20,18 @@
 static const VcuStatusStruct_t *currentVcuStatusStruct;
 static const  bmsMode_State_t *batteryModeStruct;
 static const int16_t *speed;
+static const int16_t *torque;
 static int16_t motorSpeed = 0;
+static int16_t outputTorque = 0;
 
 static uint32_t time = 0;
 void vVcuAll01Handler (void *pvParameters);
 void vVcuAll02Handler (void *pvParameters);
+void vInvVcu02 (void *pvParameters);
+
 static void parseDataToCanVcuAll01(canMessage_t *VcuToAll01);
 static void parseDataToCanVcuAll02(canMessage_t *VcuToAll02);
+static void parseDataToCanInvVcu02(canMessage_t *invVcu02);
 
 void VcuAllInit(void)
 {
@@ -40,10 +45,16 @@ void VcuAllInit(void)
         /*Task couldn't be created */
         while(1);
     }/* else not needed */
+    if(xTaskCreate(vInvVcu02, "InvVcu02", configMINIMAL_STACK_SIZE, (void *)CAN_PERIOD_MS_INV_VCU_02, 1, NULL) != pdTRUE)
+    {
+        /*Task couldn't be created */
+        while(1);
+    }/* else not needed */
 
     currentVcuStatusStruct = getVcuStatusStruct();
     batteryModeStruct = getBatteryModeStateStruct();
     speed = getSpeed();
+    torque = getTorque();
 }
 
 void vVcuAll01Handler (void *pvParameters)
@@ -92,6 +103,30 @@ void vVcuAll02Handler (void *pvParameters)
         vTaskDelayUntil(&lastWakeTime, transmitPeriod);
     }
 }
+void vInvVcu02 (void *pvParameters)
+{
+    TickType_t lastWakeTime;
+    TickType_t transmitPeriod = pdMS_TO_TICKS((uint32_t) pvParameters);
+    canMessage_t invVcu02 =
+    {
+     .id  = INV_VCU_02_ID,
+     .dlc = INV_VCU_02_DLC,
+     .ide = (uint8_t)CAN_Id_Extended,
+     .data = {0}
+    };
+    lastWakeTime = xTaskGetTickCount();
+    for(;;)
+    {
+        outputTorque = *torque;
+        if(outputTorque < 0)
+        {
+            outputTorque = outputTorque * (-1);
+        }
+        parseDataToCanInvVcu02(&invVcu02);
+        newCanTransmit(canREG1, canMESSAGE_BOX13, &invVcu02);
+        vTaskDelayUntil(&lastWakeTime, transmitPeriod);
+    }
+}
 static void parseDataToCanVcuAll01(canMessage_t *VcuToAll01)
 {
     increaseVcuAll01MessageCounter(VcuToAll01, 0x01);
@@ -109,4 +144,13 @@ static void parseDataToCanVcuAll02(canMessage_t *VcuToAll02)
     setVcuAll02Temp01(VcuToAll02, 0xFF);
     setVcuAll02Temp02(VcuToAll02, 0xFF);
     WriteToCanFrameCrc8(VcuToAll02->data, VcuToAll02->dlc);
+}
+static void parseDataToCanInvVcu02(canMessage_t *invVcu02)
+{
+    increaseInvVcu02MessageCounter(invVcu02, 0x01);
+    setInvVcu02MaxTorque(invVcu02, 0xFFF);
+    setInvVcu02MinTorque(invVcu02, 0xFFF);
+    setInvVcu02InvSpeed(invVcu02, motorSpeed);
+    setInvVcu02OutputTorque(invVcu02, VCU_ALL_01_TORQUE(outputTorque));
+    WriteToCanFrameCrc8(invVcu02->data, invVcu02->dlc);
 }
