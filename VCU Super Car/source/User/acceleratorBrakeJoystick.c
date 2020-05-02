@@ -24,8 +24,8 @@ maxTimeOutTime_t maxTimeOutTime =
 {
  .maxTime =
  {
-     500,  // accelerator
-     500,  // Joystick
+     1000,  // accelerator
+     1000,  // Joystick
  }
 };
 
