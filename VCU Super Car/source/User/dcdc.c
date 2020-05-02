@@ -56,7 +56,9 @@ void vDcDcTxHandler (void *pvParameters)
         }
         else
         {
-            xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(5U));
+           // xEventGroupSetBits(canMessageLostCheckEventGroup, MASK(5U));
+            xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(5U));
+
         }
     }
 }
