@@ -73,7 +73,7 @@ static void parseError(canMessage_t* currentErrors ,const uint64_t semicronBitEr
 {
     currentErrors->data[0] = lostComponentsError  |
                      (hetError << 6)      ;
-    //currentErrors->data[1]                            // RESERVE
+    // currentErrors->data[1]                            // RESERVE
     currentErrors->data[2] = (uint8_t)  semicronBitError;
     currentErrors->data[3] = (uint8_t) (semicronBitError >> 8);
     currentErrors->data[4] = (uint8_t) (semicronBitError >> 16);
