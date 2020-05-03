@@ -66,7 +66,7 @@ void vSemicronTxHandler (void *pvParameters)
     emdTxPdo05_t *emdTxPdo_05 = &semicronTxCanFrame.p.emdTxPdo05;
     while(1)
     {
-        if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(5000)))
+        if(xQueueReceive(xQueueSemikronTx, &semicronTxCanFrame, pdMS_TO_TICKS(10000)))
         {
             xEventGroupClearBits(canMessageLostCheckEventGroup, MASK(0U));
 

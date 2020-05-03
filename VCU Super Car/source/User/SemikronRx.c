@@ -22,7 +22,8 @@ void vSemicronNmtCommand (void *pvParameters);
 void vSemicronSyn(void *pvParameters);
 void vSemicronNmtNodeGuarding(void *pvParameters);
 
-MessageBufferHandle_t xMessageBuffer;
+//MessageBufferHandle_t xMessageBuffer;
+QueueHandle_t xQueueCommandToNmtCommand = NULL;
 TaskHandle_t xSemicronRxHandler;
 TaskHandle_t xNMTCommand;
 
@@ -57,7 +58,8 @@ void semikronRxInit(void)
         /*Task couldn't be created */
         while(1);
     }/* else not needed */
-    xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4);
+   // xMessageBuffer = xMessageBufferCreate(sizeof(nmtCommandSpecifier_t) + 4);
+    xQueueCommandToNmtCommand = xQueueCreate(1U,sizeof(nmtCommandSpecifier_t));
     currentVcuStatusStruct = getVcuStatusStruct();
 
 }
@@ -98,7 +100,7 @@ void vSemicronRxHandler (void *pvParameters)
         xQueuePeek(xqueueAcceleratorValue, &speedTorqueStruct, pdMS_TO_TICKS(0));
         if(currentVcuStatusStruct->errorStatus == VCU_NO_ERROR ||currentVcuStatusStruct->errorStatus == VCU_ERROR_WORK)
         {
-            if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT)
+            if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_INIT || currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_PARKING)
                     clearErrorAction(&rxPdo_03);
 
             else if (currentVcuStatusStruct->vcuStateMangement == VCU_STATUS_NEUTRAL ||
@@ -182,9 +184,11 @@ void vSemicronNmtNodeGuarding(void *pvParameters)
                 {
                     nmtNodeGuardingState = OPERATIONAL;
                 }
+
                 if(isStatusNmtGuardingChanged(nmtNodeGuardingState, &nmtCommandSpecifier))
                 {
-                    xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
+                  //  xMessageBufferSend(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), pdMS_TO_TICKS(0));
+                    xQueueSend(xQueueCommandToNmtCommand, &nmtCommandSpecifier, pdMS_TO_TICKS(0));
                 }/* else not needed */
             }
         //}
@@ -212,8 +216,8 @@ void vSemicronNmtCommand (void *pvParameters)
     };
     for(;;)
     {
-        xMessageBufferReceive(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), portMAX_DELAY);
-
+      //  xMessageBufferReceive(xMessageBuffer, ( void * )nmtCommandSpecifier, sizeof(nmtCommandSpecifier), portMAX_DELAY);
+        xQueueReceive(xQueueCommandToNmtCommand, &nmtCommandSpecifier, portMAX_DELAY);
         setNmtCommandSpecifier(&semicronNmtCommand, (uint8_t)nmtCommandSpecifier);
 
         newCanTransmit(canREG1, canMESSAGE_BOX1, &semicronNmtCommand);
@@ -253,7 +257,7 @@ static void carStop(canMessage_t *ptr)
  * */
 static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t  NodeGuardingState, nmtCommandSpecifier_t *nmtCommandSpecifier  )
 {
-    static nmtNodeGuardingState_t nmtNodeGuardingState = PRE_OPERATIONAL;
+    static nmtNodeGuardingState_t nmtNodeGuardingState = OPERATIONAL;
 
     if (nmtNodeGuardingState == NodeGuardingState)
         return false;
@@ -261,12 +265,17 @@ static boolean isStatusNmtGuardingChanged( nmtNodeGuardingState_t  NodeGuardingS
     else
     {
         if(NodeGuardingState == OPERATIONAL)
+        {
             *nmtCommandSpecifier = START_REMOTE_NODE;
+        }
         else if(NodeGuardingState == PRE_OPERATIONAL)
-            *nmtCommandSpecifier = RESET_COMMUNICATION;
+        {
+            *nmtCommandSpecifier = RESET_NODE;
+        }
         else
+        {
             *nmtCommandSpecifier = STOP_REMOTE_NODE;
-
+        }
         nmtNodeGuardingState = NodeGuardingState;
         return true;
     }

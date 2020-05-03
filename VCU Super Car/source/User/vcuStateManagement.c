@@ -50,7 +50,8 @@ static taskStatuses_t taskStatuses = {
                                            }
                                          };
 static VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
-                                             VCU_NO_ERROR
+                                             VCU_NO_ERROR,
+                                             0
                                            };
 static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
                                 batteryMode_t batteryMode, VcuErrorStatus_t bmsError);
@@ -196,15 +197,15 @@ static void setVcuErrorSemicron(VcuErrorStatus_t *semicronError, VcuStateMangeme
 }
 static void setvcuSelectorMode(SelectorMode_t *selectorMode,VcuStateMangement_t currentVcuStatus, SelectorStructModeTx_t selectorStructRequest)
 {
-    if(selectorStructRequest.selectorInitialization == SELECTOR_INIT_OPERATIONAL)
-    {
+    //if(selectorStructRequest.selectorInitialization == SELECTOR_INIT_OPERATIONAL)
+  //  {
         switch(selectorStructRequest.selectorMode)
         {
         case SELECTOR_MODE_INIT :
             *selectorMode = SELECTOR_MODE_INIT;
             break;
         case SELECTOR_MODE_PARKING :
-            if(currentVcuStatus == VCU_STATUS_NEUTRAL)
+           // if(currentVcuStatus == VCU_STATUS_NEUTRAL)
                 *selectorMode = SELECTOR_MODE_PARKING;
             break;
         case SELECTOR_MODE_NEUTRAL :
@@ -219,15 +220,15 @@ static void setvcuSelectorMode(SelectorMode_t *selectorMode,VcuStateMangement_t 
                 *selectorMode = SELECTOR_MODE_REVERSE;
             break;
           }
-    }
-    else if(selectorStructRequest.selectorInitialization == SELECTOR_INIT_ERROR)
-    {
-        *selectorMode = SELECTOR_MODE_UNDEFINED;
-    }
-    else
-    {
-        *selectorMode = SELECTOR_MODE_INIT;
-    }
+  //  }
+//    else if(selectorStructRequest.selectorInitialization == SELECTOR_INIT_ERROR)
+//    {
+//        *selectorMode = SELECTOR_MODE_UNDEFINED;
+//    }
+//    else
+//    {
+//        *selectorMode = SELECTOR_MODE_INIT;
+//    }
 }
 
 static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
@@ -239,6 +240,7 @@ static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorSta
         {
             vcuCurrentStatus->vcuStateMangement = VCU_STATUS_INIT;
             vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
+
         }
         else if(LostComponents == VCU_NO_ERROR && Semicron == VCU_NO_ERROR && bmsError == VCU_NO_ERROR && batteryMode == BATTERY_HV_ACTIVE )
         {
@@ -246,23 +248,28 @@ static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorSta
             {
             case SELECTOR_MODE_INIT:
                 vcuCurrentStatus->vcuStateMangement = VCU_STATUS_PARKING;
+                vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
+
+
                 break;
             default :
                 vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
+                vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
                 break;
             }
 
-            vcuCurrentStatus->errorStatus = VCU_NO_ERROR;
         }
         else if ((LostComponents == VCU_ERROR_WORK || bmsError == VCU_ERROR_WORK)  && Semicron == VCU_NO_ERROR  && batteryMode == BATTERY_HV_ACTIVE)
         {
             vcuCurrentStatus->vcuStateMangement = (VcuStateMangement_t)selector;
             vcuCurrentStatus->errorStatus = VCU_ERROR_WORK;
+
         }
         else if (LostComponents == VCU_ERROR_STOP || Semicron == VCU_ERROR_STOP ||  bmsError == VCU_ERROR_STOP)
         {
             vcuCurrentStatus->vcuStateMangement = VCU_STATUS_SLEEP;
             vcuCurrentStatus->errorStatus = VCU_ERROR_STOP;
+
         }
     }else
     {

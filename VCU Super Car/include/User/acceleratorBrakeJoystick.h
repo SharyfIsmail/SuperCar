@@ -97,7 +97,7 @@ inline uint8_t getSelectorVcuModeRequest(selectorTx_t *ptr)
     return (uint8_t)(ptr->data[3] & 0xF0)>>4 ;
 }
 
-#define SELECTOR_RX               ((uint32_t) 0x5228)
+#define SELECTOR_RX               ((uint32_t) 0xC5228D0)
 #define CAN_PERIOD_MS_SELECTOR_RX ((uint32_t) 100)
 #define SLECETOR_RX_DLC             ((uint8_t)3)
 

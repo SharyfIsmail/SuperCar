@@ -180,7 +180,10 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
            if(receivedAPposition <= 10)
            {
-               speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+              // speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+              speedTorqueStruct.realAPposition = 0;
+
+
            }
            else if(receivedAPposition < 80)
            {
@@ -196,7 +199,8 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
             if(receivedAPposition <= 10)
             {
-                speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
+               // speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
+                speedTorqueStruct.realAPposition = 0;
             }
             else
             {
@@ -216,7 +220,8 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
             if(receivedAPposition <= 10)
             {
-                speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+               // speedTorqueStruct.realAPposition = (int8_t)((receivedAPposition * 2) - 20);
+                speedTorqueStruct.realAPposition = 0;
             }
             else if (receivedAPposition < 80)
             {
@@ -232,7 +237,8 @@ static void setRealAPPosition(uint8_t receivedAPposition)
         {
             if(receivedAPposition <= 10)
             {
-                speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
+              //  speedTorqueStruct.realAPposition = 20 - (receivedAPposition * 2);
+                speedTorqueStruct.realAPposition = 0;
             }
             else
             {
