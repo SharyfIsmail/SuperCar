@@ -61,7 +61,6 @@ inline void setVcuAll01Speed(canMessage_t* ptr, uint8_t value)
 #define CAN_PERIOD_MS_VCU_ALL02   ((uint32_t) 1000)
 #define VCU_ALL02_ID              ((uint32_t) 0x1852A0D0)
 #define VCU_ALL02_DLC             ((uint8_t) 5)
-
 inline void setVcuAll02MessageCounter(canMessage_t* ptr, uint8_t value)
 {
     ptr->data[1] = (ptr->data[1] & 0xF0) | (value & 0x0F);
@@ -90,7 +89,8 @@ inline void setVcuAll02Temp02(canMessage_t* ptr, uint8_t value)
 #define CAN_PERIOD_MS_INV_VCU_02   ((uint32_t) 100)
 #define INV_VCU_02_ID              ((uint32_t) 0x18A2D0EF)
 #define INV_VCU_02_DLC             ((uint8_t) 8)
-#define VCU_ALL_01_TORQUE(phy)     ((uint16_t) (phy * 4))
+#define INV_VCU_02_TORQUE(phy)     ((int16_t) (phy * 4) + 2000)
+#define INV_VCU_02_SPEED(phy)      (uint16_t)(phy + 20000)
 
 inline void setInvVcu02MessageCounter(canMessage_t* ptr, uint8_t value)
 {
@@ -123,5 +123,57 @@ inline void setInvVcu02InvSpeed(canMessage_t* ptr, uint16_t value)
 {
     ptr->data[6] = (uint8_t)(value);
     ptr->data[7] = (uint8_t)(value >> 8);
+}
+#define CAN_PERIOD_MS_INV_VCU_01   ((uint32_t) 10)
+#define INV_VCU_01_ID              ((uint32_t) 0xCA1D0EF)
+#define INV_VCU_01_DLC             ((uint8_t) 8)
+#define INV_VCU_01_HV_CURRENT(phy)     ((uint16_t) (phy * 10) + 5000)
+
+inline void setInvVcu01MessageCounter(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[1] = (ptr->data[1] & 0xF0) | (value & 0x0F);
+}
+inline uint8_t getInvVcu01MessageCounter(canMessage_t* ptr)
+{
+    return ptr->data[1] & 0x0F;
+}
+inline void increaseInvVcu01MessageCounter(canMessage_t* ptr, uint8_t value)
+{
+    setInvVcu01MessageCounter(ptr, getInvVcu01MessageCounter(ptr) + value);
+}
+inline void setInvVcu01InverterState(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[1] = (ptr->data[1] & 0x0F) | ((value & 0x0F) << 4);
+}
+inline void setInvVcu01InverterHvCurrent(canMessage_t* ptr, uint16_t value)
+{
+    ptr->data[2] = (uint8_t) value;
+    ptr->data[3] = (uint8_t)( value >> 8);
+}
+
+#define CAN_PERIOD_MS_INV_VCU_03   ((uint32_t) 1000)
+#define INV_VCU_03_ID              ((uint32_t) 0x18A3D0EF)
+#define INV_VCU_03_DLC             ((uint8_t) 8)
+
+inline void setInvVcu03MessageCounter(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[1] = (ptr->data[1] & 0xF0) | (value & 0x0F);
+}
+inline uint8_t getInvVcu03MessageCounter(canMessage_t* ptr)
+{
+    return ptr->data[1] & 0x0F;
+}
+inline void increaseInvVcu03MessageCounter(canMessage_t* ptr, uint8_t value)
+{
+    setInvVcu03MessageCounter(ptr, getInvVcu03MessageCounter(ptr) + value);
+}
+
+inline void setInvVcu03MotorTemp(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[3] = value;
+}
+inline void setInvVcu03InverterTemp(canMessage_t* ptr, uint8_t value)
+{
+    ptr->data[4] = value;
 }
 #endif /* INCLUDE_USER_VCUALL_H_ */

@@ -108,6 +108,8 @@ static void messageBoxInitReg1()
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX11, CAN_Id_Extended); // VCU ALL 1
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX12, CAN_Id_Extended); // VCU ALL 2
     initializeSendingMessageBox(canREG1, canMESSAGE_BOX13, CAN_Id_Extended); // INV VCU 02
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX14, CAN_Id_Extended); // INV VCU 01
+    initializeSendingMessageBox(canREG1, canMESSAGE_BOX23, CAN_Id_Extended); // INV VCU 03
 
 
 //    initializeSendingMessageBox(canREG1, canMESSAGE_BOX1, CAN_Id_Extended);// Bms Heart Beat

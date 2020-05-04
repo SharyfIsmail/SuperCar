@@ -50,9 +50,8 @@ static taskStatuses_t taskStatuses = {
                                            }
                                          };
 static VcuStatusStruct_t currentVcuStatusStruct = { VCU_STATUS_INIT,
-                                             VCU_NO_ERROR,
-                                             0
-                                           };
+                                                    VCU_NO_ERROR
+                                                  };
 static void setCurrentVcuStatus(VcuStatusStruct_t* vcuCurrentStatus, VcuErrorStatus_t LostComponents, VcuErrorStatus_t Semicron, SelectorMode_t selector,
                                 batteryMode_t batteryMode, VcuErrorStatus_t bmsError);
 static void setVcuErrorLostComponents(VcuErrorStatus_t *lostComponentError, VcuStateMangement_t currentVcuStatus, lostComponentsStatus_t LostComponentsStatus);

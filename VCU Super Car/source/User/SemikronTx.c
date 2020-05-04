@@ -16,8 +16,12 @@
 #include "currentErrorViewer.h"
 #include "string.h"
 
-static int16_t Torque = 0;
-static int16_t Speed = 0;
+static InfoFromInv_t infoFromInv = { .inverterHvCurrent = 0,
+                              .inverterSpeed = 0,
+                              .inverterTemp = 0,
+                              .inverterTorque = 0,
+                              .motorTemp = 0
+};
 void vSemicronTxHandler (void *pvParameters);
 static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01);
 static uint8_t errorSeek(causingOfError_t *cause);
@@ -78,7 +82,8 @@ void vSemicronTxHandler (void *pvParameters)
                 }
                 else                                        // emdTxPdo_05
                 {
-
+                    infoFromInv.motorTemp = getTx_PDO_05_MotorTemperature(emdTxPdo_05);
+                    infoFromInv.inverterTemp = getTx_PDO_05_MaxJunctionTemp(emdTxPdo_05);
                 }
             }
 
@@ -86,18 +91,18 @@ void vSemicronTxHandler (void *pvParameters)
             {
                 if(semicronTxCanFrame.id == EMD_TxPDO_3)    // emdTxPdo_03
                 {
-                    Speed = getTx_PDO_03_MotorSpeed(emdTxPdo_03);
+                    infoFromInv.inverterSpeed = getTx_PDO_03_MotorSpeed(emdTxPdo_03);
                 }
                 else                                        // emdTxPdo_04
                 {
-
+                    infoFromInv.inverterHvCurrent = (uint16_t)getTx_PDO_04_PhaseCurrent(emdTxPdo_04);
 
                 }
             }
 
             else                                            // emdTxPdo_02
             {
-                Torque = getTx_PDO_02_Torque(emdTxPdo_02);
+                infoFromInv.inverterTorque = getTx_PDO_02_Torque(emdTxPdo_02);
             }
         }
         else
@@ -155,12 +160,8 @@ static void semicronBitsErrorSet(uint8_t errorIndex)
     uint64_t semicronBitError = ((uint64_t)1) << (errorIndex - 1);
     xQueueOverwrite(queueCurrentSemicronError, &semicronBitError);
 }
-const int16_t* getSpeed()
-{
-    return &Speed;
-}
 
-const int16_t* getTorque()
+const InfoFromInv_t *getInfoFromInv()
 {
-    return &Torque;
+    return &infoFromInv;
 }

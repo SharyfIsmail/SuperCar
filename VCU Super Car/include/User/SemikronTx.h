@@ -234,15 +234,15 @@ typedef struct
 }emdTxPdo05_t;
 
 /*EMD_ACT_Max Junction Temp  length : 8 start bit : 0*/
-inline int16_t getTx_PDO_05_MaxJunctionTemp(emdTxPdo05_t *ptr)
+inline uint8_t getTx_PDO_05_MaxJunctionTemp(emdTxPdo05_t *ptr)
 {
-    return (int16_t)(((uint8_t)ptr->data[0]) - 40 );
+    return ptr->data[0];
 }
 
 /*EMD_ACT_Motor Temperature  length : 8 start bit : 8*/
-inline int16_t getTx_PDO_05_MotorTemperature(emdTxPdo05_t *ptr)
+inline uint8_t getTx_PDO_05_MotorTemperature(emdTxPdo05_t *ptr)
 {
-    return (int16_t)(((uint8_t)ptr->data[1]) - 40 );
+    return ptr->data[1];
 }
 
 /*EMD_ACT_Control Strategy length : 3 start bit : 16*/
@@ -282,7 +282,15 @@ typedef struct
         emdTxPdo05_t emdTxPdo05;
     }p;
 }semicronTxCanFrame_t;
-const int16_t* getSpeed();
-const int16_t* getTorque();
+typedef struct
+{
+    int16_t inverterSpeed;
+    int16_t inverterTorque;
+    uint16_t inverterHvCurrent;
+    uint8_t inverterTemp;
+    uint8_t motorTemp;
+}InfoFromInv_t;
+
+const InfoFromInv_t *getInfoFromInv();
 #endif /* INCLUDE_USER_SEMIKRONTX_H_ */
 
