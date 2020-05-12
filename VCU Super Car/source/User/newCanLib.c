@@ -200,7 +200,7 @@ uint32 newCanTransmit(canBASE_t *node, uint32 messageBox, canMessage_t* ptr)
 
 void boardCanInit(canBASE_t *node)
 {
-    node->CTL = (uint32)0x00000000U
+    node->CTL = (uint32)0x00000200U
               | (uint32)0x00000000U
               | (uint32)((uint32)0x00000005U  << 10U)
               | (uint32)0x00020043U;
@@ -216,7 +216,7 @@ void boardCanInit(canBASE_t *node)
         //setMessageBoxLowInterrupt(node, canMESSAGE_BOX15, canMESSAGE_BOX16);
     }
     /** - Setup auto bus on timer period */
-    node->ABOTR = (uint32) 1U;
+    node->ABOTR = (uint32) 0U;
 
     if(node == canREG1)
         messageBoxInitReg1();
