@@ -93,7 +93,7 @@ int main(void)
 {
 /* USER CODE BEGIN (3) */
     memoryAccessInit();
-   // hetInit();////////////////////////////
+    hetInit();////////////////////////////
     boardCanInit(canREG1);
   //  boardCanInit(canREG2);
     semikronRxInit();
@@ -103,7 +103,7 @@ int main(void)
     canMessageLostCheckInit();
     vcuStateManagementInit();
     externalMemoryTaskInit();
-  //  timerTaskInit();
+    timerTaskInit();
     currentErrorViewerInit();
     dcDcInit();
     VcuAllInit();

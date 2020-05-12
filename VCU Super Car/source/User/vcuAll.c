@@ -85,7 +85,7 @@ void vVcuAll01Handler (void *pvParameters)
     lastWakeTime = xTaskGetTickCount();
     for(;;)
     {
-       // xQueuePeek(xQueueRealTime, &time, pdMS_TO_TICKS(0));
+        xQueuePeek(xQueueRealTime, &time, pdMS_TO_TICKS(0));
         motorSpeed = infFromInv->inverterSpeed;
         if (motorSpeed < 0)
         {
@@ -195,8 +195,8 @@ static void parseDataToCanVcuAll02(canMessage_t *VcuToAll02)
 static void parseDataToCanInvVcu02(canMessage_t *invVcu02)
 {
     increaseInvVcu02MessageCounter(invVcu02, 0x01);
-    setInvVcu02MaxTorque(invVcu02, 0xFFF);
-    setInvVcu02MinTorque(invVcu02, 0xFFF);
+    setInvVcu02MaxTorque(invVcu02, 0xFFFF);
+    setInvVcu02MinTorque(invVcu02, 0xFFFF);
     setInvVcu02InvSpeed(invVcu02, INV_VCU_02_SPEED(infFromInv->inverterSpeed));
     setInvVcu02OutputTorque(invVcu02, INV_VCU_02_TORQUE(infFromInv->inverterTorque));
     WriteToCanFrameCrc8(invVcu02->data, invVcu02->dlc);

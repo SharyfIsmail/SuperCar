@@ -216,7 +216,7 @@ void boardCanInit(canBASE_t *node)
         //setMessageBoxLowInterrupt(node, canMESSAGE_BOX15, canMESSAGE_BOX16);
     }
     /** - Setup auto bus on timer period */
-    node->ABOTR = (uint32)0U;
+    node->ABOTR = (uint32) 1U;
 
     if(node == canREG1)
         messageBoxInitReg1();

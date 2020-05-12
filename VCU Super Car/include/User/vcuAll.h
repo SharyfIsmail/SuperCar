@@ -116,7 +116,7 @@ inline void setInvVcu02MaxTorque(canMessage_t* ptr, uint16_t value)
 }
 inline void setInvVcu02MinTorque(canMessage_t* ptr, uint16_t value)
 {
-    ptr->data[4] = (ptr->data[1] & 0x0F) | (uint8_t)(value << 4);
+    ptr->data[4] = (ptr->data[4] & 0x0F) | (uint8_t)(value << 4);
     ptr->data[5] = (uint8_t) (value >> 4);
 }
 inline void setInvVcu02InvSpeed(canMessage_t* ptr, uint16_t value)

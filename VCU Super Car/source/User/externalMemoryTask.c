@@ -324,7 +324,7 @@ static void sendTheChoosenError(ErrorDataToExtMemory_t *errorDataFromcan)
 void logError(causingOfError_t cause)
 {
     uint32_t errorTime = 0 ;
-   // xQueuePeek(xQueueRealTime, &errorTime, pdMS_TO_TICKS(0));
+    xQueuePeek(xQueueRealTime, &errorTime, pdMS_TO_TICKS(0));
 
     CommandToExtMemory_t command =
     {

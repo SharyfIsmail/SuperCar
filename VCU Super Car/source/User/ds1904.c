@@ -51,10 +51,10 @@ void DS1904_ReadDateTime(datetime_t *pDateTime)
 }
 
 /** @fn datetime_t getDifferenceDateAndTime()
-*   @brief Get the difference between 00:00:00 1.01.2019 and current calendar time in seconds
+*   @brief Get the difference between 00:00:00 1.01.2020 and current calendar time in seconds
 *   @return This function will return the time difference in seconds.
 *
-*   This function calculates the difference between 00:00:00 1.01.2019 and current calendar time in seconds.
+*   This function calculates the difference between 00:00:00 1.01.2020 and current calendar time in seconds.
 */
 datetime_t getDifferenceDateAndTime()
 {
@@ -64,15 +64,15 @@ datetime_t getDifferenceDateAndTime()
     /* Get current time in seconds */
     time(&currentDateTime);
 
-    /* Set starting point calendar time in seconds - 00:00:00 1.01.2019 */
+    /* Set starting point calendar time in seconds - 00:00:00 1.01.2020 */
     startingPointDateTime = localtime(&currentDateTime);
     startingPointDateTime->tm_sec = 0;
     startingPointDateTime->tm_min = 0;
     startingPointDateTime->tm_hour = 0;
     startingPointDateTime->tm_mday = 1;
     startingPointDateTime->tm_mon = 0;
-    startingPointDateTime->tm_year = 120; /* 2019 - 1900 */
-    startingPointDateTime->tm_wday = 0;
+    startingPointDateTime->tm_year = 120; /* 2020 - 1900 */
+    startingPointDateTime->tm_wday = 1;
     startingPointDateTime->tm_yday = 0;
 
     /* Convert structure tm to time_t */
