@@ -130,6 +130,7 @@ static void checkErrorsOnInverter(emdTxPdo01_t *emdTxPdo_01)
     else
     {
         SemicronStatus = NO_CRASH_SEMICRON;
+        semicronBitsErrorSet(0);
     }
 
     xQueueOverwrite(xQueueSemicronError, &SemicronStatus);
@@ -157,7 +158,10 @@ static void errorOccured(uint8_t errorIndex)
 
 static void semicronBitsErrorSet(uint8_t errorIndex)
 {
-    uint64_t semicronBitError = ((uint64_t)1) << (errorIndex - 1);
+    uint64_t semicronBitError = 0;
+    if(errorIndex > 0)
+         semicronBitError = ((uint64_t)1) << (errorIndex - 1);
+
     xQueueOverwrite(queueCurrentSemicronError, &semicronBitError);
 }
 
