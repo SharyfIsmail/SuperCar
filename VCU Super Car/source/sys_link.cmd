@@ -86,6 +86,7 @@ SECTIONS
     .data         : {} > RAM	
 	
 /* USER CODE BEGIN (4) */
+.sysmem       : {} > RAM
 /* USER CODE END */
 }
 

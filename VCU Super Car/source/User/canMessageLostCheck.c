@@ -37,7 +37,6 @@ typedef bool (*identifyLostComponent_t)(EventBits_t value);
 typedef void (*LostComponentHandler_t)(void);
 
 static causingOfError_t  causingOfError = EVERYTHING_IS_FINE;
-//static VcuRawStatusLostComponents_t LostComponentsStatus = NO_CRASH_lOST_MESSAGE;
 
 static canMessageLost_t canMessageLoses =
 {
